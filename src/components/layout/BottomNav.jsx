@@ -1,8 +1,7 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { Compass, Heart, Map, Plus, Sparkles, Settings } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { Compass, Heart, Map, Sparkles } from "lucide-react";
 import useFavorites from "@/hooks/useFavorites";
-import { useAuth } from "@/lib/AuthContext";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
@@ -13,35 +12,18 @@ const ITEMS = [
 ];
 
 export default function BottomNav() {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
   const { favorites } = useFavorites();
   const favoritesCount = Object.keys(favorites).length;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-md">
-      <div className="mx-auto grid w-full max-w-4xl grid-cols-5 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2">
-        {ITEMS.slice(0, 2).map((item) => (
+      <div className="mx-auto grid w-full max-w-4xl grid-cols-4 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2">
+        {ITEMS.map((item, index) => (
           <NavItem
             key={item.to}
             {...item}
             badge={item.to === "/favorites" && favoritesCount > 0 ? favoritesCount : null}
           />
-        ))}
-
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={() => navigate(isAuthenticated ? "/contribute" : "/login")}
-            aria-label="המלצה על מקום"
-            className="-mt-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-600/25 transition active:scale-95 hover:bg-green-700"
-          >
-            <Plus className="h-6 w-6" />
-          </button>
-        </div>
-
-        {ITEMS.slice(2).map((item) => (
-          <NavItem key={item.to} {...item} badge={null} />
         ))}
       </div>
     </nav>
