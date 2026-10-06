@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Save, Trash2, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock, Zap } from 'lucide-react';
 
 const CATEGORIES = [
   { id: 'cafe', label: 'חיי קפה' },
@@ -15,6 +15,59 @@ const CATEGORIES = [
 ];
 
 const API_BASE = 'http://localhost:3001/api';
+
+const FormSection = ({ title, icon: Icon, isOpen, onToggle, children }) => (
+  <motion.div
+    layout
+    className="border border-slate-200 rounded-2xl overflow-hidden"
+  >
+    <button
+      onClick={onToggle}
+      className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white hover:from-slate-100 hover:to-slate-50 transition-colors text-right"
+    >
+      <div className="flex items-center gap-3">
+        <Icon size={20} className="text-green-600" />
+        <span className="font-semibold text-gray-900">{title}</span>
+      </div>
+      <motion.div
+        animate={{ rotate: isOpen ? 180 : 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+      >
+        <ChevronDown size={20} className="text-gray-600" />
+      </motion.div>
+    </button>
+
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          className="border-t border-slate-200 px-6 py-6 bg-white space-y-6"
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </motion.div>
+);
+
+const FormInput = ({ label, helper, error, ...props }) => (
+  <div className="text-right">
+    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+    {helper && <p className="text-xs text-gray-500 mb-2">{helper}</p>}
+    <input
+      {...props}
+      className={`w-full px-4 py-3 border rounded-2xl text-right focus:outline-none focus:ring-2 transition-all ${
+        error
+          ? 'border-red-300 focus:ring-red-600 bg-red-50'
+          : 'border-gray-300 focus:ring-green-600'
+      }`}
+    />
+    {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+  </div>
+);
 
 export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
   const [formData, setFormData] = useState({
@@ -36,6 +89,12 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
 
   const [loading, setLoading] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
+  const [openSections, setOpenSections] = useState({
+    basics: true,
+    visuals: false,
+    details: false,
+    operations: false,
+  });
 
   useEffect(() => {
     if (place) setFormData(place);
@@ -100,172 +159,224 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
     }
   };
 
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="space-y-4"
     >
-      {/* Category */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">קטגוריה</label>
-        <select
-          value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
-        >
-          {CATEGORIES.map(cat => (
-            <option key={cat.id} value={cat.id}>{cat.label}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Name */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">שם</label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
-          placeholder="שם המקום"
-        />
-      </div>
-
-      {/* Address & Geocoding */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">כתובת</label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
-            placeholder="כתובת המקום"
+      {/* Form Progress Bar */}
+      <div className="bg-white rounded-2xl p-4 border border-slate-200">
+        <p className="text-xs font-semibold text-gray-600 mb-3">התקדמות</p>
+        <div className="w-full bg-slate-200 rounded-full h-2">
+          <motion.div
+            layoutId="progress"
+            className="h-full bg-green-600 rounded-full"
+            style={{
+              width: `${((Object.values(openSections).filter(Boolean).length || 1) / 4) * 100}%`,
+            }}
           />
-          <button
-            onClick={handleAutoGeocode}
-            disabled={geocoding}
-            className="px-4 py-3 bg-slate-100 text-gray-700 rounded-2xl hover:bg-slate-200 transition-colors disabled:opacity-50"
-          >
-            {geocoding ? <Loader2 size={20} className="animate-spin" /> : 'זיהוי'}
-          </button>
         </div>
       </div>
 
-      {/* Coordinates */}
-      <div className="grid grid-cols-2 gap-4 text-right">
+      {/* SECTION 1: Basics */}
+      <FormSection
+        title="📍 מידע בסיסי"
+        icon={MapPin}
+        isOpen={openSections.basics}
+        onToggle={() => toggleSection('basics')}
+      >
+        <FormInput
+          label="שם המקום"
+          helper="זהו השם שיופיע בחיפוש"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="לדוגמה: אגם עוצ'קי"
+          required
+        />
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">קו רוחב</label>
-          <input
+          <label className="block text-sm font-medium text-gray-700 mb-2">קטגוריה</label>
+          <p className="text-xs text-gray-500 mb-2">בחר את הסוג המתאים ביותר</p>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          >
+            {CATEGORIES.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">כתובת</label>
+          <p className="text-xs text-gray-500 mb-2">הכנס כתובת דויקת - לחץ "זיהוי" לקבלת קואורדינטות</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+              placeholder="כתובת המקום"
+            />
+            <motion.button
+              onClick={handleAutoGeocode}
+              disabled={geocoding}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-4 py-3 bg-green-100 text-green-600 rounded-2xl hover:bg-green-200 transition-colors disabled:opacity-50 font-medium"
+            >
+              {geocoding ? <Loader2 size={20} className="animate-spin" /> : 'זיהוי'}
+            </motion.button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormInput
+            label="קו רוחב"
             type="number"
             step="0.0001"
             value={formData.lat}
             onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">קו אורך</label>
-          <input
+          <FormInput
+            label="קו אורך"
             type="number"
             step="0.0001"
             value={formData.lng}
             onChange={(e) => setFormData({ ...formData, lng: parseFloat(e.target.value) })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
           />
         </div>
-      </div>
+      </FormSection>
 
-      {/* Image URL */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">תמונה (URL)</label>
-        <input
+      {/* SECTION 2: Visuals */}
+      <FormSection
+        title="🖼️ תמונות ותיאור"
+        icon={ImageIcon}
+        isOpen={openSections.visuals}
+        onToggle={() => toggleSection('visuals')}
+      >
+        <FormInput
+          label="URL של תמונה"
+          helper="הכנס קישור מלא לתמונה (https://...)"
           type="url"
           value={formData.image_url}
           onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
-          placeholder="https://..."
+          placeholder="https://example.com/image.jpg"
         />
-      </div>
 
-      {/* Description */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">תיאור</label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
-          rows={6}
-          placeholder="תיאור מלא של המקום..."
-        />
-      </div>
+        {formData.image_url && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="rounded-2xl overflow-hidden border border-slate-200"
+          >
+            <img
+              src={formData.image_url}
+              alt="preview"
+              className="w-full h-48 object-cover"
+              onError={() => console.log('Image failed to load')}
+            />
+          </motion.div>
+        )}
 
-      {/* Short Description */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">תיאור קצר</label>
-        <input
-          type="text"
-          value={formData.short_description}
-          onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
-          maxLength="150"
-          placeholder="תיאור בקצרה (עד 150 תווים)"
-        />
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">תיאור קצר</label>
+          <p className="text-xs text-gray-500 mb-2">תיאור בשורה אחת (עד 150 תווים)</p>
+          <input
+            type="text"
+            value={formData.short_description}
+            onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+            maxLength="150"
+            placeholder="תיאור בקצרה..."
+          />
+          <p className="text-xs text-gray-500 mt-2 text-left">
+            {formData.short_description.length}/150 תווים
+          </p>
+        </div>
 
-      {/* Opening Hours */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">שעות פתיחה</label>
-        <input
-          type="text"
-          value={formData.opening_hours}
-          onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
-          placeholder="09:00-17:00"
-        />
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">תיאור מלא</label>
+          <p className="text-xs text-gray-500 mb-2">תיאור מפורט של המקום</p>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
+            rows={5}
+            placeholder="תיאור מלא של המקום..."
+          />
+        </div>
+      </FormSection>
 
-      {/* Phone */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">טלפון</label>
-        <input
-          type="tel"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
-          placeholder="050-0000000"
-        />
-      </div>
-
-      {/* Rating */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">דירוג</label>
-        <input
+      {/* SECTION 3: Details */}
+      <FormSection
+        title="📝 פרטים"
+        icon={FileText}
+        isOpen={openSections.details}
+        onToggle={() => toggleSection('details')}
+      >
+        <FormInput
+          label="דירוג"
+          helper="דירוג מ-0 עד 5"
           type="number"
           min="0"
           max="5"
           step="0.1"
           value={formData.rating}
           onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
         />
-      </div>
 
-      {/* Tags */}
-      <div className="text-right">
-        <label className="block text-sm font-medium text-gray-700 mb-2">תגיות</label>
-        <input
-          type="text"
+        <FormInput
+          label="טלפון"
+          helper="מספר טלפון לפניה לעת הצורך"
+          type="tel"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          placeholder="050-0000000"
+        />
+
+        <FormInput
+          label="תגיות"
+          helper="הפרדת תגיות בפסיקים (דוגמה: יוקי, משפחה, טבע)"
           value={formData.tags}
           onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
           placeholder="תגיות מופרדות בפסיקים"
         />
-      </div>
+      </FormSection>
+
+      {/* SECTION 4: Operations */}
+      <FormSection
+        title="⏰ פעילות"
+        icon={Clock}
+        isOpen={openSections.operations}
+        onToggle={() => toggleSection('operations')}
+      >
+        <FormInput
+          label="שעות פתיחה"
+          helper="פורמט: HH:MM-HH:MM (לדוגמה: 09:00-17:00)"
+          value={formData.opening_hours}
+          onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
+          placeholder="09:00-17:00"
+        />
+
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-right">
+          <p className="text-sm text-green-700">
+            <span className="font-semibold">טיפ:</span> אתה יכול להשתמש ב"זיהוי" בסעיף "מידע בסיסי" כדי לקבל את הקואורדינטות המדוייקות של המקום.
+          </p>
+        </div>
+      </FormSection>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-6 border-t border-gray-200">
+      <motion.div
+        layout
+        className="flex gap-3 pt-6 border-t border-gray-200"
+      >
         <button
           onClick={onCancel}
           className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-2xl font-medium hover:bg-gray-50 transition-colors"
@@ -274,25 +385,38 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
         </button>
 
         {place?.id && (
-          <button
+          <motion.button
             onClick={handleDelete}
             disabled={loading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             className="flex-1 px-4 py-3 bg-red-100 text-red-700 rounded-2xl font-medium hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <Trash2 size={18} />
             מחיקה
-          </button>
+          </motion.button>
         )}
 
-        <button
+        <motion.button
           onClick={handleSave}
           disabled={loading}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-          שמור
-        </button>
-      </div>
+          {loading ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              שומר...
+            </>
+          ) : (
+            <>
+              <Save size={18} />
+              שמור
+            </>
+          )}
+        </motion.button>
+      </motion.div>
     </motion.div>
   );
 }
