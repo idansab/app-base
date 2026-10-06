@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מה יש פה - Home Discovery</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2EBD6F;
+      --primary-light: #C8F0DC;
+      --clay: #CE8560;
+      --sand: #F5D9B5;
+      --sky: #0BA3E0;
+      --background: #F2F7FC;
+      --text-primary: #1A2235;
+      --text-secondary: #6B7A8F;
+      --border: #D4E4F0;
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .page-container {
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      sticky: top;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--sand);
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .icon-btn:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Search + Location */
+    .search-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .search-bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Rubik';
+      text-align: right;
+    }
+
+    .location-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .location-btn:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Categories */
+    .categories-section {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .categories-scroll {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-start;
+    }
+
+    .category-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      background: var(--sand);
+      color: var(--text-primary);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+    }
+
+    .category-chip:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    .category-chip.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Sort + Count */
+    .controls-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .sort-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .sort-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--sand);
+      color: var(--text-primary);
+      transition: all 0.3s;
+    }
+
+    .sort-btn:hover,
+    .sort-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Grid */
+    .grid-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 24px;
+    }
+
+    .places-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .place-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+
+    .place-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .place-card-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      position: relative;
+    }
+
+    .place-card-favorite {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .place-card-favorite:hover {
+      transform: scale(1.1);
+    }
+
+    .place-card-content {
+      padding: 16px;
+    }
+
+    .place-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      text-align: right;
+    }
+
+    .place-card-meta {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      justify-content: flex-end;
+    }
+
+    .place-card-meta-item {
+      background: var(--sand);
+      color: var(--text-primary);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .place-card-rating {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .place-card-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      text-align: right;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-icon {
+      font-size: 24px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .place-card {
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    .place-card:nth-child(1) { animation-delay: 0.1s; }
+    .place-card:nth-child(2) { animation-delay: 0.15s; }
+    .place-card:nth-child(3) { animation-delay: 0.2s; }
+    .place-card:nth-child(4) { animation-delay: 0.25s; }
+    .place-card:nth-child(5) { animation-delay: 0.3s; }
+    .place-card:nth-child(6) { animation-delay: 0.35s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .places-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+      }
+
+      .place-card-image {
+        height: 120px;
+        font-size: 32px;
+      }
+
+      .place-card-content {
+        padding: 12px;
+      }
+
+      .place-card-title {
+        font-size: 14px;
+      }
+
+      .search-section {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body dir="rtl">
+  <div class="page-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="logo">מה יש פה?</div>
+        <div class="header-actions">
+          <button class="icon-btn" title="Favorites">❤️</button>
+          <button class="icon-btn" title="Settings">⚙️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search + Location -->
+    <div class="search-section">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="חפש מקום, עיר או חומץ..." />
+      </div>
+      <button class="location-btn" title="Select location">📍</button>
+    </div>
+
+    <!-- Categories -->
+    <div class="categories-section">
+      <div class="categories-scroll">
+        <button class="category-chip active">🌍 הכל</button>
+        <button class="category-chip">☕ קפה ואוכל</button>
+        <button class="category-chip">🧗 טיולים</button>
+        <button class="category-chip">🌙 חיי לילה</button>
+        <button class="category-chip">🛍️ שווקים</button>
+        <button class="category-chip">🎨 תרבות</button>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-section">
+      <span>נמצאו 11 מקומות</span>
+      <div class="sort-buttons">
+        <button class="sort-btn active">קרובים</button>
+        <button class="sort-btn">דירוג</button>
+        <button class="sort-btn">שם</button>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid-section">
+      <div class="places-grid">
+        <!-- Card 1 -->
+        <div class="place-card">
+          <div class="place-card-image">
+            🏔️
+            <button class="place-card-favorite">🤍</button>
+          </div>
+          <div class="place-card-content">
+            <div class="place-card-title">טיול סלעים בנחל דוד</div>
+            <div class="place-card-meta">
+              <span class="place-card-rating">⭐ 4.8</span>
+              <span class="place-card-meta-item">טיולים</span>
+            </div>
+            <div class="place-card-desc">טיול משפחתי יפה עם מפלים קטנים</div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="place-card">
+          <div class="place-card-image">
+            ☕
+            <button class="place-card-favorite">🤍</button>
+          </div>
+          <div class="place-card-content">
+            <div class="place-card-title">עגלת קפה של גלעד</div>
+            <div class="place-card-meta">
+              <span class="place-card-rating">⭐ 4.7</span>
+              <span class="place-card-meta-item">קפה</span>
+            </div>
+            <div class="place-card-desc">קפה ספיציאליטי וקינוחים טריים</div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="place-card">
+          <div class="place-card-image">
+            🌙
+            <button class="place-card-favorite">🤍</button>
+          </div>
+          <div class="place-card-content">
+            <div class="place-card-title">בר הלילה כוכבים</div>
+            <div class="place-card-meta">
+              <span class="place-card-rating">⭐ 4.6</span>
+              <span class="place-card-meta-item">לילה</span>
+            </div>
+            <div class="place-card-desc">מוזיקה חיה וקוקטיילים משובחים</div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="place-card">
+          <div class="place-card-image">
+            🏛️
+            <button class="place-card-favorite">🤍</button>
+          </div>
+          <div class="place-card-content">
+            <div class="place-card-title">מוזיאון ישראל</div>
+            <div class="place-card-meta">
+              <span class="place-card-rating">⭐ 4.9</span>
+              <span class="place-card-meta-item">תרבות</span>
+            </div>
+            <div class="place-card-desc">אוספים עתיקים וקוראים מודרניים</div>
+          </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="place-card">
+          <div class="place-card-image">
+            🛍️
+            <button class="place-card-favorite">🤍</button>
+          </div>
+          <div class="place-card-content">
+            <div class="place-card-title">שוק הרמלה</div>
+            <div class="place-card-meta">
+              <span class="place-card-rating">⭐ 4.4</span>
+              <span class="place-card-meta-item">שווקים</span>
+            </div>
+            <div class="place-card-desc">שוק מסורתי עם סחורה מקומית</div>
+          </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="place-card">
+          <div class="place-card-image">
+            🍽️
+            <button class="place-card-favorite">🤍</button>
+          </div>
+          <div class="place-card-content">
+            <div class="place-card-title">מקום האוכל של אבו</div>
+            <div class="place-card-meta">
+              <span class="place-card-rating">⭐ 4.9</span>
+              <span class="place-card-meta-item">קפה</span>
+            </div>
+            <div class="place-card-desc">חומוס עתיק בעבודת יד וממלחות</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <div class="nav-icon">🏠</div>
+      <div>בית</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">❤️</div>
+      <div>מועדפים</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🗺️</div>
+      <div>מסלולים</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">⚡</div>
+      <div>הפתעה</div>
+    </div>
+  </div>
+</body>
+</html>
