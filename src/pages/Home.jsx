@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Loader2, X } from 'lucide-react';
+import { Search, MapPin, Loader2, X, Plus, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
+import { useAuth } from '@/lib/AuthContext';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
@@ -19,6 +21,8 @@ const CATEGORIES = [
 const API_BASE = 'http://localhost:3001/api';
 
 export default function Home() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [places, setPlaces] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -136,9 +140,24 @@ export default function Home() {
       {/* Header */}
       <div className="sticky top-0 bg-white border-b border-gray-200 z-30 py-3">
         <div className="px-4 max-w-6xl mx-auto flex items-center justify-between">
-          <h1 className="text-right font-bold text-2xl text-green-600">מה יש פה?</h1>
-          <div className="flex gap-2">
-            {/* TODO: Add more header actions */}
+          <h1 className="text-right font-bold text-2xl text-primary">מה יש פה?</h1>
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={() => navigate(isAuthenticated ? '/contribute' : '/login')}
+              className="p-2 bg-primary hover:bg-primary/90 text-white rounded-full transition-all hover:scale-110 shadow-md"
+              title="הוסף מקום"
+              aria-label="הוסף מקום"
+            >
+              <Plus size={20} />
+            </button>
+            <button
+              onClick={() => navigate('/settings')}
+              className="p-2 hover:bg-sand rounded-full transition-colors"
+              title="הגדרות"
+              aria-label="הגדרות"
+            >
+              <Settings size={20} className="text-primary" />
+            </button>
           </div>
         </div>
       </div>

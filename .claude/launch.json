@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "server"],
       "port": 3001
+    },
+    {
+      "name": "admin",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", "../mah-sheyesh-pah", "-p", "4000", "-c-1"],
+      "port": 4000
     }
   ]
 }
