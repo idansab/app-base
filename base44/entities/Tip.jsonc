@@ -1,0 +1,27 @@
+{
+  "name": "Tip",
+  "type": "object",
+  "properties": {
+    "place_id": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "image_uri": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "place_id",
+    "content"
+  ]
+}

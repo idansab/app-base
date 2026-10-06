@@ -1,0 +1,99 @@
+{
+  "name": "Place",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "cafe",
+        "nature",
+        "hiking",
+        "culture",
+        "nightlife",
+        "shopping",
+        "family",
+        "food",
+        "view",
+        "beach",
+        "other"
+      ]
+    },
+    "city": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "short_description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number"
+    },
+    "price_level": {
+      "type": "string",
+      "enum": [
+        "free",
+        "budget",
+        "moderate",
+        "expensive"
+      ]
+    },
+    "opening_hours": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "difficulty_level": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "moderate",
+        "hard"
+      ]
+    },
+    "trail_length": {
+      "type": "number"
+    },
+    "seasonality": {
+      "type": "string"
+    },
+    "accessibility": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}

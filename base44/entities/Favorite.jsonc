@@ -1,0 +1,12 @@
+{
+  "name": "Favorite",
+  "type": "object",
+  "properties": {
+    "place_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "place_id"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "מה יש פה",
+  "short_name": "מה יש פה",
+  "description": "מה יש פה — כל מה שיש באזור: עגלות קפה, מעיינות, מסלולי הליכה, תרבות ובילוי, עם טיפים מהקהילה וניווט בלחיצה ל-Waze.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#f8fafc",
+  "background_color": "#f8fafc",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

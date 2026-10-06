@@ -1,0 +1,24 @@
+{
+  "name": "FieldReport",
+  "type": "object",
+  "properties": {
+    "place_id": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "place_id",
+    "content"
+  ]
+}
