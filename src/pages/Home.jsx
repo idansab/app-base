@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Loader2 } from 'lucide-react';
+import { Search, MapPin, Loader2, X } from 'lucide-react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
 import { haversineKm } from '@/lib/geo';
@@ -7,11 +7,15 @@ import useUserLocation from '@/hooks/useUserLocation';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
-  { id: 'nature', label: 'טבע', emoji: '🏞️' },
-  { id: 'culture', label: 'תרבות', emoji: '🎭' },
-  { id: 'food', label: 'אוכל', emoji: '🍽️' },
-  { id: 'shopping', label: 'קניות', emoji: '🛍️' },
-  { id: 'entertainment', label: 'בילוי', emoji: '🎪' },
+  { id: 'cafe', label: 'חיי קפה', emoji: '☕' },
+  { id: 'springs', label: 'טבועות שפעתוניות', emoji: '💧' },
+  { id: 'nature', label: 'טבע ופרחוניות', emoji: '🏞️' },
+  { id: 'other', label: 'אחר', emoji: '🎯' },
+  { id: 'beaches', label: 'חופים', emoji: '🏖️' },
+  { id: 'treatments', label: 'טיפולים', emoji: '✨' },
+  { id: 'food', label: 'אוכל וסיור רחוב', emoji: '🍽️' },
+  { id: 'family', label: 'גילויים משפחתי', emoji: '👨‍👩‍👧‍👦' },
+  { id: 'shopping', label: 'שווקים וקניות', emoji: '🛍️' },
 ];
 
 const API_BASE = 'http://localhost:3001/api';
@@ -119,69 +123,61 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {error && (
-        <div className="sticky top-0 bg-red-50 text-red-700 p-4 text-center z-40">
+        <div className="sticky top-0 bg-red-50 text-red-700 p-4 text-center z-40 flex items-center justify-between px-4">
+          <button onClick={() => setError(null)} className="p-1">
+            <X size={18} />
+          </button>
           {error}
+          <div className="w-6" />
         </div>
       )}
 
-      {/* Header with Location Button */}
-      <div className="sticky top-0 bg-white shadow-sm z-30 pt-4 pb-3">
-        <div className="px-4 max-w-6xl mx-auto">
-          {/* Logo */}
-          <h1 className="text-right font-bold text-xl mb-4 text-green-600">מה יש פה?</h1>
-
-          {/* Location Button */}
-          <button
-            onClick={() => setLocationPickerOpen(true)}
-            className="w-full flex items-center justify-between gap-3 p-3 bg-green-50 border-2 border-green-200 rounded-2xl hover:bg-green-100 transition-colors"
-          >
-            <div className="text-right flex-1">
-              <p className="text-xs text-gray-600">המיקום שלך</p>
-              <p className="font-semibold text-green-700">
-                {userLocation ? (
-                  `${userLocation.lat.toFixed(3)}, ${userLocation.lng.toFixed(3)}`
-                ) : (
-                  'לא נבחר מיקום'
-                )}
-              </p>
-              {maxDistance && (
-                <p className="text-xs text-green-600 mt-1">מרחק: עד {maxDistance} ק״מ</p>
-              )}
-            </div>
-            <div className="p-3 bg-white rounded-full">
-              <MapPin size={20} className="text-green-600" />
-            </div>
-          </button>
-
-          {/* Search Bar */}
-          <div className="mt-4 flex gap-2">
-            <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-2xl">
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="חפש מקום..."
-                className="flex-1 outline-none text-right bg-transparent"
-              />
-            </div>
+      {/* Header */}
+      <div className="sticky top-0 bg-white border-b border-gray-200 z-30 py-3">
+        <div className="px-4 max-w-6xl mx-auto flex items-center justify-between">
+          <h1 className="text-right font-bold text-2xl text-green-600">מה יש פה?</h1>
+          <div className="flex gap-2">
+            {/* TODO: Add more header actions */}
           </div>
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="sticky top-[140px] bg-white border-b border-gray-200 z-20 overflow-x-auto">
-        <div className="px-4 max-w-6xl mx-auto py-2 flex gap-2 justify-end">
+      {/* Search Bar */}
+      <div className="px-4 max-w-6xl mx-auto py-3">
+        <div className="flex gap-2 items-center">
+          <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-2xl">
+            <Search size={18} className="text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="חפש מקום, עיר או חומץ..."
+              className="flex-1 outline-none text-right bg-transparent text-sm"
+            />
+          </div>
+          <button
+            onClick={() => setLocationPickerOpen(true)}
+            className="p-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors flex items-center justify-center flex-shrink-0"
+            title="בחר מיקום ומרחק"
+          >
+            <MapPin size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Category Tabs - Horizontal Scroll */}
+      <div className="bg-white border-b border-gray-100 z-20 overflow-x-auto">
+        <div className="px-4 max-w-6xl mx-auto py-3 flex gap-2 justify-start">
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors text-sm font-medium ${
                 selectedCategory === cat.id
                   ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
               }`}
             >
               {cat.emoji} {cat.label}
@@ -191,19 +187,43 @@ export default function Home() {
       </div>
 
       {/* Sort Controls */}
-      <div className="px-4 max-w-6xl mx-auto py-4 flex gap-2 justify-end">
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-2xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-600"
-        >
-          <option value="distance">מרחק</option>
-          <option value="rating">דירוג</option>
-          <option value="name">שם</option>
-        </select>
-        <span className="text-sm text-gray-600 self-center">
-          {filteredPlaces.length} מקומות
+      <div className="px-4 max-w-6xl mx-auto py-4 flex gap-2 items-center justify-end">
+        <span className="text-sm font-medium text-gray-600">
+          נמצאו {filteredPlaces.length} מקומות
         </span>
+
+        <div className="flex gap-1">
+          <button
+            onClick={() => setSortBy('distance')}
+            className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
+              sortBy === 'distance'
+                ? 'bg-green-600 text-white'
+                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+            }`}
+          >
+            קרובים
+          </button>
+          <button
+            onClick={() => setSortBy('rating')}
+            className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
+              sortBy === 'rating'
+                ? 'bg-green-600 text-white'
+                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+            }`}
+          >
+            דירוג
+          </button>
+          <button
+            onClick={() => setSortBy('name')}
+            className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
+              sortBy === 'name'
+                ? 'bg-green-600 text-white'
+                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+            }`}
+          >
+            שם
+          </button>
+        </div>
       </div>
 
       {/* Places Grid */}

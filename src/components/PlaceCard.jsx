@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { Heart, MapPin, Star } from 'lucide-react';
 import { formatDistance } from '@/lib/geo';
 
+const CATEGORY_MAP = {
+  'cafe': '☕ חיי קפה',
+  'springs': '💧 טבועות שפעתוניות',
+  'nature': '🏞️ טבע ופרחוניות',
+  'other': '🎯 אחר',
+  'beaches': '🏖️ חופים',
+  'treatments': '✨ טיפולים',
+  'food': '🍽️ אוכל וסיור רחוב',
+  'family': '👨‍👩‍👧‍👦 גילויים משפחתי',
+  'shopping': '🛍️ שווקים וקניות',
+};
+
 export default function PlaceCard({
   place,
   distance,
@@ -10,11 +22,12 @@ export default function PlaceCard({
   onClick,
 }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const categoryLabel = CATEGORY_MAP[place.category] || place.category;
 
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
@@ -27,67 +40,48 @@ export default function PlaceCard({
           />
         )}
 
-        {/* Category Tag */}
-        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700">
-          {place.category === 'nature' && '🏞️ טבע'}
-          {place.category === 'culture' && '🎭 תרבות'}
-          {place.category === 'food' && '🍽️ אוכל'}
-          {place.category === 'shopping' && '🛍️ קניות'}
-          {place.category === 'sports' && '⚽ ספורט'}
-          {place.category === 'entertainment' && '🎪 בילוי'}
-          {!['nature', 'culture', 'food', 'shopping', 'sports', 'entertainment'].includes(place.category) && place.category}
-        </div>
-
-        {/* Favorite Button */}
+        {/* Favorite Button - Top Left */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onFavoriteToggle();
           }}
-          className="absolute bottom-3 left-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
+          className="absolute top-3 right-3 p-2 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
         >
           <Heart
             size={20}
             className={isFavorite ? 'fill-red-600 text-red-600' : 'text-gray-600'}
           />
         </button>
+
+        {/* Category Tag - Top Right */}
+        <div className="absolute top-3 left-3 bg-slate-100 px-3 py-1 rounded-full text-xs font-medium text-gray-700">
+          {categoryLabel}
+        </div>
       </div>
 
       {/* Content */}
       <div className="p-4 flex-1 flex flex-col">
-        <h3 className="font-bold text-lg text-right mb-1 line-clamp-2">{place.name}</h3>
-        <p className="text-sm text-gray-600 text-right mb-3 line-clamp-2">
-          {place.short_description || place.description}
-        </p>
+        <h3 className="font-bold text-lg text-right mb-2">{place.name}</h3>
 
         {/* Rating & Distance Row */}
-        <div className="flex items-center justify-between gap-2 mb-4 text-sm">
-          <div className="flex items-center gap-1">
-            {place.rating && (
-              <>
-                <Star size={16} className="fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">{place.rating.toFixed(1)}</span>
-              </>
-            )}
-          </div>
+        <div className="flex items-center justify-between gap-2 mb-3 text-sm">
+          {place.rating && (
+            <div className="flex items-center gap-1">
+              <span className="font-medium text-gray-700">{place.rating.toFixed(1)}</span>
+              <Star size={16} className="fill-amber-400 text-amber-400" />
+            </div>
+          )}
           {distance != null && (
-            <div className="flex items-center gap-1 text-green-600 font-medium">
-              <MapPin size={16} />
+            <div className="text-xs bg-slate-100 text-gray-600 px-2 py-1 rounded-full font-medium">
               {formatDistance(distance)}
             </div>
           )}
         </div>
 
-        {/* Tags */}
-        {place.tags && place.tags.length > 0 && (
-          <div className="flex gap-2 flex-wrap justify-end">
-            {place.tags.slice(0, 2).map((tag, i) => (
-              <span key={i} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <p className="text-xs text-gray-600 text-right mb-auto line-clamp-2">
+          {place.short_description || place.description}
+        </p>
       </div>
     </div>
   );
