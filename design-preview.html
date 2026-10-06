@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מה יש פה - Design Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Greens */
+      --primary: #2EBD6F;
+      --primary-light: #C8F0DC;
+      --primary-muted: #529870;
+
+      /* Earth Tones */
+      --clay: #CE8560;
+      --sand: #F5D9B5;
+      --soil: #664D37;
+
+      /* Sky/Water */
+      --sky: #0BA3E0;
+      --water: #1A9BD1;
+
+      /* Neutrals */
+      --background: #F2F7FC;
+      --card: #FFFFFF;
+      --text-primary: #1A2235;
+      --text-secondary: #6B7A8F;
+      --border: #D4E4F0;
+
+      /* Semantic */
+      --destructive: #E63946;
+      --warning: #FDB913;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+      --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+    }
+
+    body {
+      font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text-primary);
+      padding: 48px 24px;
+      line-height: 1.5;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+    }
+
+    .section {
+      margin-bottom: 64px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '▪';
+      font-size: 12px;
+      color: var(--primary);
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    /* Color Swatches */
+    .color-swatch {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .color-box {
+      width: 100%;
+      height: 100px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .color-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Cards */
+    .place-card {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+
+    .place-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .place-card-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 48px;
+    }
+
+    .place-card-content {
+      padding: 16px;
+    }
+
+    .place-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .place-card-meta {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .place-card-meta-item {
+      background: var(--sand);
+      color: var(--text-primary);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .place-card-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Buttons */
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .button-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .button-primary:hover {
+      transform: scale(1.02);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .button-secondary {
+      background: var(--sand);
+      color: var(--text-primary);
+    }
+
+    .button-secondary:hover {
+      background: var(--primary-light);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Modals */
+    .modal-demo {
+      position: relative;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      border-radius: 16px;
+      padding: 24px;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: var(--shadow-xl);
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .modal-content {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      flex-direction: row-reverse;
+    }
+
+    /* Categories */
+    .category-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .category-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      background: var(--sand);
+      color: var(--text-primary);
+    }
+
+    .category-chip:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    .category-chip.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Typography Demo */
+    .typography-demo {
+      background: var(--card);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .typography-demo > * {
+      margin-bottom: 16px;
+    }
+
+    .typography-demo > *:last-child {
+      margin-bottom: 0;
+    }
+
+    .display {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 1px;
+    }
+
+    .heading {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .body {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .small {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Stats Card */
+    .stats-card {
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      color: var(--text-primary);
+      padding: 16px;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .stats-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .stats-value {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .layout-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Spacing Demo */
+    .spacing-box {
+      background: var(--primary-light);
+      border: 2px dashed var(--primary);
+      border-radius: 8px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .spacing-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+    }
+
+    .spacing-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .spacing-item .spacing-box {
+      height: 60px;
+    }
+  </style>
+</head>
+<body dir="rtl">
+  <div class="layout-container">
+    <h1>מה יש פה</h1>
+    <p class="subtitle">Design Preview — Nature. Daylight. Adventure.</p>
+
+    <!-- Colors -->
+    <div class="section">
+      <div class="section-title">Color Palette</div>
+      <div class="preview-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--primary);">Primary Vibrant</div>
+          <div class="color-label">#2EBD6F</div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--primary-light); color: var(--text-primary); text-shadow: none;">Primary Light</div>
+          <div class="color-label">#C8F0DC</div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--clay);">Clay (Warmth)</div>
+          <div class="color-label">#CE8560</div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--sand); color: var(--text-primary); text-shadow: none;">Sand</div>
+          <div class="color-label">#F5D9B5</div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--sky);">Sky</div>
+          <div class="color-label">#0BA3E0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards -->
+    <div class="section">
+      <div class="section-title">Place Cards</div>
+      <div class="preview-grid">
+        <div class="place-card">
+          <div class="place-card-image">🏔️</div>
+          <div class="place-card-content">
+            <div class="place-card-title">טיול סלעים בנחל</div>
+            <div class="place-card-meta">
+              <span class="place-card-meta-item">טיולים</span>
+              <span class="place-card-meta-item">4.8 ⭐</span>
+            </div>
+            <div class="place-card-desc">טיול משפחתי יפה עם מפלים קטנים</div>
+          </div>
+        </div>
+
+        <div class="place-card">
+          <div class="place-card-image">☕</div>
+          <div class="place-card-content">
+            <div class="place-card-title">עגלת קפה בדיזנגוף</div>
+            <div class="place-card-meta">
+              <span class="place-card-meta-item">קפה</span>
+              <span class="place-card-meta-item">4.7 ⭐</span>
+            </div>
+            <div class="place-card-desc">קפה ספיציאליטי וקינוחים טריים</div>
+          </div>
+        </div>
+
+        <div class="place-card">
+          <div class="place-card-image">🌙</div>
+          <div class="place-card-content">
+            <div class="place-card-title">בר הלילה כוכבים</div>
+            <div class="place-card-meta">
+              <span class="place-card-meta-item">חיי לילה</span>
+              <span class="place-card-meta-item">4.6 ⭐</span>
+            </div>
+            <div class="place-card-desc">מוזיקה חיה וקוקטיילים משובחים</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="section">
+      <div class="section-title">Buttons & Interactions</div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
+        <button class="button button-primary">בואו נחפש</button>
+        <button class="button button-secondary">שמור למועדפים</button>
+        <button class="button" style="background: transparent; color: var(--primary); border: 2px solid var(--primary); font-weight: 500;">קרא עוד</button>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="section">
+      <div class="section-title">Category Filters</div>
+      <div class="category-row">
+        <button class="category-chip active">הכל</button>
+        <button class="category-chip">☕ קפה ואוכל</button>
+        <button class="category-chip">🧗 טיולים</button>
+        <button class="category-chip">🌙 חיי לילה</button>
+        <button class="category-chip">🛍️ שווקים</button>
+        <button class="category-chip">🎨 תרבות</button>
+      </div>
+    </div>
+
+    <!-- Modal Demo -->
+    <div class="section">
+      <div class="section-title">Centered Modal (Place Details)</div>
+      <div class="modal-demo">
+        <div class="modal">
+          <div class="modal-header">טיול סלעים בנחל דוד</div>
+          <div class="modal-content">
+            טיול משפחתי יפה בנחל דוד עם מפלים קטנים וביצות. מתאים לכל הגילאים.
+            <br><br>
+            <strong>שעות פתיחה:</strong> 06:00–18:00
+            <br>
+            <strong>טלפון:</strong> 02-5678910
+          </div>
+          <div class="modal-actions">
+            <button class="button button-primary">ניווט</button>
+            <button class="button button-secondary">סגור</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <div class="section">
+      <div class="section-title">Typography</div>
+      <div class="typography-demo">
+        <div class="display">Display Heading (32px)</div>
+        <div class="heading">Heading (20px, SemiBold)</div>
+        <div class="body">Body text (16px, Regular) — This is how descriptions, place details, and longer copy appear. Line height is generous (1.5) for easy reading.</div>
+        <div class="small">Small text (14px) — For metadata, labels, and helper text</div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="section">
+      <div class="section-title">Stats Cards</div>
+      <div class="preview-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+        <div class="stats-card">
+          <div class="stats-label">דירוג</div>
+          <div class="stats-value">4.8</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-label">מרחק</div>
+          <div class="stats-value">3.2 ק״מ</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-label">ביקורות</div>
+          <div class="stats-value">127</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacing -->
+    <div class="section">
+      <div class="section-title">Spacing Scale (8px base)</div>
+      <div class="spacing-demo">
+        <div class="spacing-item">
+          <div class="spacing-box">xs: 4px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box">sm: 8px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box">md: 16px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box">lg: 24px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box">xl: 32px</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 64px; padding: 24px; background: var(--primary-light); border-radius: 12px; text-align: center; color: var(--text-primary);">
+      <p style="font-size: 14px; margin-bottom: 8px;"><strong>✅ Design Preview Ready</strong></p>
+      <p style="font-size: 12px; color: var(--text-secondary);">Next: Update Tailwind config, implement components, verify in app</p>
+    </div>
+  </div>
+</body>
+</html>
