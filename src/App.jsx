@@ -21,6 +21,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Settings from '@/pages/Settings';
 import About from '@/pages/About';
+import PlaceDetail from '@/pages/PlaceDetail';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
 
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/place/:id" element={<PlaceDetail />} />
         <Route path="/trips" element={<Trips />} />
         <Route path="/surprise" element={<Surprise />} />
         <Route path="/about" element={<About />} />

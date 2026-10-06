@@ -1,195 +1,298 @@
-import React, { useState } from "react";
-import { Crosshair, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { CATEGORIES } from "@/lib/categories";
-import { geocodeAddress } from "@/lib/geo";
-import { DIFFICULTY_LABELS, PRICE_LABELS } from "@/lib/labels";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { Save, Trash2, Loader2 } from 'lucide-react';
 
-const SELECT_CLASS =
-  "h-11 w-full rounded-2xl border border-input bg-card px-4 text-sm text-foreground shadow-sm outline-none transition focus:border-primary/50 focus:ring-4 focus:ring-primary/10";
+const CATEGORIES = [
+  { id: 'cafe', label: 'חיי קפה' },
+  { id: 'springs', label: 'טבועות שפעתוניות' },
+  { id: 'nature', label: 'טבע ופרחוניות' },
+  { id: 'other', label: 'אחר' },
+  { id: 'beaches', label: 'חופים' },
+  { id: 'treatments', label: 'טיפולים' },
+  { id: 'food', label: 'אוכל וסיור רחוב' },
+  { id: 'family', label: 'גילויים משפחתי' },
+  { id: 'shopping', label: 'שווקים וקניות' },
+];
 
-function Field({ label, children, hint }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-semibold text-muted-foreground">{label}</Label>
-      {children}
-      {hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}
-    </div>
-  );
-}
+const API_BASE = 'http://localhost:3001/api';
 
-function PlaceForm() {
+export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
   const [formData, setFormData] = useState({
-    name: "",
-    category: "cafe",
-    city: "",
-    address: "",
-    lat: "",
-    lng: "",
-    description: "",
-    shortDescription: "",
-    imageUrl: "",
-    rating: "",
-    priceLevel: "",
-    openingHours: "",
-    phone: "",
-    difficultyLevel: "",
-    trailLength: "",
-    seasonality: "",
-    accessibility: "",
-    tags: [],
+    name: '',
+    category: 'nature',
+    city: '',
+    address: '',
+    lat: 0,
+    lng: 0,
+    description: '',
+    short_description: '',
+    image_url: '',
+    rating: 4.5,
+    opening_hours: '09:00-17:00',
+    phone: '',
+    tags: '',
+    ...place,
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const [loading, setLoading] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+
+  useEffect(() => {
+    if (place) setFormData(place);
+  }, [place]);
+
+  const handleAutoGeocode = async () => {
+    if (!formData.address) return;
+    setGeocoding(true);
+    try {
+      const res = await fetch(`${API_BASE}/geocode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: formData.address }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFormData(prev => ({ ...prev, lat: data.lat, lng: data.lng }));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGeocoding(false);
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSave = async () => {
+    setLoading(true);
     try {
-      await geocodeAddress(formData.address);
-      console.log("Form submitted successfully:", formData);
-    } catch (error) {
-      console.error("Error submitting form:", error);
+      const method = place?.id ? 'PATCH' : 'POST';
+      const url = place?.id ? `${API_BASE}/places/${place.id}` : `${API_BASE}/places`;
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        onSave?.(data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!place?.id || !confirm('בטוח שרוצה למחוק?')) return;
+    setLoading(true);
+    try {
+      await fetch(`${API_BASE}/places/${place.id}`, { method: 'DELETE' });
+      onDelete?.();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="mx-auto max-w-3xl space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">הוסף מקום חדש</h1>
-          <p className="text-muted-foreground">שתפו את הקהילה במיקומים שמעניינים אתכם</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-card p-6 shadow-lg">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Field label="שם המקום" hint="שם ייחודי שיעזור לאנשים למצוא את המקום">
-              <Input
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="לדוגמה: בית קפה היסטורי בעיר העתיקה"
-                required
-              />
-            </Field>
-
-            <Field label="קטגוריה" hint="בחרו את הקטגוריה המתאימה ביותר">
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className={SELECT_CLASS}
-                required
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
-            <Field label="כתובת" hint="כתובת מלאה שתוצג במפה">
-              <Input
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder="רחוב, מספר, עיר"
-                required
-              />
-            </Field>
-
-            <Field label="עיר" hint="העיר בה נמצא המקום">
-              <Input
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                placeholder="תל אביב"
-                required
-              />
-            </Field>
-
-            <Field label="דירוג" hint="דירוג מ-1 עד 5 כוכבים">
-              <Input
-                name="rating"
-                type="number"
-                min="1"
-                max="5"
-                value={formData.rating}
-                onChange={handleInputChange}
-                placeholder="4.5"
-              />
-            </Field>
-
-            <Field label="רמת מחיר" hint="טווח המחירים של המקום">
-              <select
-                name="priceLevel"
-                value={formData.priceLevel}
-                onChange={handleInputChange}
-                className={SELECT_CLASS}
-              >
-                <option value="">בחר רמת מחיר</option>
-                {PRICE_LABELS.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-
-          <Field label="תיאור" hint="תיאור מפורט של המקום והחוויה">
-            <Textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="ספרו למבקרים על המקום, מה מייחד אותו, מתי הוא פתוח..."
-              rows={4}
-              required
-            />
-          </Field>
-
-          <Field label="תיאור קצר" hint="תקציר קצר שיופיע ברשימת המקומות">
-            <Textarea
-              name="shortDescription"
-              value={formData.shortDescription}
-              onChange={handleInputChange}
-              placeholder="במהירות ובקיצור..."
-              rows={2}
-              maxLength={200}
-            />
-          </Field>
-
-          <Field label="תמונת URL" hint="לינק לתמונה של המקום">
-            <Input
-              name="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              placeholder="https://example.com/image.jpg"
-            />
-          </Field>
-
-          <div className="flex gap-4 pt-6">
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={!formData.name || !formData.category || !formData.address}
-            >
-              <Loader2 className="mr-2 h-4 w-4" />
-              שלח את המקום
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setFormData({})}>אפס טופס</Button>
-          </div>
-        </form>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      {/* Category */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">קטגוריה</label>
+        <select
+          value={formData.category}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+        >
+          {CATEGORIES.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.label}</option>
+          ))}
+        </select>
       </div>
-    </div>
+
+      {/* Name */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">שם</label>
+        <input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          placeholder="שם המקום"
+        />
+      </div>
+
+      {/* Address & Geocoding */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">כתובת</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+            placeholder="כתובת המקום"
+          />
+          <button
+            onClick={handleAutoGeocode}
+            disabled={geocoding}
+            className="px-4 py-3 bg-slate-100 text-gray-700 rounded-2xl hover:bg-slate-200 transition-colors disabled:opacity-50"
+          >
+            {geocoding ? <Loader2 size={20} className="animate-spin" /> : 'זיהוי'}
+          </button>
+        </div>
+      </div>
+
+      {/* Coordinates */}
+      <div className="grid grid-cols-2 gap-4 text-right">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">קו רוחב</label>
+          <input
+            type="number"
+            step="0.0001"
+            value={formData.lat}
+            onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">קו אורך</label>
+          <input
+            type="number"
+            step="0.0001"
+            value={formData.lng}
+            onChange={(e) => setFormData({ ...formData, lng: parseFloat(e.target.value) })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          />
+        </div>
+      </div>
+
+      {/* Image URL */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">תמונה (URL)</label>
+        <input
+          type="url"
+          value={formData.image_url}
+          onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          placeholder="https://..."
+        />
+      </div>
+
+      {/* Description */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">תיאור</label>
+        <textarea
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
+          rows={6}
+          placeholder="תיאור מלא של המקום..."
+        />
+      </div>
+
+      {/* Short Description */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">תיאור קצר</label>
+        <input
+          type="text"
+          value={formData.short_description}
+          onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          maxLength="150"
+          placeholder="תיאור בקצרה (עד 150 תווים)"
+        />
+      </div>
+
+      {/* Opening Hours */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">שעות פתיחה</label>
+        <input
+          type="text"
+          value={formData.opening_hours}
+          onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          placeholder="09:00-17:00"
+        />
+      </div>
+
+      {/* Phone */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">טלפון</label>
+        <input
+          type="tel"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          placeholder="050-0000000"
+        />
+      </div>
+
+      {/* Rating */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">דירוג</label>
+        <input
+          type="number"
+          min="0"
+          max="5"
+          step="0.1"
+          value={formData.rating}
+          onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+        />
+      </div>
+
+      {/* Tags */}
+      <div className="text-right">
+        <label className="block text-sm font-medium text-gray-700 mb-2">תגיות</label>
+        <input
+          type="text"
+          value={formData.tags}
+          onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+          placeholder="תגיות מופרדות בפסיקים"
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3 pt-6 border-t border-gray-200">
+        <button
+          onClick={onCancel}
+          className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-2xl font-medium hover:bg-gray-50 transition-colors"
+        >
+          ביטול
+        </button>
+
+        {place?.id && (
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="flex-1 px-4 py-3 bg-red-100 text-red-700 rounded-2xl font-medium hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <Trash2 size={18} />
+            מחיקה
+          </button>
+        )}
+
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+          שמור
+        </button>
+      </div>
+    </motion.div>
   );
 }
-
-export default PlaceForm;
