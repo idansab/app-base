@@ -57,7 +57,7 @@ export default function PlaceCard({
         </button>
 
         {/* Category Tag - Top Right */}
-        <div className="absolute top-3 left-3 bg-slate-100 px-3 py-1 rounded-full text-xs font-medium text-gray-700">
+        <div className="absolute top-3 left-3 bg-sand px-3 py-1 rounded-full text-xs font-medium text-text-primary">
           {categoryLabel}
         </div>
       </div>

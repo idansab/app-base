@@ -92,7 +92,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
         <button
           onClick={handleUseCurrentLocation}
           disabled={status === 'locating'}
-          className="w-full mb-6 p-4 border-2 border-green-600 text-green-600 rounded-2xl font-medium hover:bg-green-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full mb-6 p-4 border-2 border-primary text-primary rounded-2xl font-medium hover:bg-primary-light transition-all hover:scale-102 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {status === 'locating' ? (
             <>
@@ -125,7 +125,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
             <button
               onClick={handleSearch}
               disabled={isLoadingGeocode}
-              className="px-6 py-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex-shrink-0"
+              className="px-6 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary transition-all hover:scale-105 hover:shadow-md disabled:opacity-50 flex-shrink-0 shadow-sm"
             >
               {isLoadingGeocode ? <Loader2 size={18} className="animate-spin" /> : 'חפש'}
             </button>
@@ -163,10 +163,10 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
           {/* Unlimited Toggle */}
           <button
             onClick={() => setShowUnlimited(!showUnlimited)}
-            className={`w-full mt-4 p-3 rounded-2xl font-medium transition-colors ${
+            className={`w-full mt-4 p-3 rounded-2xl font-medium transition-all ${
               showUnlimited
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                ? 'bg-primary text-white hover:shadow-md'
+                : 'bg-sand text-text-primary hover:bg-primary-light hover:shadow-sm'
             }`}
           >
             {showUnlimited ? '✓ ללא הגבלת מרחק' : 'ללא הגבלת מרחק'}
@@ -177,14 +177,14 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
         <div className="flex gap-3 pt-6">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-2xl font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-3 border-2 border-border text-text-primary rounded-2xl font-medium hover:bg-sand transition-all hover:scale-102"
           >
             ביטול
           </button>
           <button
             onClick={handleApply}
             disabled={!selectedLocation}
-            className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50 shadow-md"
           >
             החל
           </button>

@@ -158,7 +158,7 @@ export default function Home() {
           </div>
           <button
             onClick={() => setLocationPickerOpen(true)}
-            className="p-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors flex items-center justify-center flex-shrink-0"
+            className="p-3 bg-primary text-white rounded-full hover:bg-primary transition-all hover:scale-105 duration-300 flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg"
             title="בחר מיקום ומרחק"
           >
             <MapPin size={20} />
@@ -178,8 +178,8 @@ export default function Home() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
                 selectedCategory === cat.id
-                  ? 'bg-green-600 text-white shadow-md'
-                  : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                  ? 'bg-primary text-white shadow-md'
+                  : 'bg-sand text-text-primary hover:bg-primary-light'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
@@ -201,8 +201,8 @@ export default function Home() {
             onClick={() => setSortBy('distance')}
             className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
               sortBy === 'distance'
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                ? 'bg-primary text-white'
+                : 'bg-sand text-text-primary hover:bg-primary-light'
             }`}
           >
             קרובים
@@ -211,8 +211,8 @@ export default function Home() {
             onClick={() => setSortBy('rating')}
             className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
               sortBy === 'rating'
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                ? 'bg-primary text-white'
+                : 'bg-sand text-text-primary hover:bg-primary-light'
             }`}
           >
             דירוג
@@ -221,8 +221,8 @@ export default function Home() {
             onClick={() => setSortBy('name')}
             className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
               sortBy === 'name'
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                ? 'bg-primary text-white'
+                : 'bg-sand text-text-primary hover:bg-primary-light'
             }`}
           >
             שם

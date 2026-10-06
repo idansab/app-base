@@ -6,9 +6,17 @@ module.exports = {
     extend: {
       opacity: Object.fromEntries(Array.from({ length: 101 }, (_, i) => [i, `${i / 100}`])),
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        '2xl': '16px',
+        '3xl': '24px'
+      },
+      boxShadow: {
+        'sm': 'var(--shadow-sm)',
+        'md': 'var(--shadow-md)',
+        'lg': 'var(--shadow-lg)',
+        'xl': 'var(--shadow-xl)',
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -23,7 +31,9 @@ module.exports = {
         },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))'
+          foreground: 'hsl(var(--primary-foreground))',
+          light: 'hsl(var(--primary-light))',
+          muted: 'hsl(var(--primary-muted))'
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -41,6 +51,12 @@ module.exports = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))'
         },
+        /* Nature Palette */
+        clay: 'hsl(var(--clay))',
+        sand: 'hsl(var(--sand))',
+        soil: 'hsl(var(--soil))',
+        sky: 'hsl(var(--sky))',
+        water: 'hsl(var(--water))',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
