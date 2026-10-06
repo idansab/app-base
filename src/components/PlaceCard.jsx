@@ -5,15 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistance } from '@/lib/geo';
 
 const CATEGORY_MAP = {
-  'cafe': '☕ חיי קפה',
-  'springs': '💧 טבועות שפעתוניות',
-  'nature': '🏞️ טבע ופרחוניות',
-  'other': '🎯 אחר',
-  'beaches': '🏖️ חופים',
-  'treatments': '✨ טיפולים',
-  'food': '🍽️ אוכל וסיור רחוב',
-  'family': '👨‍👩‍👧‍👦 גילויים משפחתי',
-  'shopping': '🛍️ שווקים וקניות',
+  'coffee_food': 'עגלות קפה ואוכל',
+  'trips': 'טיולים',
+  'nightlife': 'חיי לילה',
+  'shopping': 'שווקים וקניות',
+  'culture': 'תרבות',
 };
 
 export default function PlaceCard({

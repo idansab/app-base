@@ -3,15 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock, Zap } from 'lucide-react';
 
 const CATEGORIES = [
-  { id: 'cafe', label: 'חיי קפה' },
-  { id: 'springs', label: 'טבועות שפעתוניות' },
-  { id: 'nature', label: 'טבע ופרחוניות' },
-  { id: 'other', label: 'אחר' },
-  { id: 'beaches', label: 'חופים' },
-  { id: 'treatments', label: 'טיפולים' },
-  { id: 'food', label: 'אוכל וסיור רחוב' },
-  { id: 'family', label: 'גילויים משפחתי' },
+  { id: 'coffee_food', label: 'עגלות קפה ואוכל' },
+  { id: 'trips', label: 'טיולים' },
+  { id: 'nightlife', label: 'חיי לילה' },
   { id: 'shopping', label: 'שווקים וקניות' },
+  { id: 'culture', label: 'תרבות' },
 ];
 
 const API_BASE = 'http://localhost:3001/api';
@@ -72,7 +68,7 @@ const FormInput = ({ label, helper, error, ...props }) => (
 export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
   const [formData, setFormData] = useState({
     name: '',
-    category: 'nature',
+    category: 'coffee_food',
     city: '',
     address: '',
     lat: 0,
