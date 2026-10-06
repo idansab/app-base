@@ -1,216 +1,248 @@
-import React, { useEffect, useState } from "react";
-import { Heart, MapPin, Navigation, Star } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Image } from "@/components/ui/image";
-import PlaceCard from "./PlaceCard";
-import CommunityPanel from "@/components/community/CommunityPanel";
-import { useAuth } from "@/lib/AuthContext";
-import { getCategory } from "@/lib/categories";
-import { formatDistance, googleMapsUrl, haversineKm, wazeUrl } from "@/lib/geo";
-import { DIFFICULTY_LABELS, PRICE_LABELS } from "@/lib/labels";
-import { base44 } from "@/api/base44Client";
-import { cn } from "@/lib/utils";
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, MapPin, Phone, Clock, Star, Heart, Share2, Navigation } from 'lucide-react';
+import { haversineKm, formatDistance } from '@/lib/geo';
 
-function InfoRow({ label, value }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-border/60 py-2.5 last:border-none">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className="text-end text-sm font-medium text-foreground">{value}</span>
-    </div>
-  );
-}
+const API_BASE = 'http://localhost:3001/api';
 
-function NavAction({ href, children, variant = "primary" }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className={cn(
-        "inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl text-sm font-semibold transition active:scale-[0.98]",
-        variant === "primary"
-          ? "bg-primary text-primary-foreground shadow-sm"
-          : "border border-border bg-card text-foreground hover:border-primary/40"
-      )}
-    >
-      {children}
-    </a>
-  );
-}
+export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation, isFavorite, onFavoriteToggle }) {
+  const [tips, setTips] = useState([]);
+  const [newTipText, setNewTipText] = useState('');
+  const [submittingTip, setSubmittingTip] = useState(false);
 
-export default function PlaceDetailsSheet({
-  place,
-  open,
-  onOpenChange,
-  isFavorite,
-  onToggleFavorite,
-  userLoc,
-}) {
-  const { isAuthenticated } = useAuth();
-  const [nearby, setNearby] = useState([]);
+  const distance = userLocation && place
+    ? haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng)
+    : null;
 
-  useEffect(() => {
-    if (!open || !place || typeof place.lat !== "number" || typeof place.lng !== "number") {
-      setNearby([]);
-      return undefined;
-    }
-    let cancelled = false;
-    const latDelta = 3 / 111;
-    const lngDelta = 3 / (111 * Math.cos((place.lat * Math.PI) / 180) || 1);
-    base44.entities.Place
-      .filter(
-        {
-          status: "approved",
-          lat: { $gte: place.lat - latDelta, $lte: place.lat + latDelta },
-          lng: { $gte: place.lng - lngDelta, $lte: place.lng + lngDelta },
-        },
-        { limit: 30 }
-      )
-      .then((page) => {
-        if (cancelled) return;
-        const list = (page.items || [])
-          .filter((item) => item.id !== place.id && typeof item.lat === "number")
-          .map((item) => ({ ...item, distance: haversineKm(place.lat, place.lng, item.lat, item.lng) }))
-          .filter((item) => item.distance <= 3)
-          .sort((a, b) => a.distance - b.distance)
-          .slice(0, 4);
-        setNearby(list);
-      })
-      .catch(() => {
-        if (!cancelled) setNearby([]);
+  const handleAddTip = async () => {
+    if (!newTipText.trim() || !place) return;
+    setSubmittingTip(true);
+    try {
+      const res = await fetch(`${API_BASE}/tips`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ place_id: place.id, content: newTipText }),
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, place?.id]);
+      if (res.ok) {
+        setTips([...tips, { id: Date.now(), content: newTipText, created_at: new Date() }]);
+        setNewTipText('');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSubmittingTip(false);
+    }
+  };
 
-  if (!place) return null;
-
-  const category = getCategory(place.category);
-  const CategoryIcon = category.icon;
-  const hasCoords = typeof place.lat === "number" && typeof place.lng === "number";
-  const distance =
-    userLoc && hasCoords ? haversineKm(userLoc.lat, userLoc.lng, place.lat, place.lng) : null;
-  const tags = Array.isArray(place.tags) ? place.tags.filter(Boolean) : [];
+  if (!isOpen || !place) return null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="no-scrollbar mx-auto max-h-[92vh] w-full max-w-3xl overflow-x-hidden overflow-y-auto rounded-t-[2rem] border-border p-0 shadow-xl"
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 bg-black/50 z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      />
+
+      <motion.div
+        className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl"
+        initial={{ y: 600 }}
+        animate={{ y: 0 }}
+        exit={{ y: 600 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-          <Image src={place.image_url} alt={place.name} className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
           <button
-            type="button"
-            onClick={() => onToggleFavorite?.(place)}
-            aria-label={isFavorite ? "הסרה מהמועדפים" : "הוספה למועדפים"}
-            className={cn(
-              "absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur transition active:scale-95",
-              isFavorite
-                ? "border-rose-200 bg-rose-50 text-rose-600"
-                : "border-white/60 bg-white/85 text-slate-600"
-            )}
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
+            <X size={24} />
           </button>
-          <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
-              <CategoryIcon className="h-3.5 w-3.5" />
-              {category.label}
-            </span>
-            <SheetTitle className="mt-2 font-heading text-2xl font-bold text-white">
-              {place.name}
-            </SheetTitle>
-            <SheetDescription className="mt-1 flex flex-wrap items-center gap-3 text-xs font-medium text-white/85">
-              {place.city ? (
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {place.city}
-                </span>
-              ) : null}
-              {place.rating ? (
-                <span className="inline-flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 fill-current" />
-                  {Number(place.rating).toFixed(1)}
-                </span>
-              ) : null}
-              {distance ? <span>{formatDistance(distance)} מכאן</span> : null}
-            </SheetDescription>
-          </div>
+          <h2 className="font-bold text-lg text-right flex-1">{place.name}</h2>
         </div>
 
-        {hasCoords ? (
-          <div className="flex gap-2 px-5 pt-5">
-            <NavAction href={wazeUrl(place.lat, place.lng)}>
-              <Navigation className="h-4 w-4" />
-              ניווט ב-Waze
-            </NavAction>
-            <NavAction href={googleMapsUrl(place.lat, place.lng)} variant="outline">
-              Google Maps
-            </NavAction>
-          </div>
-        ) : null}
-
-        <div className="px-5 py-4">
-          <InfoRow label="שעות פתיחה" value={place.opening_hours} />
-          <InfoRow label="טלפון" value={place.phone} />
-          <InfoRow label="רמת מחיר" value={PRICE_LABELS[place.price_level]} />
-          <InfoRow label="נגישות" value={place.accessibility} />
-          <InfoRow label="רמת קושי" value={DIFFICULTY_LABELS[place.difficulty_level]} />
-          <InfoRow label="אורך מסלול" value={place.trail_length ? `${place.trail_length} ק״מ` : null} />
-          <InfoRow label="עונה מומלצת" value={place.seasonality} />
-          <InfoRow label="כתובת" value={place.address} />
-        </div>
-
-        {place.description ? (
-          <div className="px-5 pb-5">
-            <p className="text-sm leading-relaxed text-muted-foreground">{place.description}</p>
-          </div>
-        ) : null}
-
-        {tags.length > 0 ? (
-          <div className="flex flex-wrap gap-2 px-5 pb-5">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-border bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        <CommunityPanel place={place} isAuthenticated={isAuthenticated} />
-
-        {nearby.length > 0 ? (
-          <section className="border-t border-border/70 px-5 py-5">
-            <h3 className="font-heading text-base font-semibold text-foreground">
-              מקומות נוספים בסביבה
-            </h3>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {nearby.map((item) => (
-                <PlaceCard
-                  key={item.id}
-                  place={item}
-                  distanceKm={item.distance}
-                  isFavorite={false}
-                  onToggleFavorite={() => {}}
-                  onOpen={() => {}}
-                />
-              ))}
+        <div className="p-6 space-y-6">
+          {/* Hero Image */}
+          {place.image_url && (
+            <div className="relative h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-200 to-slate-300">
+              <img
+                src={place.image_url}
+                alt={place.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-          </section>
-        ) : null}
-      </SheetContent>
-    </Sheet>
+          )}
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            {place.rating && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-2xl text-right"
+              >
+                <p className="text-xs text-gray-600 mb-1">דירוג</p>
+                <p className="text-2xl font-bold text-yellow-600">⭐ {place.rating.toFixed(1)}</p>
+              </motion.div>
+            )}
+
+            {distance != null && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl text-right"
+              >
+                <p className="text-xs text-gray-600 mb-1">מרחק</p>
+                <p className="text-2xl font-bold text-green-600">{formatDistance(distance)}</p>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Details */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-4"
+          >
+            {place.opening_hours && (
+              <div className="flex items-start gap-3 text-right">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900">{place.opening_hours}</p>
+                  <p className="text-xs text-gray-600">שעות פתיחה</p>
+                </div>
+                <Clock size={20} className="text-green-600 flex-shrink-0" />
+              </div>
+            )}
+
+            {place.phone && (
+              <a
+                href={`tel:${place.phone}`}
+                className="flex items-start gap-3 text-right hover:bg-gray-50 p-3 rounded-lg transition-colors"
+              >
+                <div className="flex-1">
+                  <p className="font-semibold text-green-600 hover:underline">{place.phone}</p>
+                  <p className="text-xs text-gray-600">טלפון</p>
+                </div>
+                <Phone size={20} className="text-green-600 flex-shrink-0" />
+              </a>
+            )}
+
+            {place.address && (
+              <div className="flex items-start gap-3 text-right">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900">{place.address}</p>
+                  <p className="text-xs text-gray-600">כתובת</p>
+                </div>
+                <MapPin size={20} className="text-green-600 flex-shrink-0" />
+              </div>
+            )}
+          </motion.div>
+
+          {/* Description */}
+          {place.description && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="p-4 bg-slate-50 rounded-2xl text-right"
+            >
+              <p className="text-sm leading-relaxed text-gray-700">{place.description}</p>
+            </motion.div>
+          )}
+
+          {/* Action Buttons */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex gap-3"
+          >
+            <button
+              onClick={onFavoriteToggle}
+              className={`flex-1 p-3 rounded-2xl font-medium transition-all ${
+                isFavorite
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                  : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+              }`}
+            >
+              <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
+            </button>
+
+            {place.lat && place.lng && (
+              <a
+                href={`https://waze.com/ul?ll=${place.lat},${place.lng}&navigate=yes`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 p-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Navigation size={18} />
+                ניווט
+              </a>
+            )}
+
+            <button
+              onClick={() => navigator.share?.({ title: place.name, text: place.description })}
+              className="flex-1 p-3 bg-slate-100 text-gray-700 rounded-2xl font-medium hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+            >
+              <Share2 size={18} />
+            </button>
+          </motion.div>
+
+          {/* Community Tips */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.35 }}
+            className="border-t border-gray-200 pt-6"
+          >
+            <h3 className="font-bold text-lg text-right mb-4">טיפים מהקהילה</h3>
+
+            {/* Add Tip Form */}
+            <div className="mb-6 p-4 bg-green-50 rounded-2xl">
+              <textarea
+                value={newTipText}
+                onChange={(e) => setNewTipText(e.target.value)}
+                placeholder="שתף טיפ עם הקהילה..."
+                className="w-full p-3 border border-green-200 rounded-lg text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 mb-3"
+                rows={3}
+              />
+              <button
+                onClick={handleAddTip}
+                disabled={submittingTip || !newTipText.trim()}
+                className="w-full p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 font-medium"
+              >
+                {submittingTip ? 'שולח...' : 'שיתף טיפ'}
+              </button>
+            </div>
+
+            {/* Tips List */}
+            {tips.length > 0 ? (
+              <div className="space-y-3">
+                {tips.map((tip) => (
+                  <motion.div
+                    key={tip.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-slate-50 rounded-lg border-r-4 border-green-600 text-right"
+                  >
+                    <p className="text-sm text-gray-700">{tip.content}</p>
+                    <p className="text-xs text-gray-500 mt-2">עכשיו</p>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 text-sm py-4">עדיין אין טיפים. הוסף אחד!</p>
+            )}
+          </motion.div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

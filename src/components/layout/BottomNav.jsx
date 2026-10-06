@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Compass, Heart, Map, Plus, Sparkles } from "lucide-react";
+import { Compass, Heart, Map, Plus, Sparkles, Settings } from "lucide-react";
 import useFavorites from "@/hooks/useFavorites";
 import { useAuth } from "@/lib/AuthContext";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ const ITEMS = [
   { to: "/favorites", label: "מועדפים", icon: Heart },
   { to: "/trips", label: "מסלולים", icon: Map },
   { to: "/surprise", label: "הפתעה", icon: Sparkles },
+  { to: "/settings", label: "הגדרות", icon: Settings },
 ];
 
 export default function BottomNav() {
@@ -20,7 +21,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-md">
-      <div className="mx-auto grid w-full max-w-3xl grid-cols-5 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2">
+      <div className="mx-auto grid w-full max-w-4xl grid-cols-6 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2">
         {ITEMS.slice(0, 2).map((item) => (
           <NavItem
             key={item.to}
@@ -34,7 +35,7 @@ export default function BottomNav() {
             type="button"
             onClick={() => navigate(isAuthenticated ? "/contribute" : "/login")}
             aria-label="המלצה על מקום"
-            className="-mt-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition active:scale-95"
+            className="-mt-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-600/25 transition active:scale-95 hover:bg-green-700"
           >
             <Plus className="h-6 w-6" />
           </button>

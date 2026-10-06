@@ -3,6 +3,7 @@ import { Search, MapPin, Loader2, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
+import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 
@@ -32,6 +33,7 @@ export default function Home() {
   const [maxDistance, setMaxDistance] = useState(null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [sortBy, setSortBy] = useState('distance');
+  const [selectedPlace, setSelectedPlace] = useState(null);
   const { location: autoLocation } = useUserLocation({ auto: true });
 
   // Load places on mount
@@ -260,9 +262,7 @@ export default function Home() {
                   distance={distance}
                   isFavorite={favorites.includes(place.id)}
                   onFavoriteToggle={() => handleFavoriteToggle(place.id)}
-                  onClick={() => {
-                    // TODO: Navigate to place details modal
-                  }}
+                  onClick={() => setSelectedPlace(place)}
                 />
               );
             })}
@@ -280,6 +280,18 @@ export default function Home() {
         }}
         currentLocation={userLocation}
         currentDistance={maxDistance}
+      />
+
+      {/* Place Details Sheet */}
+      <PlaceDetailsSheet
+        isOpen={!!selectedPlace}
+        onClose={() => setSelectedPlace(null)}
+        place={selectedPlace}
+        userLocation={userLocation}
+        isFavorite={selectedPlace ? favorites.includes(selectedPlace.id) : false}
+        onFavoriteToggle={() => {
+          if (selectedPlace) handleFavoriteToggle(selectedPlace.id);
+        }}
       />
     </div>
   );
