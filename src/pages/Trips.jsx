@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Loader2 } from 'lucide-react';
+import { motion } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
 
 const API_BASE = 'http://localhost:3001/api';

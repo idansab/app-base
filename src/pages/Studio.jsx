@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, MapPin, Send } from 'lucide-react';
+import { motion } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
 import { geocodeAddress, haversineKm } from '@/lib/geo';
 

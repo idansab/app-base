@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Heart, MapPin, Star } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
+import { motion } from 'motion/react';
 import { formatDistance } from '@/lib/geo';
 
 const CATEGORY_MAP = {
@@ -25,9 +26,14 @@ export default function PlaceCard({
   const categoryLabel = CATEGORY_MAP[place.category] || place.category;
 
   return (
-    <div
+    <motion.div
       onClick={onClick}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col"
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
@@ -83,6 +89,6 @@ export default function PlaceCard({
           {place.short_description || place.description}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

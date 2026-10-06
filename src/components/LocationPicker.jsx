@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, X, Loader2 } from 'lucide-react';
+import { motion } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
 import { geocodeAddress, formatDistance } from '@/lib/geo';
 
@@ -56,9 +57,20 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={onClose}>
-      <div
-        className="w-full bg-white rounded-t-2xl p-6 max-h-[90vh] overflow-y-auto"
+    <motion.div
+      className="fixed inset-0 bg-black/50 z-50 flex items-end"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="w-full bg-white rounded-t-2xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl"
+        initial={{ y: 400, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 400, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -173,7 +185,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
             החל
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

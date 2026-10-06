@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Loader2, X } from 'lucide-react';
+import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
 import { haversineKm } from '@/lib/geo';
@@ -170,18 +171,23 @@ export default function Home() {
       {/* Category Tabs - Horizontal Scroll */}
       <div className="bg-white border-b border-gray-100 z-20 overflow-x-auto">
         <div className="px-4 max-w-6xl mx-auto py-3 flex gap-2 justify-start">
-          {CATEGORIES.map(cat => (
-            <button
+          {CATEGORIES.map((cat, i) => (
+            <motion.button
               key={cat.id}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04, duration: 0.3 }}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors text-sm font-medium ${
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
                 selectedCategory === cat.id
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-green-600 text-white shadow-md'
                   : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
               }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
             >
               {cat.emoji} {cat.label}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>

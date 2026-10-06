@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Sparkles, RefreshCw, Heart, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 
@@ -117,7 +118,16 @@ export default function Surprise() {
 
       {/* Place Card - Large */}
       <div className="px-4 max-w-6xl mx-auto py-6">
-        <div className="bg-white rounded-3xl overflow-hidden shadow-md">
+        <AnimatePresence mode="wait">
+          {place && (
+            <motion.div
+              key={place.id}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+              className="bg-white rounded-3xl overflow-hidden shadow-md"
+            >
           {/* Image */}
           <div className="relative h-80 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
             {place.image_url && (
@@ -205,7 +215,9 @@ export default function Surprise() {
               )}
             </div>
           </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
