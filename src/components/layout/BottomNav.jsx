@@ -10,7 +10,6 @@ const ITEMS = [
   { to: "/favorites", label: "מועדפים", icon: Heart },
   { to: "/trips", label: "מסלולים", icon: Map },
   { to: "/surprise", label: "הפתעה", icon: Sparkles },
-  { to: "/settings", label: "הגדרות", icon: Settings },
 ];
 
 export default function BottomNav() {
@@ -21,7 +20,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-md">
-      <div className="mx-auto grid w-full max-w-4xl grid-cols-6 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2">
+      <div className="mx-auto grid w-full max-w-4xl grid-cols-5 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2">
         {ITEMS.slice(0, 2).map((item) => (
           <NavItem
             key={item.to}

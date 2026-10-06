@@ -69,9 +69,9 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
 
       {/* Centered Glassmorphic Modal */}
       <motion.div
-        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
+        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8"
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: -50 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         style={{ transform: 'translate(-50%, -50%)' }}

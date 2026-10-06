@@ -152,7 +152,7 @@ export default function Home() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="חפש מקום, עיר או חומץ..."
+              placeholder="חפשו מקום לטייל"
               className="flex-1 outline-none text-right bg-transparent text-sm"
             />
           </div>
@@ -176,10 +176,10 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all border backdrop-blur-sm ${
                 selectedCategory === cat.id
-                  ? 'bg-primary text-white shadow-md'
-                  : 'bg-sand text-text-primary hover:bg-primary-light'
+                  ? 'bg-primary text-white shadow-md border-primary/30'
+                  : 'bg-sand/60 text-text-primary border-sand/40 hover:bg-sand/80 hover:border-sand/60 hover:shadow-sm'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
