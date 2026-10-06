@@ -57,20 +57,24 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
   if (!isOpen) return null;
 
   return (
-    <motion.div
-      className="fixed inset-0 bg-black/50 z-50 flex items-end"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-      onClick={onClose}
-    >
+    <>
+      {/* Backdrop */}
       <motion.div
-        className="w-full bg-white rounded-t-2xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl"
-        initial={{ y: 400, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 400, opacity: 0 }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      />
+
+      {/* Centered Glassmorphic Modal */}
+      <motion.div
+        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: -50 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{ transform: 'translate(-50%, -50%)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -186,6 +190,6 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </>
   );
 }
