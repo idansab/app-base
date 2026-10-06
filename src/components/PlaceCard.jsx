@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, Star } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
 import { formatDistance } from '@/lib/geo';
 
 const CATEGORY_MAP = {
@@ -20,16 +19,11 @@ export default function PlaceCard({
   onClick,
 }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const navigate = useNavigate();
   const categoryLabel = CATEGORY_MAP[place.category] || place.category;
-
-  const handleClick = () => {
-    navigate(`/place/${place.id}`);
-  };
 
   return (
     <motion.div
-      onClick={handleClick}
+      onClick={onClick}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}

@@ -38,20 +38,23 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
 
   return (
     <AnimatePresence>
+      {/* Backdrop */}
       <motion.div
-        className="fixed inset-0 bg-black/50 z-50"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
 
+      {/* Glassmorphic Modal */}
       <motion.div
-        className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl"
-        initial={{ y: 600 }}
-        animate={{ y: 0 }}
-        exit={{ y: 600 }}
+        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: -50 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{ transform: 'translate(-50%, -50%)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

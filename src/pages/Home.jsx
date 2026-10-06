@@ -9,15 +9,11 @@ import useUserLocation from '@/hooks/useUserLocation';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
-  { id: 'cafe', label: 'חיי קפה', emoji: '☕' },
-  { id: 'springs', label: 'טבועות שפעתוניות', emoji: '💧' },
-  { id: 'nature', label: 'טבע ופרחוניות', emoji: '🏞️' },
-  { id: 'other', label: 'אחר', emoji: '🎯' },
-  { id: 'beaches', label: 'חופים', emoji: '🏖️' },
-  { id: 'treatments', label: 'טיפולים', emoji: '✨' },
-  { id: 'food', label: 'אוכל וסיור רחוב', emoji: '🍽️' },
-  { id: 'family', label: 'גילויים משפחתי', emoji: '👨‍👩‍👧‍👦' },
+  { id: 'coffee_food', label: 'עגלות קפה ואוכל', emoji: '☕' },
+  { id: 'trips', label: 'טיולים', emoji: '🧗' },
+  { id: 'nightlife', label: 'חיי לילה', emoji: '🌙' },
   { id: 'shopping', label: 'שווקים וקניות', emoji: '🛍️' },
+  { id: 'culture', label: 'תרבות', emoji: '🎨' },
 ];
 
 const API_BASE = 'http://localhost:3001/api';
