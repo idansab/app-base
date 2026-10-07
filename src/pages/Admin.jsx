@@ -98,7 +98,10 @@ export default function Admin() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin-token'
+        },
         body: JSON.stringify(payload),
       });
 
@@ -136,12 +139,18 @@ export default function Admin() {
     try {
       const res = await fetch(`${API_BASE}/places/${id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin-token'
+        },
         body: JSON.stringify({ status }),
       });
       if (res.ok) {
         showSuccess(status === 'approved' ? 'המקום אושר בהצלחה' : 'המקום נדחה בהצלחה');
         loadPlaces();
+      } else {
+        const error = await res.json();
+        showSuccess(error.error || 'שגיאה בעדכון הסטטוס');
       }
     } catch (e) {
       console.error('Failed to update place status:', e);
@@ -153,7 +162,10 @@ export default function Admin() {
   const handleDeletePlace = async (id) => {
     if (!confirm('בטוח שברצונך למחוק את המקום הזה?')) return;
     try {
-      const res = await fetch(`${API_BASE}/places/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/places/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer admin-token' }
+      });
       if (res.ok) {
         showSuccess('המקום נמחק בהצלחה');
         loadPlaces();
