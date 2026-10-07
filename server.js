@@ -44,6 +44,7 @@ app.get('/api/places', async (req, res) => {
     let query = supabase.from('places').select('*');
 
     if (status) query = query.eq('status', status);
+    else query = query.eq('status', 'approved');
     if (category) query = query.eq('category', category);
     if (city) query = query.eq('city', city);
 
@@ -94,7 +95,7 @@ app.post('/api/places', auth, async (req, res) => {
     const place = {
       id: uuidv4(),
       ...req.body,
-      status: 'approved',
+      status: req.user?.role === 'admin' ? 'approved' : 'pending',
       created_by_id: req.user?.id || 'anonymous',
       created_at: new Date().toISOString(),
     };
