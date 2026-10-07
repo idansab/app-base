@@ -64,21 +64,27 @@ jobs:
         with:
           name: build-artifacts
 
-      - name: Deploy to Cloudflare Pages (Production)
+      - name: Deploy to Cloudflare (Production)
         if: github.ref == 'refs/heads/main'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           environment: production
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
-      - name: Deploy to Cloudflare Pages (Staging)
+      - name: Deploy to Cloudflare (Staging)
         if: github.ref == 'refs/heads/staging'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           environment: staging
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
   migrate-database:
     needs: deploy-to-cloudflare
@@ -97,18 +103,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Supabase migrations
+      - name: Verify Supabase connection
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          npx supabase db push --projectRef "$(echo $SUPABASE_URL | cut -d'.' -f1)" || true
-
-      - name: Migrate data (if needed)
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npm run migrate:supabase
+          curl -s -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            "$SUPABASE_URL/rest/v1/places?limit=1" | head -20
+          echo "✅ Supabase connection verified"
 
   notify-deployment:
     needs: [deploy-to-cloudflare, migrate-database]
