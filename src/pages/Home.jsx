@@ -14,6 +14,7 @@ const CATEGORIES = [
   { id: 'food', label: 'עגלות קפה ואוכל', emoji: '☕' },
   { id: 'nature', label: 'טבע וטיולים', emoji: '🏞️' },
   { id: 'nightlife', label: 'חיי לילה', emoji: '🌙' },
+  { id: 'shopping', label: 'קניות ושווקים', emoji: '🛍️' },
   { id: 'culture', label: 'תרבות', emoji: '🎨' },
 ];
 

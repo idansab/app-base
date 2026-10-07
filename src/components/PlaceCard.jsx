@@ -6,8 +6,10 @@ import { formatDistance } from '@/lib/geo';
 const CATEGORY_MAP = {
   'coffee_food': 'עגלות קפה ואוכל',
   'trips': 'טיולים',
+  'food': 'אוכל ושתייה',
+  'nature': 'טבע וטיולים',
   'nightlife': 'חיי לילה',
-  'shopping': 'שווקים וקניות',
+  'shopping': 'קניות ושווקים',
   'culture': 'תרבות',
 };
 
