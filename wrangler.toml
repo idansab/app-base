@@ -1,16 +1,20 @@
 # Cloudflare Pages configuration (Frontend only)
 # Backend: Node.js Express server (runs separately)
 
+name = "whatishere"
 account_id = "2bf9335eb4120606b6337d0442cb902e"
-
-# Pages deployment - frontend only
-pages_build_output_dir = "dist"
+type = "javascript"
+compatibility_date = "2024-09-23"
 
 # Build configuration
 [build]
 command = "npm run build"
 cwd = "./"
-watch_paths = ["src/**/*.{js,jsx,ts,tsx}"]
+
+# Static assets directory for Pages
+[assets]
+directory = "./dist"
+binding = "ASSETS"
 
 # Production environment
 [env.production]
