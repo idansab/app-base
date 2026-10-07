@@ -1,9 +1,7 @@
-name = "mah-yesh-po"
-type = "javascript"
+name = "whatishere"
 account_id = "2bf9335eb4120606b6337d0442cb902e"
-workers_dev = true
 main = "server.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 # Cloudflare Pages configuration
