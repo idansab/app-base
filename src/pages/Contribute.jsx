@@ -8,7 +8,6 @@ const CATEGORIES = [
   { id: 'food', label: 'אוכל ושתייה', icon: '🍽️' },
   { id: 'nature', label: 'טבע וטיולים', icon: '🏞️' },
   { id: 'nightlife', label: 'חיי לילה', icon: '🌙' },
-  { id: 'bars', label: 'ברים ומועדונים', icon: '🍸' },
   { id: 'culture', label: 'תרבות ואמנות', icon: '🎨' },
 ];
 
