@@ -13,7 +13,8 @@ const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
   { id: 'food', label: 'עגלות קפה ואוכל', emoji: '☕' },
   { id: 'nature', label: 'טבע וטיולים', emoji: '🏞️' },
-  { id: 'hiking', label: 'טיול הליכה', emoji: '🥾' },
+  { id: 'nightlife', label: 'חיי לילה', emoji: '🌙' },
+  { id: 'bars', label: 'ברים ומועדונים', emoji: '🍸' },
   { id: 'culture', label: 'תרבות', emoji: '🎨' },
 ];
 

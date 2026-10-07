@@ -91,7 +91,7 @@
   {
     "id": "3",
     "name": "פארק העמק",
-    "category": "hiking",
+    "category": "nightlife",
     "city": "עמק יזרעאל",
     "address": "כביש 65, ליד צומת העמק",
     "lat": 32.63,
@@ -270,7 +270,7 @@
   {
     "id": "7",
     "name": "מרכז ספורט אולימפיה",
-    "category": "hiking",
+    "category": "nightlife",
     "city": "עפולה",
     "address": "רחוב הספורט 5, עפולה",
     "lat": 32.6175,

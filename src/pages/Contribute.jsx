@@ -7,7 +7,8 @@ const API_BASE = 'http://localhost:3001/api';
 const CATEGORIES = [
   { id: 'food', label: 'אוכל ושתייה', icon: '🍽️' },
   { id: 'nature', label: 'טבע וטיולים', icon: '🏞️' },
-  { id: 'hiking', label: 'טיול הליכה', icon: '🥾' },
+  { id: 'nightlife', label: 'חיי לילה', icon: '🌙' },
+  { id: 'bars', label: 'ברים ומועדונים', icon: '🍸' },
   { id: 'culture', label: 'תרבות ואמנות', icon: '🎨' },
 ];
 
