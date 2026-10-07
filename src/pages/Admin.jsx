@@ -41,7 +41,7 @@ export default function Admin() {
   const loadPlaces = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/places`);
+      const res = await fetch(`${API_BASE}/places?limit=100`);
       const data = await res.json();
       setPlaces(data.data || []);
     } catch (e) {
