@@ -53,7 +53,7 @@ export default function ImageCarousel({ images, title }) {
               opacity: { duration: 0.2 },
             }}
             src={images[current]}
-            alt={`${title} - صورة ${current + 1}`}
+            alt={`${title} - תמונה ${current + 1}`}
             className="w-full h-full object-cover"
           />
         </AnimatePresence>
