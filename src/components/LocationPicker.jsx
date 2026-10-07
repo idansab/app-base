@@ -69,11 +69,12 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
 
       {/* Centered Glassmorphic Modal */}
       <motion.div
-        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 -translate-x-1/2 -translate-y-1/2"
+        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-[calc(100%-32px)] max-h-[85vh] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{ x: '-50%', y: '-50%' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -132,11 +133,12 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
           {searchError && <p className="text-red-600 text-sm mt-2">{searchError}</p>}
         </div>
 
-        {/* Selected Location */}
+
+        {/* Selected Location Display */}
         {selectedLocation && (
-          <div className="mb-6 p-4 bg-green-50 rounded-2xl text-right">
-            <p className="text-sm font-medium text-green-900">
-              ✓ מיקום נבחר: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
+          <div className="mb-6 p-4 bg-blue-50 rounded-2xl text-right border border-blue-200">
+            <p className="text-sm font-medium text-blue-900">
+              ✓ מיקום נבחר
             </p>
           </div>
         )}

@@ -10,6 +10,16 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
   const [newTipText, setNewTipText] = useState('');
   const [submittingTip, setSubmittingTip] = useState(false);
 
+  // Lock body scroll when modal is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => { document.body.style.overflow = 'auto'; };
+  }, [isOpen]);
+
   const distance = userLocation && place
     ? haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng)
     : null;
@@ -49,12 +59,12 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
 
       {/* Glassmorphic Modal */}
       <motion.div
-        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: -50 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-[calc(100%-32px)] max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        style={{ transform: 'translate(-50%, -50%)' }}
+        style={{ x: '-50%', y: '-50%' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
