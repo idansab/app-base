@@ -304,10 +304,18 @@ app.post('/api/geocode', express.json(), async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✅ API server running on http://localhost:${PORT}`);
-  console.log(`📊 Using Supabase: ${SUPABASE_URL}`);
-});
-
+// Export the Express app for Cloudflare Workers
+// Don't call app.listen() - Cloudflare Workers handles the server
 export default app;
+
+// For local development only
+if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+  // Only listen in Node.js environment, not in Cloudflare Workers
+  if (typeof window === 'undefined' && typeof navigator === 'undefined') {
+    app.listen(PORT, () => {
+      console.log(`✅ API server running on http://localhost:${PORT}`);
+      console.log(`📊 Using Supabase: ${SUPABASE_URL}`);
+    });
+  }
+}
