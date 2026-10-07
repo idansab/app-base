@@ -1,74 +1,55 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
+const SUPABASE_URL = 'https://gsbbtrknnkdihdlojwbd.supabase.co';
+const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || 'sb_anon_key_here';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoadingAuth, setIsLoadingAuth] = useState(false);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
-  const [authError, setAuthError] = useState(null);
-  const [authChecked, setAuthChecked] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  // For standalone mode, we auto-authenticate as admin
   useEffect(() => {
-    const checkAppState = async () => {
-      try {
-        // In standalone mode, load a demo user with admin role
-        const demoUser = {
-          id: 'user-1',
-          email: 'admin@mayhishpo.local',
-          role: 'admin',
-          name: 'מנהל האפליקציה',
-        };
-        setUser(demoUser);
-        setIsAuthenticated(true);
-        setAuthError(null);
-      } catch (error) {
-        console.error('App state check failed:', error);
-        setAuthError({
-          type: 'unknown',
-          message: 'שגיאה בטעינת האפליקציה'
-        });
-      }
-    };
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      setLoading(false);
+    });
 
-    checkAppState();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription?.unsubscribe();
   }, []);
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('auth_token');
+  const signUp = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    return data;
   };
 
-  const navigateToLogin = () => {
-    logout();
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated,
-      isLoadingAuth,
-      isLoadingPublicSettings,
-      authError,
-      appPublicSettings: {},
-      authChecked,
-      logout,
-      navigateToLogin,
-      checkUserAuth: async () => {},
-      checkAppState: async () => {}
-    }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
-};
+}

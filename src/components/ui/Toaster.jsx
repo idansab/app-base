@@ -1,7 +1,12 @@
-import { Toaster as SonnerToaster } from "sonner";
+import { Toaster as Sonner } from 'sonner';
 
-const Toaster = () => {
-  return <SonnerToaster position="bottom-left" closeButton richColors />;
-};
-
-export { Toaster };
+export function Toaster() {
+  return (
+    <Sonner
+      theme="light"
+      position="top-center"
+      richColors
+      closeButton
+    />
+  );
+}

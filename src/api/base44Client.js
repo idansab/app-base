@@ -6,12 +6,19 @@
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://gsbbtrknnkdihdlojwbd.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_anon_key_here'; // Public key, safe in frontend
+const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || 'sb_anon_key_here';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Mock auth - in production this would be real Auth
-let currentUser = { id: 'user-1', email: 'user@ma-yesh-po.com', role: 'user' };
+// Get current authenticated user from Supabase
+let currentUser = null;
+supabase.auth.getSession().then(({ data: { session } }) => {
+  currentUser = session?.user || null;
+});
+
+supabase.auth.onAuthStateChange((event, session) => {
+  currentUser = session?.user || null;
+});
 
 export const base44 = {
   auth: {
