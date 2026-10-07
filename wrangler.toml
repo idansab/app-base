@@ -18,6 +18,8 @@ vars = { ENVIRONMENT = "production" }
 routes = [
   { pattern = "mayheshpo.com/*", zone_name = "mayheshpo.com" }
 ]
+# Secrets passed from GitHub Actions
+secrets = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
 
 # Staging environment
 [env.staging]
@@ -25,10 +27,14 @@ vars = { ENVIRONMENT = "staging" }
 routes = [
   { pattern = "staging.mayheshpo.com/*", zone_name = "mayheshpo.com" }
 ]
+# Secrets passed from GitHub Actions
+secrets = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
 
 # Development environment
 [env.development]
 vars = { ENVIRONMENT = "development" }
+# Secrets passed from GitHub Actions
+secrets = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
 
 # Secrets passed from GitHub Actions via wrangler-action secrets parameter
 # SUPABASE_URL - Supabase project URL

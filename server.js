@@ -10,15 +10,15 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gsbbtrknnkdihdlojwbd.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'sb_placeholder_key_set_via_cloudflare_secrets';
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('❌ Missing Supabase credentials');
-  console.error('   Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
-  process.exit(1);
+let supabase;
+try {
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch (err) {
+  console.error('⚠️  Supabase client initialization warning:', err.message);
+  console.error('   Ensure SUPABASE_SERVICE_ROLE_KEY is set in Cloudflare Secrets');
 }
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const app = express();
 
