@@ -31,29 +31,7 @@ const saveData = (filename, data) => {
 
 // ---- In-memory data stores with persistence ----
 const stores = {
-  places: loadData('places.json') || [
-    {
-      id: '1', name: 'בית הערב המסורתי', category: 'culture', city: 'ירושלים',
-      address: 'רחוב המשה, ירושלים', lat: 31.7860, lng: 35.2034,
-      description: 'בית ערב מסורתי עם אוכל מסורתי.', short_description: 'אוכל ערבי מסורתי',
-      image_url: 'https://picsum.photos/seed/place1/400/300', rating: 4.7, price_level: 'moderate',
-      opening_hours: '10:00-22:00', phone: '02-1234567', status: 'approved', tags: ['אוכל', 'תרבות'],
-    },
-    {
-      id: '2', name: 'מעיין חלבה', category: 'nature', city: 'צפון ישראל',
-      address: 'שביל המעיינות', lat: 31.8888, lng: 35.0000,
-      description: 'מעיין טבעי באזור יהודה.', short_description: 'מעיין טבעי',
-      image_url: 'https://picsum.photos/seed/place2/400/300', rating: 4.9, price_level: 'free',
-      opening_hours: '24/7 - פתוח תמיד', phone: '', status: 'approved', tags: ['טבע', 'מים'],
-    },
-    {
-      id: '3', name: 'שוק הנמלים בתל אביב', category: 'shopping', city: 'תל אביב',
-      address: 'רחוב רק-קוק, תל אביב', lat: 32.0773, lng: 34.7797,
-      description: 'שוק עתיק עם חנויות וזוגות במגוון מוצרים', short_description: 'שוק עתיק בעיר',
-      image_url: 'https://picsum.photos/seed/place3/400/300', rating: 4.3, price_level: 'budget',
-      opening_hours: '09:00-20:00', phone: '', status: 'approved', tags: ['קניות'],
-    },
-  ],
+  places: loadData('places.json') || [],
   tips: loadData('tips.json') || [],
   fieldReports: loadData('reports.json') || [],
   favorites: loadData('favorites.json') || [],
