@@ -1,11 +1,18 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import Header from './Header';
 import BottomNav from './BottomNav';
 import Footer from './Footer';
+import { useTheme } from '@/lib/ThemeContext';
 
 export default function AppLayout() {
+  const { isDark } = useTheme();
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className={`min-h-screen ${isDark ? 'bg-background' : 'bg-slate-50'} flex flex-col`}>
+      {/* Header with Logo */}
+      <Header />
+
       <main className="flex-1">
         <Outlet />
       </main>

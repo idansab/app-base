@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Loader2, X, Plus, Settings } from 'lucide-react';
+import { Search, MapPin, Loader2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
@@ -126,9 +126,9 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen pb-24">
       {error && (
-        <div className="sticky top-0 bg-red-50 text-red-700 p-4 text-center z-40 flex items-center justify-between px-4">
+        <div className="sticky top-16 bg-red-50 text-red-700 p-4 text-center z-40 flex items-center justify-between px-4">
           <button onClick={() => setError(null)} className="p-1">
             <X size={18} />
           </button>
@@ -136,31 +136,6 @@ export default function Home() {
           <div className="w-6" />
         </div>
       )}
-
-      {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-30 py-3">
-        <div className="px-4 max-w-6xl mx-auto flex items-center justify-between">
-          <h1 className="text-right font-bold text-2xl text-primary">מה יש פה?</h1>
-          <div className="flex gap-2 items-center">
-            <button
-              onClick={() => navigate(isAuthenticated ? '/contribute' : '/login')}
-              className="p-2 bg-primary hover:bg-primary/90 text-white rounded-full transition-all hover:scale-110 shadow-md"
-              title="הוסף מקום"
-              aria-label="הוסף מקום"
-            >
-              <Plus size={20} />
-            </button>
-            <button
-              onClick={() => navigate('/settings')}
-              className="p-2 hover:bg-sand rounded-full transition-colors"
-              title="הגדרות"
-              aria-label="הגדרות"
-            >
-              <Settings size={20} className="text-primary" />
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Search Bar */}
       <div className="px-4 max-w-6xl mx-auto py-3">

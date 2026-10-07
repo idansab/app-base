@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, Phone, Clock, Star, Heart, Share2, Navigation } from 'lucide-react';
 import { haversineKm, formatDistance } from '@/lib/geo';
+import ImageCarousel from '@/components/ImageCarousel';
 
 const API_BASE = 'http://localhost:3001/api';
 
@@ -79,15 +80,12 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Hero Image */}
+          {/* Hero Image Carousel */}
           {place.image_url && (
-            <div className="relative h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-200 to-slate-300">
-              <img
-                src={place.image_url}
-                alt={place.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <ImageCarousel
+              images={Array.isArray(place.image_url) ? place.image_url : [place.image_url]}
+              title={place.name}
+            />
           )}
 
           {/* Quick Stats */}
