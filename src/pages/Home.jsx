@@ -11,10 +11,9 @@ import { useAuth } from '@/lib/AuthContext';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
-  { id: 'coffee_food', label: 'עגלות קפה ואוכל', emoji: '☕' },
-  { id: 'trips', label: 'טיולים', emoji: '🧗' },
-  { id: 'nightlife', label: 'חיי לילה', emoji: '🌙' },
-  { id: 'shopping', label: 'שווקים וקניות', emoji: '🛍️' },
+  { id: 'food', label: 'עגלות קפה ואוכל', emoji: '☕' },
+  { id: 'nature', label: 'טבע וטיולים', emoji: '🏞️' },
+  { id: 'hiking', label: 'טיול הליכה', emoji: '🥾' },
   { id: 'culture', label: 'תרבות', emoji: '🎨' },
 ];
 

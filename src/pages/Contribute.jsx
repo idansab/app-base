@@ -5,12 +5,10 @@ import { MapPin, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 const API_BASE = 'http://localhost:3001/api';
 
 const CATEGORIES = [
-  { id: 'nature', label: 'טבע', icon: '🏞️' },
-  { id: 'hiking', label: 'טיול הליכה', icon: '🥾' },
-  { id: 'water', label: 'מימי', icon: '💧' },
   { id: 'food', label: 'אוכל ושתייה', icon: '🍽️' },
-  { id: 'culture', label: 'תרבות', icon: '🎨' },
-  { id: 'historical', label: 'היסטוריה', icon: '🏛️' },
+  { id: 'nature', label: 'טבע וטיולים', icon: '🏞️' },
+  { id: 'hiking', label: 'טיול הליכה', icon: '🥾' },
+  { id: 'culture', label: 'תרבות ואמנות', icon: '🎨' },
 ];
 
 export default function Contribute() {
