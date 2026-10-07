@@ -1,24 +1,17 @@
 /**
- * Standalone API Client — replaces Base44 SDK with local Express server
- * All existing imports of `base44` from `@/api/base44Client` continue to work
+ * Supabase Direct Client
+ * Frontend connects directly to Supabase (no backend needed for MVP)
  */
 
-const API_BASE = 'http://localhost:3001/api';
+import { createClient } from '@supabase/supabase-js';
 
-async function request(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Request failed: ${res.status}`);
-  }
-  return res.json();
-}
+const SUPABASE_URL = 'https://gsbbtrknnkdihdlojwbd.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_anon_key_here'; // Public key, safe in frontend
 
-// Mock auth - in production this would be real JWT verification
-let currentUser = { id: 'user-1', email: 'admin@ma-yesh-po.com', role: 'admin' };
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Mock auth - in production this would be real Auth
+let currentUser = { id: 'user-1', email: 'user@ma-yesh-po.com', role: 'user' };
 
 export const base44 = {
   auth: {
@@ -33,9 +26,6 @@ export const base44 = {
     Core: {
       CreateFileSignedUrl: async ({ file_uri, expires_in }) => ({ signed_url: file_uri }),
       UploadPrivateFile: async ({ file, ...rest }) => {
-        // Mock file upload - in production would upload to actual storage
-        const formData = new FormData();
-        formData.append('file', file);
         return { file_uri: `local://uploads/mock-${Date.now()}` };
       },
     },
@@ -43,46 +33,173 @@ export const base44 = {
   entities: {
     Place: {
       filter: async (query = {}, options = {}) => {
-        const params = new URLSearchParams();
-        if (query.status) params.set('status', query.status);
-        if (query.category) params.set('category', query.category);
-        if (query.city) params.set('city', query.city);
-        if (query.created_by_id) params.set('created_by_id', query.created_by_id);
-        if (query.$in) params.set('id', query.$in.join(','));
-        const qs = params.toString() ? `?${params.toString()}` : '';
-        return request(`/places${qs}`);
+        let q = supabase.from('places').select('*');
+
+        // Apply filters
+        if (query.status) q = q.eq('status', query.status);
+        if (query.category) q = q.eq('category', query.category);
+        if (query.city) q = q.eq('city', query.city);
+        if (query.created_by_id) q = q.eq('created_by_id', query.created_by_id);
+
+        const { data, error } = await q.limit(100);
+        if (error) throw error;
+
+        // Filter by search query if provided
+        let results = data || [];
+        if (query.q) {
+          results = results.filter(p =>
+            p.name?.toLowerCase().includes(query.q.toLowerCase()) ||
+            p.address?.toLowerCase().includes(query.q.toLowerCase())
+          );
+        }
+
+        return { data: results };
       },
-      create: async (data) => request('/places', { method: 'POST', body: JSON.stringify(data) }),
-      update: async (id, data) => request(`/places/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-      delete: async (id) => request(`/places/${id}`, { method: 'DELETE' }),
-      list: async () => request('/places'),
-      get: async (id) => request(`/places/${id}`),
+
+      create: async (data) => {
+        const { data: result, error } = await supabase
+          .from('places')
+          .insert([{ ...data, created_by_id: currentUser?.id }])
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
+
+      update: async (id, data) => {
+        const { data: result, error } = await supabase
+          .from('places')
+          .update(data)
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
+
+      delete: async (id) => {
+        const { data: result, error } = await supabase
+          .from('places')
+          .delete()
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
+
+      list: async () => {
+        const { data, error } = await supabase
+          .from('places')
+          .select('*')
+          .eq('status', 'approved');
+        if (error) throw error;
+        return { data };
+      },
+
+      get: async (id) => {
+        const { data, error } = await supabase
+          .from('places')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) throw error;
+        return data;
+      },
     },
+
     Tip: {
       filter: async (query = {}) => {
-        if (query.place_id) return request(`/tips?place_id=${query.place_id}`);
-        return request('/tips');
+        let q = supabase.from('tips').select('*');
+        if (query.place_id) q = q.eq('place_id', query.place_id);
+        const { data, error } = await q;
+        if (error) throw error;
+        return data || [];
       },
-      create: async (data) => request('/tips', { method: 'POST', body: JSON.stringify(data) }),
-      update: async (id, data) => request(`/tips/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-      delete: async (id) => request(`/tips/${id}`, { method: 'DELETE' }),
+
+      create: async (data) => {
+        const { data: result, error } = await supabase
+          .from('tips')
+          .insert([{ ...data, created_by_id: currentUser?.id }])
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
+
+      update: async (id, data) => {
+        const { data: result, error } = await supabase
+          .from('tips')
+          .update(data)
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
+
+      delete: async (id) => {
+        const { data: result, error } = await supabase
+          .from('tips')
+          .delete()
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
     },
+
     FieldReport: {
       filter: async (query = {}) => {
-        if (query.place_id) return request(`/reports?place_id=${query.place_id}`);
-        return request('/reports');
+        let q = supabase.from('reports').select('*');
+        if (query.place_id) q = q.eq('place_id', query.place_id);
+        const { data, error } = await q;
+        if (error) throw error;
+        return data || [];
       },
-      create: async (data) => request('/reports', { method: 'POST', body: JSON.stringify(data) }),
-      update: async (id, data) => request(`/reports/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-      delete: async (id) => request(`/reports/${id}`, { method: 'DELETE' }),
+
+      create: async (data) => {
+        const { data: result, error } = await supabase
+          .from('reports')
+          .insert([{ ...data, created_by_id: currentUser?.id }])
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
     },
+
     Favorite: {
-      filter: async (query = {}) => request('/favorites'),
-      create: async (data) => request('/favorites', { method: 'POST', body: JSON.stringify(data) }),
-      delete: async (id) => request(`/favorites/${id}`, { method: 'DELETE' }),
+      filter: async (query = {}) => {
+        const userId = currentUser?.id || 'anonymous';
+        const { data, error } = await supabase
+          .from('favorites')
+          .select('*')
+          .eq('user_id', userId);
+        if (error) throw error;
+        return data || [];
+      },
+
+      create: async (data) => {
+        const { data: result, error } = await supabase
+          .from('favorites')
+          .insert([{ ...data, user_id: currentUser?.id }])
+          .select()
+          .single();
+        if (error) throw error;
+        return result;
+      },
+
+      delete: async (id) => {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+      },
     },
   },
 };
 
 export default base44;
-
