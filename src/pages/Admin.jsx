@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { Plus, Edit2, Trash2, Upload, MapPin, Loader2, CheckCircle } from 'lucide-react';
 import { geocodeAddress } from '@/lib/geo';
 
@@ -6,6 +7,27 @@ const API_BASE = 'http://localhost:3001/api';
 const CATEGORIES = ['nature', 'culture', 'food', 'shopping', 'sports', 'entertainment'];
 
 export default function Admin() {
+  // Check if user is admin
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+          // In production, verify JWT with backend
+          // For now, show restricted access
+          setIsAuthorized(false);
+          return;
+        }
+        setIsAuthorized(true);
+      } catch (e) {
+        setIsAuthorized(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
   const [activeTab, setActiveTab] = useState('studio');
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -200,6 +222,24 @@ export default function Admin() {
     });
     setShowForm(true);
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-white rounded-3xl p-8 max-w-md text-center">
+          <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">גישה מוגבלת</h1>
+          <p className="text-gray-600 mb-6">יש צורך בהרשאות מנהל כדי לגשת לדשבורד זה.</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-6 py-2 bg-blue-600 text-white rounded-2xl font-medium hover:bg-blue-700"
+          >
+            חזור לעמוד הבית
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
