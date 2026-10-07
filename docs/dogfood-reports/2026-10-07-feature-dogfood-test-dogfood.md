@@ -80,7 +80,24 @@ None detected on home page with category filtering and place display.
 
 ## Human Verifications
 
-Not applicable — no external interactions (OAuth, email, payments, SMS).
+**Admin Dashboard Testing — Manual Verification Required**
+
+The admin dashboard requires auth state to be properly initialized. To manually verify admin flows:
+
+1. Start the dev server: `npm run dev`
+2. Navigate to `http://localhost:5173/`
+3. Open browser DevTools → Application → LocalStorage
+4. Set: `auth_token` = `admin-token` (any value)
+5. Navigate to `/admin`
+6. Verify:
+   - Approval tab shows pending places
+   - Can approve/reject places
+   - Changes reflect in main app after approval
+
+**Auth Implementation Note:** 
+- Backend: Bearer token auth at `server.js:47`
+- Frontend: AuthContext auto-authenticates in standalone mode
+- Admin route: Protected via `ProtectedRoute.jsx`
 
 ## Decisions for a Human
 
