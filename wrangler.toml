@@ -1,53 +1,40 @@
-name = "whatishere"
-account_id = "2bf9335eb4120606b6337d0442cb902e"
-main = "server.js"
-compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat"]
+# Cloudflare Pages configuration (Frontend only)
+# Backend: Node.js Express server (runs separately)
 
-# Cloudflare Pages configuration
+account_id = "2bf9335eb4120606b6337d0442cb902e"
+
+# Pages deployment - frontend only
 pages_build_output_dir = "dist"
 
 # Build configuration
 [build]
 command = "npm run build"
 cwd = "./"
+watch_paths = ["src/**/*.{js,jsx,ts,tsx}"]
 
 # Production environment
 [env.production]
-vars = { ENVIRONMENT = "production" }
 routes = [
   { pattern = "mayheshpo.com/*", zone_name = "mayheshpo.com" }
 ]
-# Secrets passed from GitHub Actions
-secrets = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
+vars = {
+  ENVIRONMENT = "production",
+  API_URL = "https://api.mayheshpo.com"
+}
 
 # Staging environment
 [env.staging]
-vars = { ENVIRONMENT = "staging" }
 routes = [
   { pattern = "staging.mayheshpo.com/*", zone_name = "mayheshpo.com" }
 ]
-# Secrets passed from GitHub Actions
-secrets = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
+vars = {
+  ENVIRONMENT = "staging",
+  API_URL = "https://staging-api.mayheshpo.com"
+}
 
 # Development environment
 [env.development]
-vars = { ENVIRONMENT = "development" }
-# Secrets passed from GitHub Actions
-secrets = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
-
-# Secrets passed from GitHub Actions via wrangler-action secrets parameter
-# SUPABASE_URL - Supabase project URL
-# SUPABASE_SERVICE_ROLE_KEY - Supabase service role key
-
-# R2 Bucket binding (optional - create bucket in Cloudflare if needed)
-# [[r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "mah-yesh-po-images"
-# preview_bucket_name = "mah-yesh-po-images-preview"
-
-# KV Namespace for sessions (optional)
-# [[kv_namespaces]]
-# binding = "SESSIONS"
-# id = "your_kv_namespace_id"
-# preview_id = "your_preview_namespace_id"
+vars = {
+  ENVIRONMENT = "development",
+  API_URL = "http://localhost:3001"
+}
