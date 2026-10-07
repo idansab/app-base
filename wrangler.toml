@@ -30,9 +30,9 @@ routes = [
 [env.development]
 vars = { ENVIRONMENT = "development" }
 
-# Secrets (set via wrangler secret put)
-# - SUPABASE_URL
-# - SUPABASE_SERVICE_ROLE_KEY
+# Secrets passed from GitHub Actions via wrangler-action secrets parameter
+# SUPABASE_URL - Supabase project URL
+# SUPABASE_SERVICE_ROLE_KEY - Supabase service role key
 
 # R2 Bucket binding (optional - create bucket in Cloudflare if needed)
 # [[r2_buckets]]
