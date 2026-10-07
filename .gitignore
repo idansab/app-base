@@ -40,3 +40,30 @@ base44/.app.jsonc
 
 # Compound Engineering scratch space
 .context/compound-engineering/
+
+# Environment variables (LOCAL ONLY - never commit)
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.development.local
+.env.test.local
+# BUT DO commit the example file:
+!.env.example
+
+# Cloudflare/Wrangler
+.wrangler/
+wrangler.toml.local
+
+# Supabase
+.supabase/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

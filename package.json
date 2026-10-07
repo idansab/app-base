@@ -11,7 +11,12 @@
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "migrate:supabase": "node scripts/migrate-to-supabase.js",
+    "deploy:cloudflare": "wrangler deploy",
+    "test:ci": "vitest run --reporter=verbose",
+    "db:push": "supabase db push",
+    "db:pull": "supabase db pull"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
