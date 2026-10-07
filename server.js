@@ -1,41 +1,24 @@
 /**
  * Standalone Express API Server for "מה יש פה?"
- * Provides independent data layer — no dependency on Base44 runtime.
+ * Uses Supabase as the database backend
  */
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Initialize Supabase client
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gsbbtrknnkdihdlojwbd.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-const DATA_DIR = path.join(__dirname, 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('❌ Missing Supabase credentials');
+  console.error('   Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+  process.exit(1);
+}
 
-const loadData = (filename) => {
-  try {
-    const data = fs.readFileSync(path.join(DATA_DIR, filename), 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return null;
-  }
-};
-
-const saveData = (filename, data) => {
-  fs.writeFileSync(path.join(DATA_DIR, filename), JSON.stringify(data, null, 2));
-};
-
-// ---- In-memory data stores with persistence ----
-const stores = {
-  places: loadData('places.json') || [],
-  tips: loadData('tips.json') || [],
-  fieldReports: loadData('reports.json') || [],
-  favorites: loadData('favorites.json') || [],
-};
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const app = express();
 
@@ -43,7 +26,7 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
-// ---- Auth middleware (placeholder for future JWT) ----
+// ---- Auth middleware ----
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   req.user = token ? { id: 'user-1', email: 'demo@ma-yesh-po.com', role: 'admin' } : null;
@@ -54,190 +37,276 @@ const auth = (req, res, next) => {
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
 // ---- Places CRUD ----
-app.get('/api/places', (req, res) => {
-  const { category, city, q, limit = 30, offset = 0, status } = req.query;
-  let results = [...stores.places];
-  
-  if (status) results = results.filter(p => p.status === status);
-  if (category) results = results.filter(p => p.category === category);
-  if (city) results = results.filter(p => p.city === city);
-  if (q) results = results.filter(p => 
-    p.name?.toLowerCase().includes(q.toLowerCase()) ||
-    p.address?.toLowerCase().includes(q.toLowerCase())
-  );
-  
-  return res.json({
-    data: results.slice(Number(offset), Number(offset) + Number(limit)),
-    meta: { total: results.length, limit: Number(limit), offset: Number(offset) }
-  });
+app.get('/api/places', async (req, res) => {
+  try {
+    const { category, city, q, limit = 30, offset = 0, status } = req.query;
+
+    let query = supabase.from('places').select('*');
+
+    if (status) query = query.eq('status', status);
+    if (category) query = query.eq('category', category);
+    if (city) query = query.eq('city', city);
+
+    const { data, error, count } = await query
+      .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+
+    if (error) throw error;
+
+    // Filter by search query
+    let results = data || [];
+    if (q) {
+      results = results.filter(p =>
+        p.name?.toLowerCase().includes(q.toLowerCase()) ||
+        p.address?.toLowerCase().includes(q.toLowerCase())
+      );
+    }
+
+    res.json({
+      data: results,
+      meta: { total: count || results.length, limit: parseInt(limit), offset: parseInt(offset) }
+    });
+  } catch (error) {
+    console.error('Error fetching places:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.get('/api/places/:id', (req, res) => {
-  const place = stores.places.find(p => p.id === req.params.id);
-  if (!place) return res.status(404).json({ error: 'Place not found' });
-  return res.json(place);
+app.get('/api/places/:id', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('places')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Place not found' });
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching place:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.post('/api/places', auth, (req, res) => {
-  const place = {
-    ...req.body,
-    id: uuidv4(),
-    status: 'approved',
-    created_by_id: req.user?.id || 'anonymous',
-    created_at: new Date().toISOString(),
-  };
-  stores.places.push(place);
-  saveData('places.json', stores.places);
-  return res.status(201).json(place);
+app.post('/api/places', auth, async (req, res) => {
+  try {
+    const place = {
+      id: uuidv4(),
+      ...req.body,
+      status: 'approved',
+      created_by_id: req.user?.id || 'anonymous',
+      created_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('places')
+      .insert([place])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    console.error('Error creating place:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.patch('/api/places/:id', auth, (req, res) => {
-  const idx = stores.places.findIndex(p => p.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: 'Place not found' });
-  stores.places[idx] = { ...stores.places[idx], ...req.body, updated_at: new Date().toISOString() };
-  saveData('places.json', stores.places);
-  return res.json(stores.places[idx]);
+app.patch('/api/places/:id', auth, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('places')
+      .update({ ...req.body, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Place not found' });
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error updating place:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.delete('/api/places/:id', auth, (req, res) => {
-  const idx = stores.places.findIndex(p => p.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: 'Place not found' });
-  const deleted = stores.places[idx];
-  stores.places.splice(idx, 1);
-  saveData('places.json', stores.places);
-  return res.json(deleted);
+app.delete('/api/places/:id', auth, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('places')
+      .delete()
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Place not found' });
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error deleting place:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.patch('/api/places/:id/status', auth, (req, res) => {
-  const { status } = req.body;
-  if (!status) return res.status(400).json({ error: 'Status required' });
-  const idx = stores.places.findIndex(p => p.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: 'Place not found' });
-  stores.places[idx].status = status;
-  saveData('places.json', stores.places);
-  return res.json(stores.places[idx]);
+app.patch('/api/places/:id/status', auth, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ error: 'Status required' });
+
+    const { data, error } = await supabase
+      .from('places')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Place not found' });
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error updating status:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ---- Tips ----
-app.get('/api/tips', (req, res) => {
-  const { placeId, status } = req.query;
-  let results = [...stores.tips];
-  if (placeId) results = results.filter(t => t.place_id === placeId);
-  if (status) results = results.filter(t => t.status === status);
-  return res.json(results);
+app.get('/api/tips', async (req, res) => {
+  try {
+    const { placeId, status } = req.query;
+
+    let query = supabase.from('tips').select('*');
+    if (placeId) query = query.eq('place_id', placeId);
+    if (status) query = query.eq('status', status);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Error fetching tips:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.post('/api/tips', auth, (req, res) => {
-  const tip = {
-    ...req.body,
-    id: uuidv4(),
-    status: 'approved',
-    created_by_id: req.user?.id,
-    created_at: new Date().toISOString()
-  };
-  stores.tips.push(tip);
-  saveData('tips.json', stores.tips);
-  return res.status(201).json(tip);
-});
+app.post('/api/tips', auth, async (req, res) => {
+  try {
+    const tip = {
+      id: uuidv4(),
+      ...req.body,
+      status: 'approved',
+      created_by_id: req.user?.id,
+      created_at: new Date().toISOString(),
+    };
 
-app.patch('/api/tips/:id', auth, (req, res) => {
-  const idx = stores.tips.findIndex(t => t.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: 'Tip not found' });
-  stores.tips[idx] = { ...stores.tips[idx], ...req.body };
-  saveData('tips.json', stores.tips);
-  return res.json(stores.tips[idx]);
-});
+    const { data, error } = await supabase
+      .from('tips')
+      .insert([tip])
+      .select()
+      .single();
 
-app.delete('/api/tips/:id', auth, (req, res) => {
-  const idx = stores.tips.findIndex(t => t.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: 'Tip not found' });
-  const deleted = stores.tips[idx];
-  stores.tips.splice(idx, 1);
-  saveData('tips.json', stores.tips);
-  return res.json(deleted);
-});
+    if (error) throw error;
 
-// ---- Field Reports ----
-app.get('/api/reports', (req, res) => {
-  const { placeId } = req.query;
-  let results = [...stores.fieldReports];
-  if (placeId) results = results.filter(r => r.place_id === placeId);
-  return res.json(results);
-});
-
-app.post('/api/reports', auth, (req, res) => {
-  const report = {
-    ...req.body,
-    id: uuidv4(),
-    status: 'approved',
-    created_by_id: req.user?.id,
-    created_at: new Date().toISOString()
-  };
-  stores.fieldReports.push(report);
-  saveData('reports.json', stores.fieldReports);
-  return res.status(201).json(report);
-});
-
-app.patch('/api/reports/:id', auth, (req, res) => {
-  const idx = stores.fieldReports.findIndex(r => r.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: 'Report not found' });
-  stores.fieldReports[idx] = { ...stores.fieldReports[idx], ...req.body };
-  saveData('reports.json', stores.fieldReports);
-  return res.json(stores.fieldReports[idx]);
-});
-
-app.delete('/api/reports/:id', auth, (req, res) => {
-  const idx = stores.fieldReports.findIndex(r => r.id === req.params.id);
-  if (idx < 0) return res.status(404).json({ error: 'Report not found' });
-  const deleted = stores.fieldReports[idx];
-  stores.fieldReports.splice(idx, 1);
-  saveData('reports.json', stores.fieldReports);
-  return res.json(deleted);
+    res.status(201).json(data);
+  } catch (error) {
+    console.error('Error creating tip:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ---- Favorites ----
-app.get('/api/favorites', auth, (req, res) => {
-  res.json(stores.favorites.filter(f => f.user_id === (req.user?.id || 'anonymous')));
-});
+app.get('/api/favorites', auth, async (req, res) => {
+  try {
+    const userId = req.user?.id || 'anonymous';
 
-app.post('/api/favorites', auth, (req, res) => {
-  const fav = { ...req.body, user_id: req.user?.id || 'anonymous', id: uuidv4() };
-  if (!stores.favorites.find(f => f.place_id === fav.place_id && f.user_id === fav.user_id)) {
-    stores.favorites.push(fav);
-    saveData('favorites.json', stores.favorites);
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    res.status(500).json({ error: error.message });
   }
-  return res.status(201).json(fav);
 });
 
-app.delete('/api/favorites/:placeId', auth, (req, res) => {
-  const userId = req.user?.id || 'anonymous';
-  const idx = stores.favorites.findIndex(f => f.place_id === req.params.placeId && f.user_id === userId);
-  if (idx < 0) return res.status(404).json({ error: 'Favorite not found' });
-  const deleted = stores.favorites[idx];
-  stores.favorites.splice(idx, 1);
-  saveData('favorites.json', stores.favorites);
-  return res.json(deleted);
+app.post('/api/favorites', auth, async (req, res) => {
+  try {
+    const favorite = {
+      id: uuidv4(),
+      place_id: req.body.place_id,
+      user_id: req.user?.id || 'anonymous',
+    };
+
+    const { data, error } = await supabase
+      .from('favorites')
+      .insert([favorite])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    console.error('Error adding favorite:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// ---- Geocoding (simple mock - fetch from Nominatim in production) ----
+app.delete('/api/favorites/:placeId', auth, async (req, res) => {
+  try {
+    const userId = req.user?.id || 'anonymous';
+
+    const { data, error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('place_id', req.params.placeId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Favorite not found' });
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error removing favorite:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ---- Geocoding (mock) ----
 app.post('/api/geocode', express.json(), async (req, res) => {
   const { address } = req.body;
   if (!address) return res.status(400).json({ error: 'Address required' });
+
   try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Israel')}`);
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Israel')}`
+    );
     const data = await response.json();
+
     if (data.length === 0) return res.status(404).json({ error: 'Address not found' });
+
     const first = data[0];
-    return res.json({ lat: parseFloat(first.lat), lng: parseFloat(first.lon) });
-  } catch (e) {
-    return res.status(500).json({ error: 'Geocoding failed' });
+    res.json({ lat: parseFloat(first.lat), lng: parseFloat(first.lon) });
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    res.status(500).json({ error: 'Geocoding failed' });
   }
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Independent API server running on http://localhost:${PORT}`);
-  console.log(`Health: http://localhost:${PORT}/health`);
+  console.log(`✅ API server running on http://localhost:${PORT}`);
+  console.log(`📊 Using Supabase: ${SUPABASE_URL}`);
 });
 
 export default app;
