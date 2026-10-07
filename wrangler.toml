@@ -4,6 +4,7 @@ account_id = "2bf9335eb4120606b6337d0442cb902e"
 workers_dev = true
 main = "server.js"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 
 # Cloudflare Pages configuration
 pages_build_output_dir = "dist"
