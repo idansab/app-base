@@ -33,7 +33,7 @@ export default function Admin() {
 
   // Load places
   useEffect(() => {
-    if (activeTab === 'places') {
+    if (activeTab === 'places' || activeTab === 'approval') {
       loadPlaces();
     }
   }, [activeTab]);
@@ -131,6 +131,24 @@ export default function Admin() {
     }
   };
 
+  // Approve/Reject place
+  const handleApprovePlace = async (id, status) => {
+    try {
+      const res = await fetch(`${API_BASE}/places/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        showSuccess(status === 'approved' ? 'המקום אושר בהצלחה' : 'המקום נדחה בהצלחה');
+        loadPlaces();
+      }
+    } catch (e) {
+      console.error('Failed to update place status:', e);
+      showSuccess('שגיאה בעדכון הסטטוס');
+    }
+  };
+
   // Delete place
   const handleDeletePlace = async (id) => {
     if (!confirm('בטוח שברצונך למחוק את המקום הזה?')) return;
@@ -185,6 +203,16 @@ export default function Admin() {
             }`}
           >
             סטודיו תוכן
+          </button>
+          <button
+            onClick={() => setActiveTab('approval')}
+            className={`px-6 py-2 rounded-2xl font-medium transition-colors ${
+              activeTab === 'approval'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            אישור מקומות
           </button>
           <button
             onClick={() => setActiveTab('places')}
@@ -538,6 +566,66 @@ export default function Admin() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'approval' && (
+          <div>
+            <h1 className="text-2xl font-bold text-right mb-6">אישור מקומות</h1>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 size={40} className="animate-spin mx-auto text-green-600" />
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {places.filter(p => p.status === 'pending').length === 0 ? (
+                  <div className="bg-white rounded-2xl p-8 text-center text-gray-600">
+                    אין מקומות המחכים לאישור
+                  </div>
+                ) : (
+                  places.filter(p => p.status === 'pending').map(place => (
+                    <div
+                      key={place.id}
+                      className="bg-white rounded-2xl p-6 border-2 border-yellow-200"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 text-right">
+                          <h3 className="font-bold text-lg">{place.name}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{place.city} • {place.category}</p>
+                          <p className="text-sm text-gray-700 mt-2">{place.address}</p>
+                          {place.description && (
+                            <p className="text-sm text-gray-600 mt-2">{place.description}</p>
+                          )}
+                        </div>
+                        {place.image_url && (
+                          <img
+                            src={place.image_url}
+                            alt={place.name}
+                            className="w-20 h-20 object-cover rounded-lg ml-4 flex-shrink-0"
+                            onError={(e) => e.target.style.display = 'none'}
+                          />
+                        )}
+                      </div>
+                      <div className="flex gap-3 justify-end">
+                        <button
+                          onClick={() => handleApprovePlace(place.id, 'approved')}
+                          className="px-6 py-2 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors"
+                        >
+                          אשר
+                        </button>
+                        <button
+                          onClick={() => handleApprovePlace(place.id, 'rejected')}
+                          className="px-6 py-2 bg-red-600 text-white rounded-2xl font-medium hover:bg-red-700 transition-colors"
+                        >
+                          דחה
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>

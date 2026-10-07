@@ -108,6 +108,16 @@ app.delete('/api/places/:id', auth, (req, res) => {
   return res.json(deleted);
 });
 
+app.patch('/api/places/:id/status', auth, (req, res) => {
+  const { status } = req.body;
+  if (!status) return res.status(400).json({ error: 'Status required' });
+  const idx = stores.places.findIndex(p => p.id === req.params.id);
+  if (idx < 0) return res.status(404).json({ error: 'Place not found' });
+  stores.places[idx].status = status;
+  saveData('places.json', stores.places);
+  return res.json(stores.places[idx]);
+});
+
 // ---- Tips ----
 app.get('/api/tips', (req, res) => {
   const { placeId, status } = req.query;
