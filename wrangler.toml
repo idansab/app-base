@@ -1,7 +1,0 @@
-name = "app-base"
-pages_build_output_dir = "dist"
-compatibility_date = "2024-01-01"
-
-[vars]
-VITE_SUPABASE_URL = "https://gsbbtrknnkdihdlojwbd.supabase.co"
-VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzYmJ0cmtubm5kaWhoZGxvandibCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzI2NTgyMzM2LCJleHAiOjE4ODQzNDgzMzZ9.TRqGmsgmZsN7G2Yk6KnLDVHDh0N5QRy1xJ3-L5M-pZI"
