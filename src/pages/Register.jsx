@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function Register() {
@@ -20,12 +21,27 @@ export default function Register() {
       return;
     }
 
+    if (password.length < 6) {
+      setError('הסיסמה חייבת להיות לפחות 6 תווים');
+      return;
+    }
+
     setLoading(true);
     try {
       await signUp(email, password);
-      navigate('/login');
+      // Show success message
+      setError('');
+      // Navigate to login after brief delay
+      setTimeout(() => navigate('/login'), 500);
     } catch (err) {
-      setError(err.message);
+      // Better error messages
+      let errorMsg = err.message;
+      if (err.message?.includes('already registered')) {
+        errorMsg = 'חשבון זה כבר קיים. אנא התחבר במקום זאת.';
+      } else if (err.message?.includes('invalid email')) {
+        errorMsg = 'כתובת דוא"ל לא תקינה';
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -85,9 +101,10 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? 'טוען...' : 'הירשם'}
+            {loading && <Loader2 size={18} className="animate-spin" />}
+            {loading ? 'יוצר חשבון...' : 'הירשם'}
           </button>
         </form>
 

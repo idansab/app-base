@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function Login() {
@@ -19,7 +20,14 @@ export default function Login() {
       await signIn(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message);
+      // Better error messages
+      let errorMsg = err.message;
+      if (err.message?.includes('Invalid login credentials')) {
+        errorMsg = 'אימייל או סיסמה לא נכונים. אנא בדוק ונסה שוב.';
+      } else if (err.message?.includes('Email not confirmed')) {
+        errorMsg = 'אנא אשר את הדוא"ל שלך לפני התחברות.';
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -66,9 +74,10 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? 'טוען...' : 'התחבר'}
+            {loading && <Loader2 size={18} className="animate-spin" />}
+            {loading ? 'מתחבר...' : 'התחבר'}
           </button>
         </form>
 
