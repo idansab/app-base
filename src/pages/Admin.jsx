@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle, LogOut } from 'lucide-react';
 import { Plus, Edit2, Trash2, Upload, MapPin, Loader2, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { geocodeAddress } from '@/lib/geo';
 import { supabase } from '@/api/base44Client';
 const CATEGORIES = ['nature', 'culture', 'food', 'shopping', 'sports', 'entertainment'];
@@ -20,6 +21,13 @@ export default function Admin() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
   const [selectedPlaces, setSelectedPlaces] = useState(new Set());
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    action: null,
+    isLoading: false,
+  });
 
   const [formData, setFormData] = useState({
     name: '',
@@ -168,20 +176,32 @@ export default function Admin() {
   };
 
   // Delete place
-  const handleDeletePlace = async (id) => {
-    if (!confirm('בטוח שברצונך למחוק את המקום הזה?')) return;
-    try {
-      const { error } = await supabase
-        .from('places')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-      showSuccess('המקום נמחק בהצלחה');
-      loadPlaces();
-    } catch (e) {
-      console.error('Failed to delete place:', e);
-      showSuccess('שגיאה במחיקת המקום');
-    }
+  const handleDeletePlace = (id) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'מחק מקום',
+      message: 'בטוח שברצונך למחוק את המקום הזה? פעולה זו לא ניתנת לביטול.',
+      action: async () => {
+        try {
+          setConfirmDialog(prev => ({ ...prev, isLoading: true }));
+          const { error } = await supabase
+            .from('places')
+            .delete()
+            .eq('id', id);
+          if (error) throw error;
+          showSuccess('המקום נמחק בהצלחה');
+          setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isLoading: false });
+          loadPlaces();
+        } catch (e) {
+          console.error('Failed to delete place:', e);
+          showSuccess('שגיאה במחיקת המקום');
+          setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isLoading: false });
+        }
+      },
+      isLoading: false,
+      variant: 'danger',
+      isDangerous: true,
+    });
   };
 
   const showSuccess = (msg) => {
@@ -877,6 +897,20 @@ export default function Admin() {
           </div>
         )}
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        variant={confirmDialog.variant || 'warning'}
+        isDangerous={confirmDialog.isDangerous}
+        isLoading={confirmDialog.isLoading}
+        confirmText="מחק"
+        cancelText="ביטול"
+        onConfirm={confirmDialog.action}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </div>
   );
 }
