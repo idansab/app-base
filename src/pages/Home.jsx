@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Loader2, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
@@ -22,16 +22,17 @@ const CATEGORIES = [
 export default function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [places, setPlaces] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [userLocation, setUserLocation] = useState(null);
-  const [maxDistance, setMaxDistance] = useState(null);
+  const [maxDistance, setMaxDistance] = useState(searchParams.get('distance') ? parseInt(searchParams.get('distance')) : null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-  const [sortBy, setSortBy] = useState('distance');
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'distance');
   const [selectedPlace, setSelectedPlace] = useState(null);
   const { location: autoLocation } = useUserLocation({ auto: true });
 
@@ -75,6 +76,17 @@ export default function Home() {
       setUserLocation(autoLocation);
     }
   }, [autoLocation]);
+
+  // Sync state with URL params
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('q', searchQuery);
+    if (selectedCategory !== 'all') params.set('category', selectedCategory);
+    if (maxDistance) params.set('distance', maxDistance.toString());
+    if (sortBy !== 'distance') params.set('sort', sortBy);
+
+    setSearchParams(params, { replace: true });
+  }, [searchQuery, selectedCategory, maxDistance, sortBy, setSearchParams]);
 
   // Keyboard navigation for categories
   useEffect(() => {
