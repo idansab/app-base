@@ -72,18 +72,18 @@ export default function PlaceCard({
         <div className="flex items-center justify-between gap-2 mb-3 text-sm">
           {place.rating && (
             <div className="flex items-center gap-1">
-              <span className="font-medium text-gray-700">{place.rating.toFixed(1)}</span>
+              <span className="font-medium text-foreground">{place.rating.toFixed(1)}</span>
               <Star size={16} className="fill-amber-400 text-amber-400" />
             </div>
           )}
           {distance != null && (
-            <div className="text-xs bg-slate-100 text-gray-600 px-2 py-1 rounded-full font-medium">
+            <div className="text-xs bg-secondary text-foreground px-2 py-1 rounded-full font-medium">
               {formatDistance(distance)}
             </div>
           )}
         </div>
 
-        <p className="text-xs text-gray-600 text-right mb-auto line-clamp-2">
+        <p className="text-xs text-muted-foreground text-right mb-auto line-clamp-2">
           {place.short_description || place.description}
         </p>
       </div>

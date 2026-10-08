@@ -196,7 +196,7 @@ export default function Home() {
       </div>
 
       {/* Category Tabs - Horizontal Scroll */}
-      <div className="bg-card border-b border-border z-20 overflow-x-auto">
+      <div className="z-20 overflow-x-auto">
         <div className="px-4 max-w-6xl mx-auto py-3 flex gap-2 justify-start">
           {CATEGORIES.map((cat, i) => (
             <motion.button
@@ -221,7 +221,7 @@ export default function Home() {
 
       {/* Sort Controls */}
       <div className="px-4 max-w-6xl mx-auto py-4 flex gap-2 items-center justify-end">
-        <span className="text-sm font-medium text-gray-600">
+        <span className="text-sm font-medium text-muted-foreground">
           נמצאו {filteredPlaces.length} מקומות
         </span>
 
@@ -231,7 +231,7 @@ export default function Home() {
             className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
               sortBy === 'distance'
                 ? 'bg-primary text-white'
-                : 'bg-sand text-text-primary hover:bg-primary-light'
+                : 'bg-secondary text-foreground hover:bg-secondary/80'
             }`}
           >
             קרובים
@@ -241,7 +241,7 @@ export default function Home() {
             className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
               sortBy === 'rating'
                 ? 'bg-primary text-white'
-                : 'bg-sand text-text-primary hover:bg-primary-light'
+                : 'bg-secondary text-foreground hover:bg-secondary/80'
             }`}
           >
             דירוג
@@ -251,7 +251,7 @@ export default function Home() {
             className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
               sortBy === 'name'
                 ? 'bg-primary text-white'
-                : 'bg-sand text-text-primary hover:bg-primary-light'
+                : 'bg-secondary text-foreground hover:bg-secondary/80'
             }`}
           >
             שם
