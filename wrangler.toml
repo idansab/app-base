@@ -1,43 +1,8 @@
-# Cloudflare Pages configuration (Frontend only)
-# Backend: Node.js Express server (runs separately)
-
 name = "whatishere"
-account_id = "2bf9335eb4120606b6337d0442cb902e"
 type = "javascript"
-compatibility_date = "2024-09-23"
+account_id = "2bf9335eb4120606b6337d0442cb902e"
+workers_dev = true
+compatibility_date = "2024-01-01"
 
-# Build configuration
-[build]
-command = "npm run build"
-cwd = "./"
-
-# Static assets directory for Pages
-[assets]
-directory = "./dist"
-
-# Production environment
 [env.production]
-routes = [
-  { pattern = "mayheshpo.com/*", zone_name = "mayheshpo.com" }
-]
-vars = {
-  ENVIRONMENT = "production",
-  API_URL = "https://api.mayheshpo.com"
-}
-
-# Staging environment
-[env.staging]
-routes = [
-  { pattern = "staging.mayheshpo.com/*", zone_name = "mayheshpo.com" }
-]
-vars = {
-  ENVIRONMENT = "staging",
-  API_URL = "https://staging-api.mayheshpo.com"
-}
-
-# Development environment
-[env.development]
-vars = {
-  ENVIRONMENT = "development",
-  API_URL = "http://localhost:3001"
-}
+vars = { VITE_SUPABASE_URL = "https://gsbbtrknnkdihdlojwbd.supabase.co", VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzYmJ0cmtubm5kaWhoZGxvandibCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzI2NTgyMzM2LCJleHAiOjE4ODQzNDgzMzZ9.TRqGmsgmZsN7G2Yk6KnLDVHDh0N5QRy1xJ3-L5M-pZI" }
