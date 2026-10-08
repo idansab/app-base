@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -9,6 +9,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -18,7 +19,9 @@ export default function Login() {
 
     try {
       await signIn(email, password);
-      navigate('/');
+      // חזור לדף שניסה להיכנס אליו, או להome
+      const from = location.state?.from?.pathname || '/';
+      navigate(from);
     } catch (err) {
       // Better error messages
       let errorMsg = err.message;
