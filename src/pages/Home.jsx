@@ -19,11 +19,6 @@ const CATEGORIES = [
   { id: 'culture', label: 'תרבות', emoji: '🎨' },
 ];
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
-
 export default function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
