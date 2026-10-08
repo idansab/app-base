@@ -64,7 +64,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
 
       {/* Glassmorphic Modal */}
       <motion.div
-        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-[calc(100%-32px)] max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
+        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-[calc(100%-32px)] max-h-[85vh] overflow-y-auto bg-card/95 backdrop-blur-xl rounded-3xl border border-border shadow-2xl"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -73,10 +73,12 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-secondary rounded-full transition-colors"
+            aria-label="סגור"
+            title="סגור"
           >
             <X size={24} />
           </button>

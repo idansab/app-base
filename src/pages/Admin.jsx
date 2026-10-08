@@ -1,31 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, LogOut } from 'lucide-react';
 import { Plus, Edit2, Trash2, Upload, MapPin, Loader2, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { geocodeAddress } from '@/lib/geo';
 import { supabase } from '@/api/base44Client';
 const CATEGORIES = ['nature', 'culture', 'food', 'shopping', 'sports', 'entertainment'];
 
 export default function Admin() {
-  // Check if user is admin
-  const [isAuthorized, setIsAuthorized] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('admin_token');
-        if (!token) {
-          // In production, verify JWT with backend
-          // For now, show restricted access
-          setIsAuthorized(false);
-          return;
-        }
-        setIsAuthorized(true);
-      } catch (e) {
-        setIsAuthorized(false);
-      }
-    };
-    checkAuth();
-  }, []);
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('studio');
   const [places, setPlaces] = useState([]);
@@ -204,6 +186,13 @@ export default function Admin() {
     setTimeout(() => setSuccessMessage(''), 3000);
   };
 
+  const handleLogout = async () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_id');
+    await supabase.auth.signOut();
+    navigate('/admin-login');
+  };
+
   const startEdit = (place) => {
     setEditingPlace(place);
     setFormData({
@@ -225,35 +214,26 @@ export default function Admin() {
     setShowForm(true);
   };
 
-  if (!isAuthorized) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="bg-white rounded-3xl p-8 max-w-md text-center">
-          <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">גישה מוגבלת</h1>
-          <p className="text-gray-600 mb-6">יש צורך בהרשאות מנהל כדי לגשת לדשבורד זה.</p>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="px-6 py-2 bg-blue-600 text-white rounded-2xl font-medium hover:bg-blue-700"
-          >
-            חזור לעמוד הבית
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       {/* Tab Navigation */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-20">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex gap-4 justify-end">
+      <div className="sticky top-0 bg-card border-b border-border z-20">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex gap-4 justify-between items-center">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors"
+            aria-label="התנתק"
+          >
+            <LogOut size={18} />
+            <span>התנתק</span>
+          </button>
+          <div className="flex gap-4">
           <button
             onClick={() => setActiveTab('studio')}
             className={`px-6 py-2 rounded-2xl font-medium transition-colors ${
               activeTab === 'studio'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-secondary text-foreground hover:bg-secondary/80'
             }`}
           >
             סטודיו תוכן
@@ -263,7 +243,7 @@ export default function Admin() {
             className={`px-6 py-2 rounded-2xl font-medium transition-colors ${
               activeTab === 'approval'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-secondary text-foreground hover:bg-secondary/80'
             }`}
           >
             אישור מקומות
@@ -273,17 +253,18 @@ export default function Admin() {
             className={`px-6 py-2 rounded-2xl font-medium transition-colors ${
               activeTab === 'places'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-secondary text-foreground hover:bg-secondary/80'
             }`}
           >
             ניהול מקומות
           </button>
+          </div>
         </div>
       </div>
 
       {/* Success Message */}
       {successMessage && (
-        <div className="fixed top-24 right-4 z-50 flex items-center gap-2 bg-green-50 text-green-700 px-6 py-3 rounded-2xl shadow-md border border-green-200 animate-in">
+        <div className="fixed top-24 right-4 z-50 flex items-center gap-2 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-200 px-6 py-3 rounded-2xl shadow-md border border-green-200 dark:border-green-800 animate-in">
           <CheckCircle size={20} />
           {successMessage}
         </div>
@@ -292,15 +273,15 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {activeTab === 'studio' && (
           <div>
-            <h1 className="text-2xl font-bold text-right mb-6">סטודיו תוכן מהיר</h1>
+            <h1 className="text-2xl font-bold text-right mb-6 text-foreground">סטודיו תוכן מהיר</h1>
 
             {/* Quick Publish Form */}
-            <div className="bg-white rounded-3xl p-6 mb-8">
-              <h2 className="text-lg font-bold text-right mb-4">פרסום מהיר</h2>
+            <div className="bg-card rounded-3xl p-6 mb-8 border border-border">
+              <h2 className="text-lg font-bold text-right mb-4 text-foreground">פרסום מהיר</h2>
               <div className="space-y-4">
                 <textarea
                   placeholder="כתוב טיפ או דיווח מהשטח..."
-                  className="w-full p-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
+                  className="w-full p-4 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right bg-background text-foreground"
                   rows={4}
                 />
                 <div className="flex gap-3">
@@ -308,7 +289,7 @@ export default function Admin() {
                     <Upload size={18} />
                     פרסום
                   </button>
-                  <button className="px-4 py-3 border border-gray-300 rounded-2xl font-medium hover:bg-gray-50 transition-colors">
+                  <button className="px-4 py-3 border border-border rounded-2xl font-medium hover:bg-secondary transition-colors text-foreground">
                     ביטול
                   </button>
                 </div>

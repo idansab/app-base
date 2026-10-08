@@ -9,7 +9,7 @@ export default function AppLayout() {
   const { isDark } = useTheme();
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-background' : 'bg-slate-50'} flex flex-col`}>
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header with Logo */}
       <Header />
 

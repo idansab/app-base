@@ -102,10 +102,10 @@ export default function Favorites() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center pb-24">
+      <div className="min-h-screen bg-background flex items-center justify-center pb-24">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin mx-auto text-green-600 mb-4" />
-          <p className="text-gray-700">טוען מועדפים...</p>
+          <p className="text-foreground">טוען מועדפים...</p>
         </div>
       </div>
     );

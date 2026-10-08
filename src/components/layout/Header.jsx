@@ -10,13 +10,14 @@ export default function Header() {
   const { isDark } = useTheme();
 
   return (
-    <div className={`sticky top-0 ${isDark ? 'bg-card border-border' : 'bg-white border-gray-200'} border-b z-30 py-3`}>
+    <div className="sticky top-0 bg-card border-border border-b z-30 py-3">
       <div className="px-4 max-w-6xl mx-auto flex items-center justify-between">
         {/* Logo - Clickable to go home */}
         <button
           onClick={() => navigate('/')}
           className="text-right font-bold text-2xl text-primary hover:opacity-80 transition-opacity cursor-pointer"
           title="חזור לבית"
+          aria-label="מה יש פה - חזור לבית"
         >
           מה יש פה?
         </button>
@@ -33,11 +34,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => navigate('/settings')}
-            className={`p-2 rounded-full transition-colors ${
-              isDark
-                ? 'hover:bg-secondary text-primary'
-                : 'hover:bg-sand text-primary'
-            }`}
+            className="p-2 rounded-full transition-colors hover:bg-secondary text-primary"
             title="הגדרות"
             aria-label="הגדרות"
           >

@@ -51,6 +51,8 @@ export default function PlaceCard({
             onFavoriteToggle();
           }}
           className="absolute top-3 right-3 p-2 bg-card rounded-full hover:bg-secondary transition-colors shadow-sm"
+          aria-label={isFavorite ? 'הסר מהמועדפים' : 'הוסף למועדפים'}
+          title={isFavorite ? 'הסר מהמועדפים' : 'הוסף למועדפים'}
         >
           <Heart
             size={20}

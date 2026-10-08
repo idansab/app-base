@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AppLayout from '@/components/layout/AppLayout';
 import Home from '@/pages/Home';
 import Favorites from '@/pages/Favorites';
@@ -15,6 +16,7 @@ import Trips from '@/pages/Trips';
 import Surprise from '@/pages/Surprise';
 import Contribute from '@/pages/Contribute';
 import Admin from '@/pages/Admin';
+import AdminLogin from '@/pages/AdminLogin';
 import Studio from '@/pages/Studio';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -53,6 +55,7 @@ const AuthenticatedApp = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/signup" element={<Register />} />
+      <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -69,8 +72,13 @@ const AuthenticatedApp = () => {
         <Route element={<AppLayout />}>
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/contribute" element={<Contribute />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/studio" element={<Studio />} />
+        </Route>
+      </Route>
+
+      <Route element={<AdminProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/admin" element={<Admin />} />
         </Route>
       </Route>
 

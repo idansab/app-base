@@ -151,10 +151,10 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin mx-auto text-green-600 mb-4" />
-          <p className="text-gray-700">טוען מקומות...</p>
+          <p className="text-foreground">טוען מקומות...</p>
         </div>
       </div>
     );
@@ -176,18 +176,19 @@ export default function Home() {
       <div className="px-4 max-w-6xl mx-auto py-3">
         <div className="flex gap-2 items-center">
           <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-2xl">
-            <Search size={18} className="text-gray-400" />
+            <Search size={18} className="text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="חפשו מקום לטייל"
-              className="flex-1 outline-none text-right bg-transparent text-sm"
+              className="flex-1 outline-none text-right bg-transparent text-sm text-foreground placeholder:text-muted-foreground"
             />
           </div>
           <button
             onClick={() => setLocationPickerOpen(true)}
             className="p-3 bg-primary text-white rounded-full hover:bg-primary transition-all hover:scale-105 duration-300 flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg"
+            aria-label="בחר מיקום ומרחק"
             title="בחר מיקום ומרחק"
           >
             <MapPin size={20} />
@@ -263,7 +264,7 @@ export default function Home() {
       <div className="px-4 max-w-6xl mx-auto pb-8">
         {filteredPlaces.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">לא נמצאו מקומות בקטגוריה זו</p>
+            <p className="text-muted-foreground mb-4">לא נמצאו מקומות בקטגוריה זו</p>
             <button
               onClick={() => {
                 setSelectedCategory('all');
