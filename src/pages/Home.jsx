@@ -207,8 +207,8 @@ export default function Home() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all border-2 backdrop-blur-2xl ${
                 selectedCategory === cat.id
-                  ? 'bg-primary/80 text-white shadow-lg border-primary/80 backdrop-blur-2xl'
-                  : 'bg-white/8 text-foreground border-primary/50 hover:bg-white/15 hover:border-primary/70 hover:shadow-md'
+                  ? 'bg-primary/80 text-white shadow-lg border-white/50 backdrop-blur-2xl'
+                  : 'bg-white/8 text-foreground border-white/30 hover:bg-white/15 hover:border-white/50 hover:shadow-md'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
