@@ -73,11 +73,25 @@ export default function Favorites() {
         setFavorites(prev => prev.filter(id => id !== placeId));
         setPlaces(prev => prev.filter(p => p.id !== placeId));
       } else {
-        const { error } = await supabase
+        // Check if already exists to avoid 409 conflict
+        const { data: existing } = await supabase
           .from('favorites')
-          .insert([{ user_id: user.id, place_id: placeId }]);
-        if (error) throw error;
-        setFavorites(prev => [...prev, placeId]);
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('place_id', placeId)
+          .single();
+
+        if (!existing) {
+          const { error } = await supabase
+            .from('favorites')
+            .insert([{ user_id: user.id, place_id: placeId }]);
+
+          if (error && error.code !== '409') {
+            throw error;
+          }
+        }
+
+        setFavorites(prev => [...new Set([...prev, placeId])]);
       }
     } catch (e) {
       console.error('Error toggling favorite:', e);

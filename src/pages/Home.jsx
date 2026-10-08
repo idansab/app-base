@@ -95,11 +95,31 @@ export default function Home() {
         setFavorites(prev => prev.filter(id => id !== placeId));
         console.log('✅ הסרת מהמועדפים');
       } else {
+        // Check if already exists to avoid 409 conflict
+        const { data: existing } = await supabase
+          .from('favorites')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('place_id', placeId)
+          .single();
+
+        if (existing) {
+          // Already favorited, just update state
+          setFavorites(prev => [...new Set([...prev, placeId])]);
+          console.log('✅ כבר במועדפים');
+          return;
+        }
+
         const { error } = await supabase
           .from('favorites')
           .insert([{ user_id: user.id, place_id: placeId }]);
-        if (error) throw error;
-        setFavorites(prev => [...prev, placeId]);
+
+        // Handle 409 conflict gracefully
+        if (error && error.code !== '409') {
+          throw error;
+        }
+
+        setFavorites(prev => [...new Set([...prev, placeId])]);
         console.log('✅ נוסף למועדפים');
       }
     } catch (e) {
