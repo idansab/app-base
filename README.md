@@ -141,6 +141,36 @@ Place data is persisted to JSON files in the `data/` directory:
 - `data/reports.json` - Field reports
 - `data/favorites.json` - User favorites
 
+## Deployment to Cloudflare
+
+This app uses **Supabase** as the backend - no Express server needed!
+
+### Setup Environment Variables
+
+1. Create a `.env.local` file for local development:
+```
+VITE_SUPABASE_URL=https://your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+2. For Cloudflare Pages deployment, set environment variables in your Cloudflare dashboard:
+   - Go to your Pages project settings
+   - Under "Build & Deployments" → "Environment Variables"
+   - Add:
+     - `VITE_SUPABASE_URL=https://your-supabase-url`
+     - `VITE_SUPABASE_ANON_KEY=your-supabase-anon-key`
+
+### Deploy to Cloudflare Pages
+
+1. Push your code to GitHub
+2. Connect your repository to Cloudflare Pages
+3. Set build command: `npm run build`
+4. Set publish directory: `dist`
+5. Add the Supabase environment variables in Cloudflare dashboard
+6. Deploy!
+
+The app will now connect directly to Supabase from the browser - no backend server needed! 🚀
+
 ## Browser Support
 
 Works in all modern browsers (Chrome, Firefox, Safari, Edge). Requires:

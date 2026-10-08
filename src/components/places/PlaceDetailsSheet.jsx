@@ -3,8 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, Phone, Clock, Star, Heart, Share2, Navigation } from 'lucide-react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import ImageCarousel from '@/components/ImageCarousel';
+import { createClient } from '@supabase/supabase-js';
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation, isFavorite, onFavoriteToggle }) {
   const [tips, setTips] = useState([]);

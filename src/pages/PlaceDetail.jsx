@@ -4,8 +4,12 @@ import { X, MapPin, Phone, Clock, Star, Heart, Navigation, Share2, Loader2, Aler
 import { useParams, useNavigate } from 'react-router-dom';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
+import { createClient } from '@supabase/supabase-js';
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
@@ -103,15 +107,21 @@ export default function PlaceDetail() {
   useEffect(() => {
     const loadPlace = async () => {
       try {
-        const res = await fetch(`${API_BASE}/places/${id}`);
-        if (!res.ok) throw new Error('Failed to load place');
-        const data = await res.json();
+        const { data, error } = await supabase
+          .from('places')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) throw error;
         setPlace(data);
 
-        const favRes = await fetch(`${API_BASE}/favorites`);
-        if (favRes.ok) {
-          const favData = await favRes.json();
-          setIsFavorite(favData.some(f => f.place_id === data.id));
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: favData } = await supabase
+            .from('favorites')
+            .select('*')
+            .eq('user_id', user.id);
+          setIsFavorite((favData || []).some(f => f.place_id === data.id));
         }
       } catch (e) {
         console.error(e);
@@ -127,15 +137,22 @@ export default function PlaceDetail() {
   const handleFavoriteToggle = async () => {
     if (!place) return;
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       if (isFavorite) {
-        await fetch(`${API_BASE}/favorites/${place.id}`, { method: 'DELETE' });
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('place_id', place.id);
+        if (error) throw error;
         setIsFavorite(false);
       } else {
-        await fetch(`${API_BASE}/favorites`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ place_id: place.id }),
-        });
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: user.id, place_id: place.id }]);
+        if (error) throw error;
         setIsFavorite(true);
       }
     } catch (e) {
@@ -147,13 +164,18 @@ export default function PlaceDetail() {
     if (!newTipText.trim() || !place) return;
     setSubmittingTip(true);
     try {
-      const res = await fetch(`${API_BASE}/tips`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ place_id: place.id, content: newTipText }),
-      });
-      if (res.ok) {
-        setTips([...tips, { id: Date.now(), content: newTipText, created_at: new Date() }]);
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from('tips')
+        .insert([{
+          place_id: place.id,
+          content: newTipText,
+          created_by_id: user?.id
+        }])
+        .select();
+      if (error) throw error;
+      if (data) {
+        setTips([...tips, data[0]]);
         setNewTipText('');
       }
     } catch (e) {

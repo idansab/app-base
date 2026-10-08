@@ -8,6 +8,8 @@ import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
+import { createClient } from '@supabase/supabase-js';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
@@ -18,7 +20,10 @@ const CATEGORIES = [
   { id: 'culture', label: 'תרבות', emoji: '🎨' },
 ];
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default function Home() {
   const navigate = useNavigate();
@@ -41,16 +46,23 @@ export default function Home() {
     const loadPlaces = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/places?status=approved`);
-        if (!res.ok) throw new Error('Failed to load places');
-        const data = await res.json();
-        setPlaces(data.data || []);
+        const { data, error } = await supabase
+          .from('places')
+          .select('*')
+          .eq('status', 'approved');
+        if (error) throw error;
+        setPlaces(data || []);
 
         // Load favorites
-        const favRes = await fetch(`${API_BASE}/favorites`);
-        if (favRes.ok) {
-          const favData = await favRes.json();
-          setFavorites(favData.map(f => f.place_id));
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: favData, error: favError } = await supabase
+            .from('favorites')
+            .select('place_id')
+            .eq('user_id', user.id);
+          if (!favError && favData) {
+            setFavorites(favData.map(f => f.place_id));
+          }
         }
       } catch (e) {
         console.error(e);
@@ -74,18 +86,24 @@ export default function Home() {
   const handleFavoriteToggle = async (placeId) => {
     const isFavorited = favorites.includes(placeId);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError('יש להתחבר כדי לשמור מועדפים');
+        return;
+      }
       if (isFavorited) {
-        await fetch(`${API_BASE}/favorites/${placeId}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('place_id', placeId);
+        if (error) throw error;
         setFavorites(prev => prev.filter(id => id !== placeId));
       } else {
-        await fetch(`${API_BASE}/favorites`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ place_id: placeId }),
-        });
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: user.id, place_id: placeId }]);
+        if (error) throw error;
         setFavorites(prev => [...prev, placeId]);
       }
     } catch (e) {

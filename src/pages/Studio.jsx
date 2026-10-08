@@ -3,8 +3,12 @@ import { Loader2, MapPin, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
 import { geocodeAddress, haversineKm } from '@/lib/geo';
+import { createClient } from '@supabase/supabase-js';
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default function Studio() {
   const { location: userLocation } = useUserLocation({ auto: true });
@@ -19,10 +23,12 @@ export default function Studio() {
     const loadPlaces = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/places?status=approved`);
-        if (!res.ok) throw new Error('Failed to load places');
-        const data = await res.json();
-        setPlaces(data.data || []);
+        const { data: allPlaces, error } = await supabase
+          .from('places')
+          .select('*')
+          .eq('status', 'approved');
+        if (error) throw error;
+        setPlaces(allPlaces || []);
 
         // Find nearest place
         if (userLocation && data.data && data.data.length > 0) {

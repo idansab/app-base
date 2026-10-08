@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
+import { createClient } from '@supabase/supabase-js';
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 // Sample trip routes
 const SAMPLE_TRIPS = [
@@ -34,16 +38,21 @@ export default function Trips() {
     const loadPlaces = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/places?status=approved`);
-        if (!res.ok) throw new Error('Failed to load places');
-        const data = await res.json();
-        setPlaces(data.data || []);
+        const { data: allPlaces, error: placesError } = await supabase
+          .from('places')
+          .select('*')
+          .eq('status', 'approved');
+        if (placesError) throw placesError;
+        setPlaces(allPlaces || []);
 
         // Load favorites
-        const favRes = await fetch(`${API_BASE}/favorites`);
-        if (favRes.ok) {
-          const favData = await favRes.json();
-          setFavorites(favData.map(f => f.place_id));
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: favData } = await supabase
+            .from('favorites')
+            .select('place_id')
+            .eq('user_id', user.id);
+          setFavorites((favData || []).map(f => f.place_id));
         }
       } catch (e) {
         console.error(e);

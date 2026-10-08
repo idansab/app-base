@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const CATEGORIES = [
   { id: 'food', label: 'אוכל ושתייה', icon: '🍽️' },

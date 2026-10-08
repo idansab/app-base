@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Plus, Edit2, Trash2, Upload, MapPin, Loader2, CheckCircle } from 'lucide-react';
 import { geocodeAddress } from '@/lib/geo';
+import { createClient } from '@supabase/supabase-js';
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 const CATEGORIES = ['nature', 'culture', 'food', 'shopping', 'sports', 'entertainment'];
 
 export default function Admin() {

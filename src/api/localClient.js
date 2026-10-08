@@ -2,7 +2,7 @@
  * Local API Client — replaces Base44 SDK with direct HTTP calls
  * Uses fetch with the same interface pattern as base44.entities.X
  */
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {

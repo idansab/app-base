@@ -3,8 +3,12 @@ import { Loader2, Sparkles, RefreshCw, Heart, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
+import { createClient } from '@supabase/supabase-js';
 
-const API_BASE = 'http://localhost:3001/api';
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default function Surprise() {
   const [place, setPlace] = useState(null);
@@ -27,12 +31,13 @@ export default function Surprise() {
   const loadSurprise = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/places?status=approved`);
-      if (!res.ok) throw new Error('Failed to load places');
-      const data = await res.json();
-      const places = data.data || [];
+      const { data: places, error } = await supabase
+        .from('places')
+        .select('*')
+        .eq('status', 'approved');
+      if (error) throw error;
 
-      if (places.length === 0) {
+      if (!places || places.length === 0) {
         setPlace(null);
         return;
       }
@@ -48,10 +53,13 @@ export default function Surprise() {
       }
 
       // Check if favorite
-      const favRes = await fetch(`${API_BASE}/favorites`);
-      if (favRes.ok) {
-        const favData = await favRes.json();
-        setIsFavorite(favData.some(f => f.place_id === randomPlace.id));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: favData } = await supabase
+          .from('favorites')
+          .select('*')
+          .eq('user_id', user.id);
+        setIsFavorite((favData || []).some(f => f.place_id === randomPlace.id));
       }
     } catch (e) {
       console.error(e);
@@ -63,14 +71,21 @@ export default function Surprise() {
   const handleFavoriteToggle = async () => {
     if (!place) return;
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       if (isFavorite) {
-        await fetch(`${API_BASE}/favorites/${place.id}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('place_id', place.id);
+        if (error) throw error;
         setIsFavorite(false);
       } else {
-        await fetch(`${API_BASE}/favorites`, {
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: user.id, place_id: place.id }]);
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ place_id: place.id }),
