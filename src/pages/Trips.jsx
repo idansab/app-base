@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
+import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { supabase } from '@/api/base44Client';
 
 // Sample trip routes
@@ -28,6 +29,7 @@ export default function Trips() {
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState([]);
+  const [selectedPlace, setSelectedPlace] = useState(null);
 
   useEffect(() => {
     const loadPlaces = async () => {
@@ -215,9 +217,7 @@ export default function Trips() {
                       distance={null}
                       isFavorite={favorites.includes(place.id)}
                       onFavoriteToggle={() => handleFavoriteToggle(place.id)}
-                      onClick={() => {
-                        // TODO: Open place details
-                      }}
+                      onClick={() => setSelectedPlace(place)}
                     />
                   </div>
                 ))}
@@ -235,6 +235,18 @@ export default function Trips() {
           </button>
         </div>
       </div>
+
+      {/* Place Details Modal */}
+      <PlaceDetailsSheet
+        isOpen={!!selectedPlace}
+        onClose={() => setSelectedPlace(null)}
+        place={selectedPlace}
+        userLocation={null}
+        isFavorite={selectedPlace ? favorites.includes(selectedPlace.id) : false}
+        onFavoriteToggle={() => {
+          if (selectedPlace) handleFavoriteToggle(selectedPlace.id);
+        }}
+      />
     </div>
   );
 }
