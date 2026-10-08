@@ -93,15 +93,18 @@ export default function Home() {
           .eq('place_id', placeId);
         if (error) throw error;
         setFavorites(prev => prev.filter(id => id !== placeId));
+        console.log('✅ הסרת מהמועדפים');
       } else {
         const { error } = await supabase
           .from('favorites')
           .insert([{ user_id: user.id, place_id: placeId }]);
         if (error) throw error;
         setFavorites(prev => [...prev, placeId]);
+        console.log('✅ נוסף למועדפים');
       }
     } catch (e) {
       console.error('Error toggling favorite:', e);
+      setError('שגיאה בשמירת המועדף');
     }
   };
 

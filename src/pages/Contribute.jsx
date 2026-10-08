@@ -97,11 +97,11 @@ export default function Contribute() {
           window.location.href = '/';
         }, 2000);
       } else {
-        const error = await response.json();
-        setErrorMessage(error.message || 'שגיאה בשליחת הטופס');
+        setErrorMessage(error?.message || 'שגיאה בשליחת הטופס');
         setStatus('error');
       }
     } catch (err) {
+      console.error('Contribute error:', err);
       setErrorMessage(err.message || 'שגיאה בחיבור לשרת');
       setStatus('error');
     } finally {

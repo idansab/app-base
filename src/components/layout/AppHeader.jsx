@@ -6,8 +6,17 @@ import { Button } from "@/components/ui/button";
 
 export default function AppHeader() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
   const isAdmin = user?.role === "admin";
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -22,33 +31,40 @@ export default function AppHeader() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-1">
-          {isAdmin ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/admin")}
-              className="gap-1.5 rounded-xl text-muted-foreground hover:text-foreground"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              ניהול
-            </Button>
-          ) : null}
-          {isAuthenticated ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => logout(true)}
-              title="התנתקות"
-              className="rounded-xl text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button size="sm" onClick={() => navigate("/login")} className="rounded-xl">
-              התחברות
-            </Button>
+        <div className="flex items-center gap-3">
+          {isAuthenticated && (
+            <span className="text-xs text-gray-600 hidden sm:inline">
+              {user?.email}
+            </span>
           )}
+          <div className="flex items-center gap-1">
+            {isAdmin ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className="gap-1.5 rounded-xl text-muted-foreground hover:text-foreground"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                ניהול
+              </Button>
+            ) : null}
+            {isAuthenticated ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                title="התנתקות"
+                className="rounded-xl text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button size="sm" onClick={() => navigate("/login")} className="rounded-xl">
+                התחברות
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </header>
