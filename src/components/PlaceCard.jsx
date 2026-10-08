@@ -31,7 +31,7 @@ export default function PlaceCard({
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col"
+      className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col"
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
@@ -50,7 +50,7 @@ export default function PlaceCard({
             e.stopPropagation();
             onFavoriteToggle();
           }}
-          className="absolute top-3 right-3 p-2 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+          className="absolute top-3 right-3 p-2 bg-card rounded-full hover:bg-secondary transition-colors shadow-sm"
         >
           <Heart
             size={20}

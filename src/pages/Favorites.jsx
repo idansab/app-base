@@ -112,9 +112,9 @@ export default function Favorites() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-20 py-4">
+      <div className="sticky top-0 bg-card border-b border-border z-20 py-4">
         <div className="px-4 max-w-6xl mx-auto">
           <h1 className="text-2xl font-bold text-right text-green-600 flex items-center gap-2 justify-end">
             <span>{favoritePlaces.length}</span>
@@ -126,10 +126,10 @@ export default function Favorites() {
       {/* Content */}
       <div className="px-4 max-w-6xl mx-auto py-6">
         {favoritePlaces.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl">
-            <Heart size={48} className="mx-auto text-gray-300 mb-4" />
-            <h2 className="text-xl font-bold text-gray-800 mb-2">אין עדיין מועדפים</h2>
-            <p className="text-gray-600 mb-6">בחר מקומות חביבים עליך וחזור לכאן כדי לשמור אותם</p>
+          <div className="text-center py-12 bg-card rounded-2xl">
+            <Heart size={48} className="mx-auto text-muted-foreground mb-4" />
+            <h2 className="text-xl font-bold text-foreground mb-2">אין עדיין מועדפים</h2>
+            <p className="text-muted-foreground mb-6">בחר מקומות חביבים עליך וחזור לכאן כדי לשמור אותם</p>
             <button
               onClick={() => window.location.href = '/'}
               className="px-6 py-2 bg-green-600 text-white rounded-2xl hover:bg-green-700 transition-colors font-medium"

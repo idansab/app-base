@@ -175,7 +175,7 @@ export default function Home() {
       {/* Search Bar */}
       <div className="px-4 max-w-6xl mx-auto py-3">
         <div className="flex gap-2 items-center">
-          <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-2xl">
+          <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-2xl">
             <Search size={18} className="text-gray-400" />
             <input
               type="text"
@@ -196,7 +196,7 @@ export default function Home() {
       </div>
 
       {/* Category Tabs - Horizontal Scroll */}
-      <div className="bg-white border-b border-gray-100 z-20 overflow-x-auto">
+      <div className="bg-card border-b border-border z-20 overflow-x-auto">
         <div className="px-4 max-w-6xl mx-auto py-3 flex gap-2 justify-start">
           {CATEGORIES.map((cat, i) => (
             <motion.button
