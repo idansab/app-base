@@ -76,6 +76,24 @@ export default function Home() {
     }
   }, [autoLocation]);
 
+  // Keyboard navigation for categories
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const currentIndex = CATEGORIES.findIndex(c => c.id === selectedCategory);
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const nextIndex = (currentIndex + 1) % CATEGORIES.length;
+        setSelectedCategory(CATEGORIES[nextIndex].id);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prevIndex = (currentIndex - 1 + CATEGORIES.length) % CATEGORIES.length;
+        setSelectedCategory(CATEGORIES[prevIndex].id);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCategory]);
+
   // Toggle favorite
   const handleFavoriteToggle = async (placeId) => {
     const isFavorited = favorites.includes(placeId);
@@ -206,6 +224,8 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
               onClick={() => setSelectedCategory(cat.id)}
+              aria-current={selectedCategory === cat.id ? 'page' : undefined}
+              aria-label={`${cat.label} - ${cat.emoji}`}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all border-2 backdrop-blur-2xl ring-1 ring-white/40 ${
                 selectedCategory === cat.id
                   ? 'bg-primary/85 text-white shadow-lg border-white/70 backdrop-blur-2xl ring-white/60'

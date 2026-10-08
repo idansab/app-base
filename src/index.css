@@ -114,7 +114,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
 
   html {
@@ -124,6 +124,40 @@
 
   body {
     @apply bg-background text-foreground font-body antialiased;
+  }
+
+  /* Focus States */
+  *:focus-visible {
+    @apply outline-2 outline-ring outline-offset-2;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Remove default outline */
+  button:focus {
+    outline: none;
+  }
+
+  a:focus {
+    outline: none;
+  }
+
+  input:focus {
+    outline: none;
+  }
+
+  select:focus {
+    outline: none;
+  }
+
+  textarea:focus {
+    outline: none;
   }
 }
 
