@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, Heart } from 'lucide-react';
 import { motion } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
+import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
@@ -11,6 +12,7 @@ export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
+  const [selectedPlace, setSelectedPlace] = useState(null);
   const { location: autoLocation } = useUserLocation({ auto: true });
 
   useEffect(() => {
@@ -134,15 +136,25 @@ export default function Favorites() {
                   distance={distance}
                   isFavorite={true}
                   onFavoriteToggle={() => handleFavoriteToggle(place.id)}
-                  onClick={() => {
-                    // TODO: Navigate to place details modal
-                  }}
+                  onClick={() => setSelectedPlace(place)}
                 />
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Place Details Modal */}
+      <PlaceDetailsSheet
+        isOpen={!!selectedPlace}
+        onClose={() => setSelectedPlace(null)}
+        place={selectedPlace}
+        userLocation={userLocation}
+        isFavorite={selectedPlace ? favorites.includes(selectedPlace.id) : false}
+        onFavoriteToggle={() => {
+          if (selectedPlace) handleFavoriteToggle(selectedPlace.id);
+        }}
+      />
     </div>
   );
 }
