@@ -205,10 +205,10 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all border-2 backdrop-blur-2xl ${
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all border-2 backdrop-blur-2xl ring-1 ring-white/40 ${
                 selectedCategory === cat.id
-                  ? 'bg-primary/80 text-white shadow-lg border-white/50 backdrop-blur-2xl'
-                  : 'bg-white/8 text-foreground border-white/30 hover:bg-white/15 hover:border-white/50 hover:shadow-md'
+                  ? 'bg-primary/85 text-white shadow-lg border-white/70 backdrop-blur-2xl ring-white/60'
+                  : 'bg-white/12 text-foreground border-white/60 hover:bg-white/20 hover:border-white/80 hover:shadow-lg hover:ring-white/60'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
