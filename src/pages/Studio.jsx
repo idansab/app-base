@@ -3,12 +3,7 @@ import { Loader2, MapPin, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
 import { geocodeAddress, haversineKm } from '@/lib/geo';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '@/api/base44Client';
 
 export default function Studio() {
   const { location: userLocation } = useUserLocation({ auto: true });

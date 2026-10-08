@@ -3,12 +3,7 @@ import { Loader2, Sparkles, RefreshCw, Heart, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '@/api/base44Client';
 
 export default function Surprise() {
   const [place, setPlace] = useState(null);

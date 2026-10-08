@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock, Zap } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/api/base44Client';
 
 const CATEGORIES = [
   { id: 'coffee_food', label: 'עגלות קפה ואוכל' },
@@ -10,11 +10,6 @@ const CATEGORIES = [
   { id: 'shopping', label: 'שווקים וקניות' },
   { id: 'culture', label: 'תרבות' },
 ];
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 const FormSection = ({ title, icon: Icon, isOpen, onToggle, children }) => (
   <motion.div

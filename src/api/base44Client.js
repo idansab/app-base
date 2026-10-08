@@ -1,14 +1,14 @@
 /**
- * Supabase Direct Client
- * Frontend connects directly to Supabase (no backend needed for MVP)
+ * Supabase Direct Client - SHARED INSTANCE
+ * Single client instance shared across entire app to prevent auth state conflicts
  */
 
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://gsbbtrknnkdihdlojwbd.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzYmJ0cmtubmtkaWhkbG9qd2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjc3ODYsImV4cCI6MjEwNjk0Mzc4Nn0.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzYmJ0cmtubmtkaWhkbG9qd2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjc3ODYsImV4cCI6MjEwNjk0Mzc4Nn0.ptA7gNYgP2zX5dz74oYEwLby6klKD_bBTzZcFt931dU';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzYmJ0cmtubmtkaWhkbG9qd2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjc3ODYsImV4cCI6MjEwNjk0Mzc4Nn0.ptA7gNYgP2zX5dz74oYEwLby6klKD_bBTzZcFt931dU';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Get current authenticated user from Supabase
 let currentUser = null;

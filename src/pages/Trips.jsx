@@ -2,12 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '@/api/base44Client';
 
 // Sample trip routes
 const SAMPLE_TRIPS = [

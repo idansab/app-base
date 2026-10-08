@@ -4,12 +4,7 @@ import { motion } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '@/api/base44Client';
 
 export default function Favorites() {
   const [places, setPlaces] = useState([]);
