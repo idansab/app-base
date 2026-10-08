@@ -1,4 +1,6 @@
 name = "whatishere"
+type = "javascript"
+account_id = "2bf9335eb4120606b6337d0442cb902e"
 pages_build_output_dir = "dist"
 compatibility_date = "2024-01-01"
 
