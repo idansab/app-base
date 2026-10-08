@@ -104,14 +104,16 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
     if (!formData.address) return;
     setGeocoding(true);
     try {
-      const res = await fetch(`${API_BASE}/geocode`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: formData.address }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setFormData(prev => ({ ...prev, lat: data.lat, lng: data.lng }));
+      // Using local geocoding since we don't have a backend
+      // In production, you might use Google Maps API or Nominatim
+      const result = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.address)}&format=json&limit=1`)
+        .then(r => r.json());
+      if (result?.[0]) {
+        setFormData(prev => ({
+          ...prev,
+          lat: parseFloat(result[0].lat),
+          lng: parseFloat(result[0].lon)
+        }));
       }
     } catch (e) {
       console.error(e);
@@ -123,21 +125,30 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const method = place?.id ? 'PATCH' : 'POST';
-      const url = place?.id ? `${API_BASE}/places/${place.id}` : `${API_BASE}/places`;
+      const { data: { user } } = await supabase.auth.getUser();
+      const payload = {
+        ...formData,
+        lat: parseFloat(formData.lat),
+        lng: parseFloat(formData.lng),
+        category: formData.category,
+        created_by_id: user?.id,
+      };
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        onSave?.(data);
+      if (place?.id) {
+        const { data, error } = await supabase
+          .from('places')
+          .update(payload)
+          .eq('id', place.id)
+          .select();
+        if (error) throw error;
+        onSave?.(data?.[0]);
+      } else {
+        const { data, error } = await supabase
+          .from('places')
+          .insert([payload])
+          .select();
+        if (error) throw error;
+        onSave?.(data?.[0]);
       }
     } catch (e) {
       console.error(e);
@@ -150,7 +161,11 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
     if (!place?.id || !confirm('בטוח שרוצה למחוק?')) return;
     setLoading(true);
     try {
-      await fetch(`${API_BASE}/places/${place.id}`, { method: 'DELETE' });
+      const { error } = await supabase
+        .from('places')
+        .delete()
+        .eq('id', place.id);
+      if (error) throw error;
       onDelete?.();
     } catch (e) {
       console.error(e);

@@ -66,22 +66,23 @@ export default function Contribute() {
         return;
       }
 
+      const { data: { user } } = await supabase.auth.getUser();
+
       const payload = {
         ...formData,
         lat: parseFloat(formData.lat) || 31.7683,
         lng: parseFloat(formData.lng) || 35.2137,
         status: 'pending',
-        created_by_id: 'user',
-        tags: [formData.category],
+        created_by_id: user?.id,
+        category: formData.category,
       };
 
-      const response = await fetch(`${API_BASE}/places`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const { data, error } = await supabase
+        .from('places')
+        .insert([payload])
+        .select();
 
-      if (response.ok) {
+      if (!error && data) {
         setStatus('success');
         setFormData({
           name: '',

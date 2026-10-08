@@ -67,18 +67,22 @@ export default function Trips() {
   const handleFavoriteToggle = async (placeId) => {
     const isFavorited = favorites.includes(placeId);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       if (isFavorited) {
-        await fetch(`${API_BASE}/favorites/${placeId}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('place_id', placeId);
+        if (error) throw error;
         setFavorites(prev => prev.filter(id => id !== placeId));
       } else {
-        await fetch(`${API_BASE}/favorites`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ place_id: placeId }),
-        });
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: user.id, place_id: placeId }]);
+        if (error) throw error;
         setFavorites(prev => [...prev, placeId]);
       }
     } catch (e) {

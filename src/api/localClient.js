@@ -1,6 +1,7 @@
 /**
- * Local API Client — replaces Base44 SDK with direct HTTP calls
- * Uses fetch with the same interface pattern as base44.entities.X
+ * DEPRECATED: Local API Client — no longer used
+ * Frontend now uses Supabase SDK directly (base44Client.js)
+ * Keeping this file for reference only
  */
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
 

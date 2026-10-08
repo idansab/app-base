@@ -33,13 +33,18 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
     if (!newTipText.trim() || !place) return;
     setSubmittingTip(true);
     try {
-      const res = await fetch(`${API_BASE}/tips`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ place_id: place.id, content: newTipText }),
-      });
-      if (res.ok) {
-        setTips([...tips, { id: Date.now(), content: newTipText, created_at: new Date() }]);
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from('tips')
+        .insert([{
+          place_id: place.id,
+          content: newTipText,
+          created_by_id: user?.id
+        }])
+        .select();
+      if (error) throw error;
+      if (data) {
+        setTips([...tips, data[0]]);
         setNewTipText('');
       }
     } catch (e) {

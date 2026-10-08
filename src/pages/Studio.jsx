@@ -57,16 +57,16 @@ export default function Studio() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/tips`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('tips')
+        .insert([{
           place_id: nearestPlace.id,
           content: quickContent,
-        }),
-      });
+          created_by_id: user?.id,
+        }]);
 
-      if (!res.ok) throw new Error('Failed to publish');
+      if (error) throw error;
       alert('🎉 פורסם בהצלחה!');
       setQuickContent('');
     } catch (e) {

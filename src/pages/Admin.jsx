@@ -67,9 +67,12 @@ export default function Admin() {
   const loadPlaces = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/places?limit=100`);
-      const data = await res.json();
-      setPlaces(data.data || []);
+      const { data, error } = await supabase
+        .from('places')
+        .select('*')
+        .limit(100);
+      if (error) throw error;
+      setPlaces(data || []);
     } catch (e) {
       console.error('Failed to load places:', e);
     } finally {
