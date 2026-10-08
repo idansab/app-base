@@ -31,13 +31,13 @@ export default function AdminProtectedRoute() {
         }
 
         // Check if user is admin
-        const { data: profile, error: profileError } = await supabase
+        const { data: profiles, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', user.id)
-          .single();
+          .eq('id', user.id);
 
-        if (profileError || !profile || profile.role !== 'admin') {
+        if (profileError || !profiles || profiles.length === 0 || profiles[0].role !== 'admin') {
+          console.error('Admin profile check failed:', { profileError, profiles });
           localStorage.removeItem('admin_token');
           localStorage.removeItem('admin_id');
           setIsAdmin(false);

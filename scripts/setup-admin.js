@@ -5,8 +5,12 @@
  * Usage: node scripts/setup-admin.js
  */
 
-const { createClient } = require('@supabase/supabase-js');
-const readline = require('readline');
+import { createClient } from '@supabase/supabase-js';
+import readline from 'readline';
+import dotenv from 'dotenv';
+
+// Load .env.local
+dotenv.config({ path: '.env.local' });
 
 const rl = readline.createInterface({
   input: process.stdin,

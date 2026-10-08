@@ -31,13 +31,18 @@ export default function AdminLogin() {
       const { data: { user } } = await supabase.auth.getUser();
 
       // Get user profile to check role
-      const { data: profile, error: profileError } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
-        .single();
+        .eq('id', user.id);
 
-      if (profileError || !profile || profile.role !== 'admin') {
+      if (profileError || !profiles || profiles.length === 0 || profiles[0].role !== 'admin') {
+        console.error('Admin check failed:', {
+          profileError: profileError?.message,
+          profileErrorCode: profileError?.code,
+          profileErrorStatus: profileError?.status,
+          profiles
+        });
         setError('אינך מורשה לגישה ל Admin');
         await supabase.auth.signOut();
         return;
