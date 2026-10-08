@@ -86,10 +86,7 @@ export default function Surprise() {
         const { error } = await supabase
           .from('favorites')
           .insert([{ user_id: user.id, place_id: place.id }]);
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ place_id: place.id }),
-        });
+        if (error) throw error;
         setIsFavorite(true);
       }
     } catch (e) {
