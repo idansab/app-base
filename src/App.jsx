@@ -1,63 +1,47 @@
 import { Toaster } from "@/components/ui/Toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes, Outlet } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { AuthProvider } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import { AccessibilityProvider } from '@/lib/AccessibilityContext';
 import AccessibilityMenu from '@/components/AccessibilityMenu';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AppLayout from '@/components/layout/AppLayout';
 import Home from '@/pages/Home';
-import Favorites from '@/pages/Favorites';
-import Trips from '@/pages/Trips';
-import Surprise from '@/pages/Surprise';
-import Contribute from '@/pages/Contribute';
-import Admin from '@/pages/Admin';
-import AdminLogin from '@/pages/AdminLogin';
-import Studio from '@/pages/Studio';
-import CommunityChat from '@/pages/CommunityChat';
+const Favorites = lazy(() => import('@/pages/Favorites'));
+const Trips = lazy(() => import('@/pages/Trips'));
+const Surprise = lazy(() => import('@/pages/Surprise'));
+const Contribute = lazy(() => import('@/pages/Contribute'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
+const Studio = lazy(() => import('@/pages/Studio'));
+const CommunityChat = lazy(() => import('@/pages/CommunityChat'));
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import Settings from '@/pages/Settings';
-import About from '@/pages/About';
-import PlaceDetail from '@/pages/PlaceDetail';
-import TermsOfService from '@/pages/TermsOfService';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import AccessibilityStatement from '@/pages/AccessibilityStatement';
-import CookiePolicy from '@/pages/CookiePolicy';
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const About = lazy(() => import('@/pages/About'));
+const PlaceDetail = lazy(() => import('@/pages/PlaceDetail'));
+const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const AccessibilityStatement = lazy(() => import('@/pages/AccessibilityStatement'));
+const CookiePolicy = lazy(() => import('@/pages/CookiePolicy'));
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
-  }
-
-  // Render the main app
   return (
+    <Suspense
+      fallback={
+        <div className="fixed inset-0 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
+        </div>
+      }
+    >
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -96,6 +80,7 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 

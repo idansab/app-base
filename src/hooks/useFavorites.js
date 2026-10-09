@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
 /**
  * Keeps a place_id -> favorite record id map for the signed-in user so the
- * heart toggle and the bottom-nav badge stay in sync.
+ * heart toggle and the bottom-nav badge stay in sync. RLS limits every query
+ * to the caller's own rows.
  */
 export default function useFavorites() {
   const { user, isAuthenticated } = useAuth();
@@ -18,18 +19,22 @@ export default function useFavorites() {
         cancelled = true;
       };
     }
-    base44.entities.Favorite
-      .filter({ created_by_id: user.id }, { limit: 500 })
-      .then((page) => {
+    supabase
+      .from("favorites")
+      .select("id, place_id")
+      .eq("user_id", user.id)
+      .limit(500)
+      .then(({ data, error }) => {
         if (cancelled) return;
+        if (error) {
+          setFavorites({});
+          return;
+        }
         const map = {};
-        (page.items || []).forEach((favorite) => {
+        (data || []).forEach((favorite) => {
           map[favorite.place_id] = favorite.id;
         });
         setFavorites(map);
-      })
-      .catch(() => {
-        if (!cancelled) setFavorites({});
       });
     return () => {
       cancelled = true;
@@ -38,22 +43,31 @@ export default function useFavorites() {
 
   const isFavorite = (placeId) => Boolean(favorites[placeId]);
 
-  const toggle = async (placeId) => {
-    if (!isAuthenticated) return false;
-    const existing = favorites[placeId];
-    if (existing) {
-      await base44.entities.Favorite.delete(existing);
-      setFavorites((prev) => {
-        const next = { ...prev };
-        delete next[placeId];
-        return next;
-      });
-    } else {
-      const created = await base44.entities.Favorite.create({ place_id: placeId });
-      setFavorites((prev) => ({ ...prev, [placeId]: created.id }));
-    }
-    return true;
-  };
+  const toggle = useCallback(
+    async (placeId) => {
+      if (!isAuthenticated || !user?.id) return false;
+      const existing = favorites[placeId];
+      if (existing) {
+        const { error } = await supabase.from("favorites").delete().eq("id", existing);
+        if (error) throw error;
+        setFavorites((prev) => {
+          const next = { ...prev };
+          delete next[placeId];
+          return next;
+        });
+      } else {
+        const { data, error } = await supabase
+          .from("favorites")
+          .insert([{ place_id: placeId, user_id: user.id }])
+          .select("id")
+          .single();
+        if (error) throw error;
+        setFavorites((prev) => ({ ...prev, [placeId]: data.id }));
+      }
+      return true;
+    },
+    [favorites, isAuthenticated, user?.id]
+  );
 
   return { favorites, isFavorite, toggle };
 }

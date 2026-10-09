@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { ClipboardList, Lightbulb, MapPin, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/common/EmptyState";
 import { STATUS_LABELS, STATUS_TONES } from "@/lib/labels";
 import { cn } from "@/lib/utils";

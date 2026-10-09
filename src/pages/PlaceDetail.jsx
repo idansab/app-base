@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, MapPin, Phone, Clock, Star, Heart, Navigation, Share2, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { X, MapPin, Star, Heart, Navigation, Share2, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
@@ -98,6 +98,7 @@ export default function PlaceDetail() {
   const [tips, setTips] = useState([]);
   const [newTipText, setNewTipText] = useState('');
   const [submittingTip, setSubmittingTip] = useState(false);
+  const [tipNotice, setTipNotice] = useState('');
 
   useEffect(() => {
     const loadPlace = async () => {
@@ -164,17 +165,19 @@ export default function PlaceDetail() {
         .from('tips')
         .insert([{
           place_id: place.id,
-          content: newTipText,
+          content: newTipText.trim(),
           created_by_id: user?.id
         }])
         .select();
       if (error) throw error;
       if (data) {
-        setTips([...tips, data[0]]);
+        // New tips are moderated: not shown publicly until an admin approves them
         setNewTipText('');
+        setTipNotice('הטיפ נשלח ויופיע באתר לאחר אישור מנהל. תודה!');
       }
     } catch (e) {
       console.error(e);
+      setTipNotice('לא הצלחנו לשלוח את הטיפ. ודא שאתה מחובר ונסה שוב.');
     } finally {
       setSubmittingTip(false);
     }
@@ -405,7 +408,11 @@ export default function PlaceDetail() {
               placeholder="שתף משהו שידוע לך על המקום..."
               className="w-full p-4 border border-green-300 rounded-2xl text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent mb-4 bg-white"
               rows={4}
+              maxLength={2000}
             />
+            {tipNotice && (
+              <p role="status" className="text-sm text-green-700 mb-4">{tipNotice}</p>
+            )}
             <DirectionalButton
               onClick={handleAddTip}
               disabled={submittingTip || !newTipText.trim()}

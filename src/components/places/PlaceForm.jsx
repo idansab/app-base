@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock, Zap } from 'lucide-react';
+import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 
 const CATEGORIES = [

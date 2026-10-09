@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, X, Loader2, ChevronDown } from 'lucide-react';
+import { MapPin, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
-import { geocodeAddress, formatDistance } from '@/lib/geo';
+import { geocodeAddress } from '@/lib/geo';
 
 const ISRAELI_CITIES = [
   'תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'רמת גן', 'אשדוד', 'פתח תקווה',
