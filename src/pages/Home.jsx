@@ -213,7 +213,7 @@ export default function Home() {
             מה יש פה?
           </h1>
           <p className="text-lg text-muted-foreground">
-            גלול מקומות באזור — עם טיפים מהקהילה
+            גלה מקומות באזור — עם טיפים מהקהילה
           </p>
         </div>
       </motion.div>
@@ -238,7 +238,7 @@ export default function Home() {
           </div>
           <button
             onClick={() => setLocationPickerOpen(true)}
-            className="p-4 bg-primary text-white rounded-3xl hover:bg-primary/90 transition-all hover:scale-110 duration-300 flex items-center justify-center flex-shrink-0 shadow-lg hover:shadow-xl"
+            className="p-4 bg-white text-primary border border-border rounded-3xl hover:bg-gray-50 transition-all hover:scale-110 duration-300 flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg"
             aria-label="בחר מיקום ומרחק"
             title="בחר מיקום ומרחק"
           >
