@@ -348,6 +348,22 @@ export default function PlaceDrawer({
           />
           {errors.schedule && <p className="text-xs text-red-600 text-right">{errors.schedule}</p>}
 
+          {place?.source === 'osm' && place.source_ref && (
+            <p className="text-xs text-muted-foreground text-right">
+              מקור:{' '}
+              <a
+                href={`https://www.openstreetmap.org/${place.source_ref}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+                dir="ltr"
+              >
+                OpenStreetMap · {place.source_ref}
+              </a>{' '}
+              ({place.source_license || 'ODbL'}). יובא אוטומטית: כדאי לבדוק שם, מיקום וקטגוריה לפני אישור.
+            </p>
+          )}
+
           {history.length > 0 && (
             <div className="rounded-xl border border-border p-3 text-right">
               <p className="text-sm font-medium text-foreground mb-2">שינויים אחרונים</p>

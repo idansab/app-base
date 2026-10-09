@@ -109,6 +109,18 @@ export default function Footer() {
           </div>
           <div className="text-right md:text-left order-1 md:order-2">
             <p>&copy; {currentYear} מה יש פה? כל הזכויות שמורות.</p>
+            <p className="mt-1 text-xs">
+              חלק מהמקומות מבוססים על נתונים של{' '}
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white"
+              >
+                © תורמי OpenStreetMap
+              </a>{' '}
+              (רישיון ODbL)
+            </p>
           </div>
         </motion.div>
       </div>
