@@ -116,25 +116,7 @@ export default function CommunityChat() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 flex flex-col">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-40 bg-card border-b border-border"
-      >
-        <div className="px-4 max-w-6xl mx-auto py-4 flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-secondary rounded-lg"
-          >
-            <ArrowRight size={24} />
-          </button>
-          <h1 className="text-xl font-bold">קהילה</h1>
-          <div className="w-10" />
-        </div>
-      </motion.div>
-
+    <div className="min-h-screen bg-background pb-20 flex flex-col">
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 max-w-4xl mx-auto w-full py-4">
         {loading ? (
@@ -183,7 +165,7 @@ export default function CommunityChat() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fixed inset-x-0 bottom-0 bg-card border-t border-border p-4"
+        className="bg-card border-t border-border p-4"
       >
         <div className="max-w-4xl mx-auto">
           <form onSubmit={handleSendMessage} className="flex gap-3">

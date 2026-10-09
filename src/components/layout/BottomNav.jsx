@@ -19,7 +19,13 @@ export default function BottomNav() {
   const { favorites } = useFavorites();
   const favoritesCount = Object.keys(favorites).length;
 
-  const ITEMS = isAuthenticated ? [AUTH_ITEM, ...BASE_ITEMS] : BASE_ITEMS;
+  const ITEMS = isAuthenticated ? [
+    { to: "/", label: "בית", icon: Compass },
+    AUTH_ITEM,
+    { to: "/favorites", label: "מועדפים", icon: Heart },
+    { to: "/trips", label: "מסלולים", icon: Map },
+    { to: "/surprise", label: "הפתעה", icon: Sparkles },
+  ] : BASE_ITEMS;
 
   const gridColsClass = isAuthenticated ? 'grid-cols-5' : 'grid-cols-4';
 
