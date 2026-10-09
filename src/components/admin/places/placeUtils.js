@@ -1,5 +1,5 @@
 // Pure helpers for the admin places manager (no React, no network) so they can be unit-tested.
-import { summarizeSchedule, validateSchedule } from '@/lib/openingHours';
+import { hasUsableSchedule, requiresHours, summarizeSchedule, validateSchedule } from '@/lib/openingHours';
 import { MAX_PLACE_IMAGES, getPlaceImages } from '@/lib/placeImages';
 
 export const STATUS_LABELS = {
@@ -24,6 +24,10 @@ const isNum = (v) => v !== null && v !== '' && Number.isFinite(Number(v));
 export const ISSUES = {
   no_image: { label: 'בלי תמונה', test: (p) => getPlaceImages(p).length === 0 },
   no_hours: { label: 'בלי שעות מובנות', test: (p) => !p.opening_schedule },
+  cart_no_hours: {
+    label: 'עגלת קפה בלי שעות (חובה)',
+    test: (p) => requiresHours(p) && !hasUsableSchedule(p.opening_schedule),
+  },
   no_description: {
     label: 'בלי תיאור',
     test: (p) => !(p.description || '').trim() && !(p.short_description || '').trim(),
@@ -115,6 +119,7 @@ export function formToPayload(form) {
   if (form.images.length > MAX_PLACE_IMAGES) errors.images = `מקסימום ${MAX_PLACE_IMAGES} תמונות`;
   const scheduleError = validateSchedule(form.schedule);
   if (scheduleError) errors.schedule = scheduleError;
+  else if (requiresHours(form) && !hasUsableSchedule(form.schedule)) errors.schedule = 'לעגלת קפה חובה להגדיר שעות פתיחה';
   if (String(form.kosher_note).trim().length > 100) errors.kosher_note = 'עד 100 תווים';
 
   if (Object.keys(errors).length > 0) return { payload: null, errors };

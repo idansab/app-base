@@ -218,3 +218,11 @@ export function parseHoursText(text) {
   if (sawBare && (sawDays || segments.length > 1)) return null;
   return validateSchedule(schedule) ? null : schedule;
 }
+
+/** Coffee carts (and similar stalls) are only useful with real hours, so they must have a schedule. */
+export const requiresHours = (place) =>
+  /עגל(ת|ה)\s*קפה|קפה\s*נייד/.test(String(place?.name ?? ''));
+
+/** True when the schedule says something: always open, or at least one opening range. */
+export const hasUsableSchedule = (schedule) =>
+  !!schedule && (schedule.type === 'always' || Object.values(schedule.days || {}).some((r) => r?.length > 0));

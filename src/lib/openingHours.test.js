@@ -205,3 +205,16 @@ describe('weeklyRows', () => {
     expect(weeklyRows({ type: 'always' })).toEqual([]);
   });
 });
+
+describe('requiresHours / hasUsableSchedule', () => {
+  it('flags coffee carts only', async () => {
+    const { requiresHours, hasUsableSchedule, emptyWeek } = await import('./openingHours');
+    expect(requiresHours({ name: 'עגלת קפה חיפה' })).toBe(true);
+    expect(requiresHours({ name: 'קפה גרג' })).toBe(false);
+    expect(hasUsableSchedule(null)).toBe(false);
+    expect(hasUsableSchedule(emptyWeek())).toBe(false);
+    expect(hasUsableSchedule({ type: 'always' })).toBe(true);
+    const w = emptyWeek(); w.days[1] = [['07:00', '19:00']];
+    expect(hasUsableSchedule(w)).toBe(true);
+  });
+});
