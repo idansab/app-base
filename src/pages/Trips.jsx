@@ -188,6 +188,43 @@ export default function Trips() {
 
   const tripPlacesData = getTripPlaces();
 
+  useEffect(() => {
+    if (!selectedTrip || tripPlacesData.length === 0 || !mapRef.current) return;
+
+    setTimeout(() => {
+      const map = L.map(mapRef.current).setView([31.9, 35.2], 7);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+      const bounds = L.latLngBounds([]);
+
+      tripPlacesData.forEach((place, idx) => {
+        const marker = L.circleMarker([place.lat, place.lng], {
+          radius: 10,
+          fillColor: '#16a34a',
+          color: '#15803d',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.8
+        })
+          .bindPopup(`<strong>${idx + 1}. ${place.name}</strong><br/>${place.short_description || ''}`)
+          .addTo(map);
+        bounds.extend([place.lat, place.lng]);
+      });
+
+      if (tripPlacesData.length > 1) {
+        const coordinates = tripPlacesData.map(p => [p.lat, p.lng]);
+        L.polyline(coordinates, {
+          color: '#16a34a',
+          weight: 3,
+          opacity: 0.7
+        }).addTo(map);
+      }
+
+      map.fitBounds(bounds, { padding: [50, 50] });
+      return () => map.remove();
+    }, 100);
+  }, [selectedTrip, tripPlacesData]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center pb-24">
@@ -467,56 +504,22 @@ export default function Trips() {
               </div>
             </div>
 
-            {/* Trip Route Visualization */}
+            {/* Trip Map */}
             {tripPlacesData.length > 0 && (
               <div className="bg-card rounded-2xl p-6 border border-border">
-                <h3 className="font-bold text-lg mb-4 text-right">מסלול המסע</h3>
-                <div className="bg-secondary rounded-xl p-4">
-                  <svg
-                    viewBox="0 0 400 300"
-                    className="w-full h-auto"
-                    style={{ direction: 'ltr' }}
-                  >
-                    {/* Draw connecting line */}
-                    {tripPlacesData.length > 1 && (
-                      <polyline
-                        points={tripPlacesData
-                          .map((_, i) => {
-                            const x = 50 + (i * 350) / (tripPlacesData.length - 1);
-                            const y = 150;
-                            return `${x},${y}`;
-                          })
-                          .join(' ')}
-                        stroke="var(--color-primary)"
-                        strokeWidth="3"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    )}
-
-                    {/* Draw stops */}
-                    {tripPlacesData.map((_, i) => {
-                      const x = 50 + (i * 350) / (Math.max(tripPlacesData.length - 1, 1));
-                      const y = 150;
-                      return (
-                        <g key={i}>
-                          <circle cx={x} cy={y} r="25" fill="var(--color-primary)" />
-                          <text
-                            x={x}
-                            y={y}
-                            textAnchor="middle"
-                            dy="0.3em"
-                            className="text-white font-bold"
-                            fill="white"
-                            fontSize="16"
-                          >
-                            {i + 1}
-                          </text>
-                        </g>
-                      );
-                    })}
-                  </svg>
+                <h3 className="font-bold text-lg mb-4 text-right">🗺️ מפת המסלול</h3>
+                <div
+                  ref={mapRef}
+                  className="w-full rounded-xl bg-gray-200 border border-border"
+                  style={{ minHeight: '400px' }}
+                />
+                <div className="mt-4 space-y-2">
+                  {tripPlacesData.map((place, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-secondary rounded-lg text-right">
+                      <span className="flex-1">{place.name}</span>
+                      <span className="font-bold bg-primary text-white px-3 py-1 rounded-full text-sm">{idx + 1}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
