@@ -44,7 +44,8 @@ export default function Home() {
         const { data, error } = await supabase
           .from('places')
           .select('*')
-          .eq('status', 'approved');
+          .eq('status', 'approved')
+          .limit(200);
         if (error) throw error;
         setPlaces(data || []);
 
@@ -70,12 +71,16 @@ export default function Home() {
     loadPlaces();
   }, []);
 
-  // Set user location if available
+  // Set user location and default distance if available
   useEffect(() => {
     if (autoLocation && !userLocation) {
       setUserLocation(autoLocation);
+      // Set default 50km distance on first location detection
+      if (!maxDistance) {
+        setMaxDistance(50);
+      }
     }
-  }, [autoLocation]);
+  }, [autoLocation, userLocation, maxDistance]);
 
   // Sync state with URL params
   useEffect(() => {

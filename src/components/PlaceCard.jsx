@@ -39,6 +39,7 @@ export default function PlaceCard({
           <img
             src={place.image_url}
             alt={place.name}
+            loading="lazy"
             onError={() => setImageFailed(true)}
             className="w-full h-full object-cover"
           />
