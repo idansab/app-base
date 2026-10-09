@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Moon, Sun, Bell, Lock, HelpCircle, LogOut, LogIn, X } from 'lucide-react';
+import { Moon, Sun, Lock, HelpCircle, LogOut, LogIn, X } from 'lucide-react';
 import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -9,7 +9,6 @@ export default function Settings() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { isAuthenticated, signOut } = useAuth();
-  const [notifications, setNotifications] = useState(true);
   const [language, setLanguage] = useState('he');
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
@@ -89,40 +88,11 @@ export default function Settings() {
           </div>
         </motion.div>
 
-        {/* Notifications */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-card rounded-2xl p-6 border border-border"
-        >
-          <h2 className="font-bold text-lg text-right mb-4 text-foreground">התראות</h2>
-
-          <div className="flex items-center justify-between p-4 bg-secondary rounded-lg">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <Bell size={20} className="text-primary" />
-              <span className="font-medium text-foreground">הפעל התראות</span>
-            </label>
-            <button
-              onClick={() => setNotifications(!notifications)}
-              className={`w-12 h-6 rounded-full transition-colors ${
-                notifications ? 'bg-primary' : 'bg-gray-400'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                  notifications ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-        </motion.div>
-
         {/* Privacy & Security */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.15 }}
           className="bg-card rounded-2xl p-6 border border-border"
         >
           <h2 className="font-bold text-lg text-right mb-4 text-foreground">פרטיות ואבטחה</h2>
@@ -155,7 +125,7 @@ export default function Settings() {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.2 }}
           className="bg-card rounded-2xl p-6 border border-border"
         >
           <h2 className="font-bold text-lg text-right mb-4 text-foreground">אודות</h2>
@@ -177,7 +147,7 @@ export default function Settings() {
           <motion.button
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.25 }}
             onClick={signOut}
             className="w-full p-4 bg-destructive/10 text-destructive rounded-2xl font-medium hover:bg-destructive/20 transition-colors flex items-center justify-center gap-2"
             whileHover={{ scale: 1.02 }}
@@ -190,7 +160,7 @@ export default function Settings() {
           <motion.button
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.25 }}
             onClick={() => navigate('/login')}
             className="w-full p-4 bg-primary text-white rounded-2xl font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
             whileHover={{ scale: 1.02 }}
