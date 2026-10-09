@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
   Copy,
   ExternalLink,
-  ImagePlus,
   Loader2,
   MapPin,
   Save,
@@ -15,6 +14,8 @@ import {
 import { supabase } from '@/api/base44Client';
 import { geocodeAddress } from '@/lib/geo';
 import { CATEGORIES } from '@/lib/categories';
+import GalleryEditor from './GalleryEditor';
+import HoursEditor from './HoursEditor';
 import {
   EMPTY_FORM,
   ISSUES,
@@ -24,9 +25,6 @@ import {
   getIssues,
   placeToForm,
 } from './placeUtils';
-
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const IMAGE_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
 
 const inputCls =
   'w-full px-3 py-2 border rounded-xl bg-background text-foreground text-right focus:outline-none focus:ring-2 focus:ring-green-600';
@@ -65,14 +63,12 @@ export default function PlaceDrawer({
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(null); // null | 'close' | 'prev' | 'next'
   const [history, setHistory] = useState([]);
-  const fileRef = useRef(null);
 
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
   const issues = useMemo(
-    () => getIssues({ ...form, tags: form.tags.split(',') }),
+    () => getIssues({ ...form, opening_schedule: form.schedule, tags: form.tags.split(',') }),
     [form]
   );
 
@@ -165,33 +161,6 @@ export default function PlaceDrawer({
     }
   };
 
-  const handleFile = async (file) => {
-    if (!file) return;
-    const ext = IMAGE_EXT[file.type];
-    if (!ext) {
-      onError?.('אפשר להעלות JPG, PNG, WEBP או GIF בלבד');
-      return;
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      onError?.('התמונה גדולה מדי (מקסימום 5MB)');
-      return;
-    }
-    setUploading(true);
-    try {
-      const path = `places/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
-      const { error } = await supabase.storage.from('place-images').upload(path, file);
-      if (error) throw error;
-      const { data } = supabase.storage.from('place-images').getPublicUrl(path);
-      setForm((f) => ({ ...f, image_url: data.publicUrl }));
-      onSuccess?.('התמונה הועלתה');
-    } catch (e) {
-      console.error('Image upload failed:', e);
-      onError?.('שגיאה בהעלאת התמונה');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const hasCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng)) && form.lat !== '' && form.lng !== '';
 
   return (
@@ -269,47 +238,13 @@ export default function PlaceDrawer({
             </div>
           )}
 
-          {/* Image */}
-          <div className="flex items-start gap-3">
-            <div className="flex-1 space-y-2">
-              <Field label="תמונה (כתובת)">
-                <input className={`${inputCls} border-border`} dir="ltr" placeholder="https://..." value={form.image_url} onChange={set('image_url')} />
-              </Field>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                className="hidden"
-                onChange={(e) => {
-                  handleFile(e.target.files?.[0]);
-                  e.target.value = '';
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="flex items-center gap-2 text-sm px-3 py-2 rounded-xl border border-border hover:bg-secondary disabled:opacity-50"
-              >
-                {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
-                העלאת תמונה
-              </button>
-            </div>
-            <div className="w-28 h-28 rounded-xl bg-muted overflow-hidden flex items-center justify-center shrink-0">
-              {form.image_url ? (
-                <img
-                  src={form.image_url}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <ImagePlus className="text-muted-foreground" />
-              )}
-            </div>
-          </div>
+          <GalleryEditor
+            images={form.images}
+            onChange={(images) => setForm((f) => ({ ...f, images }))}
+            onError={onError}
+            onSuccess={onSuccess}
+          />
+          {errors.images && <p className="text-xs text-red-600 text-right">{errors.images}</p>}
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="שם *" error={errors.name} className="col-span-2">
@@ -371,9 +306,6 @@ export default function PlaceDrawer({
             <Field label="תיאור" className="col-span-2">
               <textarea className={`${inputCls} border-border resize-none`} rows={4} value={form.description} onChange={set('description')} />
             </Field>
-            <Field label="שעות פתיחה">
-              <input className={`${inputCls} border-border`} value={form.opening_hours} onChange={set('opening_hours')} />
-            </Field>
             <Field label="רמת מחיר">
               <select className={`${inputCls} border-border`} value={form.price_level} onChange={set('price_level')}>
                 {PRICE_LEVELS.map((p) => (
@@ -387,7 +319,34 @@ export default function PlaceDrawer({
             <Field label="תגיות (מופרדות בפסיק)">
               <input className={`${inputCls} border-border`} value={form.tags} onChange={set('tags')} />
             </Field>
+            <Field label="כשרות">
+              <select className={`${inputCls} border-border`} value={form.kosher} onChange={set('kosher')}>
+                <option value="">לא ידוע</option>
+                <option value="kosher">כשר</option>
+                <option value="not_kosher">לא כשר</option>
+              </select>
+            </Field>
+            {form.kosher === 'kosher' && (
+              <Field label="שם ההכשר (אופציונלי)" error={errors.kosher_note}>
+                <input
+                  className={`${inputCls} ${errors.kosher_note ? 'border-red-500' : 'border-border'}`}
+                  maxLength={100}
+                  placeholder="למשל: רבנות מקומית"
+                  value={form.kosher_note}
+                  onChange={set('kosher_note')}
+                />
+              </Field>
+            )}
           </div>
+
+          <HoursEditor
+            value={form.schedule}
+            onChange={(schedule) => setForm((f) => ({ ...f, schedule }))}
+            legacyText={place?.opening_hours}
+            textValue={form.opening_hours}
+            onTextChange={(opening_hours) => setForm((f) => ({ ...f, opening_hours }))}
+          />
+          {errors.schedule && <p className="text-xs text-red-600 text-right">{errors.schedule}</p>}
 
           {history.length > 0 && (
             <div className="rounded-xl border border-border p-3 text-right">

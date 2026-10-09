@@ -1,4 +1,6 @@
 // Pure helpers for the admin places manager (no React, no network) so they can be unit-tested.
+import { summarizeSchedule, validateSchedule } from '@/lib/openingHours';
+import { MAX_PLACE_IMAGES, getPlaceImages } from '@/lib/placeImages';
 
 export const STATUS_LABELS = {
   pending: 'ממתין',
@@ -20,7 +22,8 @@ const isNum = (v) => v !== null && v !== '' && Number.isFinite(Number(v));
 
 /** Data-quality checks: the things worth fixing when going through the list. */
 export const ISSUES = {
-  no_image: { label: 'בלי תמונה', test: (p) => !p.image_url },
+  no_image: { label: 'בלי תמונה', test: (p) => getPlaceImages(p).length === 0 },
+  no_hours: { label: 'בלי שעות מובנות', test: (p) => !p.opening_schedule },
   no_description: {
     label: 'בלי תיאור',
     test: (p) => !(p.description || '').trim() && !(p.short_description || '').trim(),
@@ -57,10 +60,13 @@ export const EMPTY_FORM = {
   lng: '',
   short_description: '',
   description: '',
-  image_url: '',
+  images: [],
   rating: '',
   price_level: 'moderate',
   opening_hours: '',
+  schedule: null,
+  kosher: '',
+  kosher_note: '',
   phone: '',
   tags: '',
   status: 'approved',
@@ -75,10 +81,13 @@ export const placeToForm = (place) => ({
   lng: place.lng == null ? '' : String(place.lng),
   short_description: place.short_description ?? '',
   description: place.description ?? '',
-  image_url: place.image_url ?? '',
+  images: getPlaceImages(place),
   rating: place.rating == null ? '' : String(place.rating),
   price_level: place.price_level ?? 'moderate',
   opening_hours: place.opening_hours ?? '',
+  schedule: place.opening_schedule ?? null,
+  kosher: place.kosher ?? '',
+  kosher_note: place.kosher_note ?? '',
   phone: place.phone ?? '',
   tags: (place.tags || []).join(', '),
   status: place.status ?? 'approved',
@@ -103,7 +112,20 @@ export function formToPayload(form) {
     if (!Number.isFinite(rating) || rating < 0 || rating > 5) errors.rating = 'דירוג בין 0 ל-5';
   }
 
+  if (form.images.length > MAX_PLACE_IMAGES) errors.images = `מקסימום ${MAX_PLACE_IMAGES} תמונות`;
+  const scheduleError = validateSchedule(form.schedule);
+  if (scheduleError) errors.schedule = scheduleError;
+  if (String(form.kosher_note).trim().length > 100) errors.kosher_note = 'עד 100 תווים';
+
   if (Object.keys(errors).length > 0) return { payload: null, errors };
+
+  // opening_hours text stays in sync with the structured schedule for older screens/exports
+  const schedule = form.schedule || null;
+  let openingText = orNull(form.opening_hours);
+  if (schedule?.type === 'weekly') openingText = summarizeSchedule(schedule);
+  else if (schedule?.type === 'always' && !openingText) openingText = 'פתוח תמיד';
+  const note = schedule?.note?.trim();
+  const cleanSchedule = schedule ? { ...schedule, note: note || undefined } : null;
 
   return {
     errors,
@@ -116,10 +138,13 @@ export function formToPayload(form) {
       lng: Number(form.lng),
       short_description: orNull(form.short_description),
       description: orNull(form.description),
-      image_url: orNull(form.image_url),
+      images: form.images,
       rating,
       price_level: form.price_level,
-      opening_hours: orNull(form.opening_hours),
+      opening_hours: openingText,
+      opening_schedule: cleanSchedule ? JSON.parse(JSON.stringify(cleanSchedule)) : null,
+      kosher: form.kosher || null,
+      kosher_note: form.kosher === 'kosher' ? orNull(form.kosher_note) : null,
       phone: orNull(form.phone),
       tags: String(form.tags)
         .split(',')
@@ -151,7 +176,8 @@ const CSV_COLUMNS = [
   ['opening_hours', 'שעות פתיחה'],
   ['price_level', 'רמת מחיר'],
   ['tags', 'תגיות'],
-  ['image_url', 'תמונה'],
+  ['images', 'תמונות'],
+  ['kosher', 'כשרות'],
   ['short_description', 'תיאור קצר'],
   ['description', 'תיאור'],
 ];

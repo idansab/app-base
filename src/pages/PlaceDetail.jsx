@@ -5,6 +5,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
+import ImageCarousel from '@/components/ImageCarousel';
+import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
+import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
+import { getPlaceImages } from '@/lib/placeImages';
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
@@ -233,12 +237,12 @@ export default function PlaceDetail() {
         className="relative min-h-[100dvh] md:min-h-96 bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden"
       >
         {/* Background Image */}
-        {place.image_url && (
+        {getPlaceImages(place)[0] && (
           <motion.img
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.6 }}
-            src={place.image_url}
+            src={getPlaceImages(place)[0]}
             alt={place.name}
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -288,6 +292,11 @@ export default function PlaceDetail() {
             )}
           </div>
 
+          <div className="flex flex-wrap gap-2 mb-4">
+            <OpenBadge place={place} />
+            <KosherBadge place={place} />
+          </div>
+
           {/* Short description */}
           {place.short_description && (
             <p className="text-base md:text-lg max-w-[40ch] leading-relaxed opacity-90">
@@ -306,11 +315,10 @@ export default function PlaceDetail() {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"
         >
-          {place.opening_hours && (
+          {(place.opening_schedule || place.opening_hours) && (
             <BreathingPulse delay={0}>
-              <div className="p-6 bg-white rounded-3xl border border-slate-200/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] text-right">
-                <p className="text-xs font-medium text-gray-600 mb-2 tracking-tight">שעות פתיחה</p>
-                <p className="text-xl font-bold text-gray-900">{place.opening_hours}</p>
+              <div className="p-6 bg-white rounded-3xl border border-slate-200/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]">
+                <PlaceHours place={place} />
               </div>
             </BreathingPulse>
           )}
@@ -327,6 +335,19 @@ export default function PlaceDetail() {
             </BreathingPulse>
           )}
         </motion.div>
+
+        {(place.kosher === 'kosher' || place.kosher === 'not_kosher') && (
+          <div className="mb-8 p-6 bg-white rounded-3xl border border-slate-200/50">
+            <PlaceKosher place={place} />
+          </div>
+        )}
+
+        {getPlaceImages(place).length > 1 && (
+          <section className="mb-12" aria-label="גלריית תמונות">
+            <h2 className="text-xl font-bold text-right mb-4">תמונות</h2>
+            <ImageCarousel images={getPlaceImages(place)} title={place.name} />
+          </section>
+        )}
 
         {/* Navigation & Actions - Directional buttons */}
         <motion.div

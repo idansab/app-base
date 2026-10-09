@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Heart, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import { formatDistance } from '@/lib/geo';
+import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 
 const CATEGORY_MAP = {
   'coffee_food': 'עגלות קפה ואוכל',
@@ -35,9 +36,9 @@ export default function PlaceCard({
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
-        {!imageFailed && place.image_url && (
+        {!imageFailed && (place.images?.[0] || place.image_url) && (
           <img
-            src={place.image_url}
+            src={place.images?.[0] || place.image_url}
             alt={place.name}
             loading="lazy"
             onError={() => setImageFailed(true)}
@@ -60,6 +61,12 @@ export default function PlaceCard({
             className={isFavorite ? 'fill-red-600 text-red-600' : 'text-gray-600'}
           />
         </button>
+
+        {/* Status badges - bottom of the image (only when the data is known) */}
+        <div className="absolute bottom-3 right-3 flex flex-wrap gap-1.5 justify-start">
+          <OpenBadge place={place} />
+          <KosherBadge place={place} />
+        </div>
 
         {/* Category Tag - Top Right */}
         <div className="absolute top-3 left-3 bg-sand px-3 py-1 rounded-full text-xs font-medium text-text-primary">

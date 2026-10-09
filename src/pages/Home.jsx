@@ -6,6 +6,7 @@ import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
+import { isOpenNow } from '@/lib/openingHours';
 import useUserLocation from '@/hooks/useUserLocation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/api/base44Client';
@@ -33,6 +34,14 @@ export default function Home() {
   const [maxDistance, setMaxDistance] = useState(searchParams.get('distance') ? parseInt(searchParams.get('distance')) : null);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'distance');
+  const [openNowOnly, setOpenNowOnly] = useState(searchParams.get('open') === '1');
+  const [kosherOnly, setKosherOnly] = useState(searchParams.get('kosher') === '1');
+  // "Now" is re-read every minute so open/closed badges and the filter never go stale
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const { location: autoLocation } = useUserLocation({ auto: true });
 
@@ -89,9 +98,11 @@ export default function Home() {
     if (selectedCategory !== 'all') params.set('category', selectedCategory);
     if (maxDistance) params.set('distance', maxDistance.toString());
     if (sortBy !== 'distance') params.set('sort', sortBy);
+    if (openNowOnly) params.set('open', '1');
+    if (kosherOnly) params.set('kosher', '1');
 
     setSearchParams(params, { replace: true });
-  }, [searchQuery, selectedCategory, maxDistance, sortBy, setSearchParams]);
+  }, [searchQuery, selectedCategory, maxDistance, sortBy, openNowOnly, kosherOnly, setSearchParams]);
 
   // Keyboard navigation for categories
   useEffect(() => {
@@ -164,7 +175,7 @@ export default function Home() {
   };
 
   // Filter and sort places
-  const filteredPlaces = places
+  const baseFiltered = places
     .filter(place => {
       if (selectedCategory !== 'all' && place.category !== selectedCategory) return false;
       if (searchQuery && !place.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -173,7 +184,16 @@ export default function Home() {
         if (distance > maxDistance) return false;
       }
       return true;
-    })
+    });
+
+  // counts for the quick-filter chips reflect the other active filters
+  const openCount = baseFiltered.filter(p => isOpenNow(p, now) === true).length;
+  const kosherCount = baseFiltered.filter(p => p.kosher === 'kosher').length;
+  const unknownHoursCount = baseFiltered.filter(p => isOpenNow(p, now) === null).length;
+
+  const filteredPlaces = baseFiltered
+    .filter(p => !openNowOnly || isOpenNow(p, now) === true)
+    .filter(p => !kosherOnly || p.kosher === 'kosher')
     .sort((a, b) => {
       if (sortBy === 'distance' && userLocation) {
         const distA = haversineKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
@@ -278,6 +298,35 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Quick filters */}
+      <div className="px-4 max-w-6xl mx-auto pt-1 flex flex-wrap gap-2 items-center" role="group" aria-label="סינון מהיר">
+        {[
+          { key: 'open', label: 'פתוח עכשיו', active: openNowOnly, toggle: () => setOpenNowOnly(v => !v), count: openCount },
+          { key: 'kosher', label: 'כשר', active: kosherOnly, toggle: () => setKosherOnly(v => !v), count: kosherCount },
+        ]
+          // a filter that can only ever return nothing is just noise
+          .filter(chip => chip.key !== 'kosher' || chip.active || places.some(p => p.kosher === 'kosher'))
+          .map(chip => (
+          <button
+            key={chip.key}
+            onClick={chip.toggle}
+            aria-pressed={chip.active}
+            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+              chip.active
+                ? 'bg-primary text-white border-primary shadow-md'
+                : 'bg-card text-foreground border-border hover:bg-secondary'
+            }`}
+          >
+            {chip.label} <span className="tabular-nums opacity-70">({chip.count})</span>
+          </button>
+        ))}
+        {openNowOnly && unknownHoursCount > 0 && (
+          <span className="text-xs text-muted-foreground">
+            לא כולל {unknownHoursCount} מקומות ללא שעות פתיחה מוגדרות
+          </span>
+        )}
+      </div>
+
       {/* Sort Controls */}
       <div className="px-4 max-w-6xl mx-auto py-4 flex gap-2 items-center justify-end">
         <span className="text-sm font-medium text-muted-foreground">
@@ -322,11 +371,13 @@ export default function Home() {
       <div className="px-4 max-w-6xl mx-auto pb-8">
         {filteredPlaces.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">לא נמצאו מקומות בקטגוריה זו</p>
+            <p className="text-muted-foreground mb-4">לא נמצאו מקומות שמתאימים לסינון</p>
             <button
               onClick={() => {
                 setSelectedCategory('all');
                 setSearchQuery('');
+                setOpenNowOnly(false);
+                setKosherOnly(false);
               }}
               className="px-4 py-2 bg-green-600 text-white rounded-2xl hover:bg-green-700 transition-colors"
             >

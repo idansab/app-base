@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, MapPin, Phone, Clock, Heart, Share2, Navigation } from 'lucide-react';
+import { X, MapPin, Phone, Heart, Share2, Navigation } from 'lucide-react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import ImageCarousel from '@/components/ImageCarousel';
+import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
+import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
+import { getPlaceImages } from '@/lib/placeImages';
 import { supabase } from '@/api/base44Client';
 
 export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation, isFavorite, onFavoriteToggle }) {
@@ -87,11 +90,15 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
 
         <div className="p-6 space-y-6">
           {/* Hero Image Carousel */}
-          {place.image_url && (
-            <ImageCarousel
-              images={Array.isArray(place.image_url) ? place.image_url : [place.image_url]}
-              title={place.name}
-            />
+          {getPlaceImages(place).length > 0 && (
+            <ImageCarousel images={getPlaceImages(place)} title={place.name} />
+          )}
+
+          {(place.opening_schedule || place.kosher === 'kosher') && (
+            <div className="flex flex-wrap gap-2 justify-end">
+              <OpenBadge place={place} />
+              <KosherBadge place={place} />
+            </div>
           )}
 
           {/* Quick Stats */}
@@ -128,15 +135,8 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
             transition={{ delay: 0.2 }}
             className="space-y-4"
           >
-            {place.opening_hours && (
-              <div className="flex items-start gap-3 text-right">
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900">{place.opening_hours}</p>
-                  <p className="text-xs text-gray-600">שעות פתיחה</p>
-                </div>
-                <Clock size={20} className="text-green-600 flex-shrink-0" />
-              </div>
-            )}
+            <PlaceHours place={place} />
+            <PlaceKosher place={place} />
 
             {place.phone && (
               <a

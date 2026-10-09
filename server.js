@@ -53,7 +53,8 @@ const requireAdmin = (req, res, next) =>
   req.user?.role === 'admin' ? next() : res.status(req.user ? 403 : 401).json({ error: 'Admin only' });
 
 const PLACE_FIELDS = ['name', 'description', 'short_description', 'category', 'city', 'address',
-  'lat', 'lng', 'image_url', 'rating', 'price_level', 'opening_hours', 'phone', 'tags'];
+  'lat', 'lng', 'image_url', 'images', 'rating', 'price_level', 'opening_hours', 'opening_schedule',
+  'kosher', 'kosher_note', 'phone', 'tags'];
 const pick = (body, fields) =>
   Object.fromEntries(fields.filter(f => body?.[f] !== undefined).map(f => [f, body[f]]));
 
