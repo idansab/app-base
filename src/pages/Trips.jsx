@@ -27,6 +27,7 @@ export default function Trips() {
   const [tripPlaces, setTripPlaces] = useState([]); // ordered array of place IDs
   const [savingTrip, setSavingTrip] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -97,9 +98,14 @@ export default function Trips() {
     if (!tripTitle.trim() || tripPlaces.length === 0) return;
 
     setSavingTrip(true);
+    setSaveError('');
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setSaveError('צריך להתחבר כדי לשמור טריפ');
+        setSavingTrip(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('trips')
@@ -128,6 +134,7 @@ export default function Trips() {
       }
     } catch (e) {
       console.error('Error saving trip:', e);
+      setSaveError('שגיאה בשמירת הטריפ. בדוק את האינטרנט או נסה שוב.');
     } finally {
       setSavingTrip(false);
     }
@@ -230,6 +237,13 @@ export default function Trips() {
                   <X size={20} />
                 </button>
               </div>
+
+              {/* Error Message */}
+              {saveError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-right text-sm text-red-700">
+                  {saveError}
+                </div>
+              )}
 
               {/* Title & Description */}
               <div className="space-y-3">
