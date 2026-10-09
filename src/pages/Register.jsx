@@ -9,6 +9,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
@@ -21,18 +22,21 @@ export default function Register() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('הסיסמה חייבת להיות לפחות 6 תווים');
+    if (password.length < 8) {
+      setError('הסיסמה חייבת להיות לפחות 8 תווים');
       return;
     }
 
     setLoading(true);
     try {
-      await signUp(email, password);
-      // Show success message
+      const result = await signUp(email, password);
       setError('');
-      // Navigate to login after brief delay
-      setTimeout(() => navigate('/login'), 500);
+      if (result?.session) {
+        // Email confirmation disabled: already signed in
+        navigate('/');
+      } else {
+        setNeedsConfirmation(true);
+      }
     } catch (err) {
       // Better error messages
       let errorMsg = err.message;
@@ -55,6 +59,16 @@ export default function Register() {
         {error && (
           <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
             {error}
+          </div>
+        )}
+
+        {needsConfirmation && (
+          <div role="status" className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-200 px-4 py-3 rounded mb-4">
+            נשלח אליך מייל אימות. אשר את הכתובת ואז{' '}
+            <button type="button" onClick={() => navigate('/login')} className="underline font-medium">
+              התחבר
+            </button>
+            .
           </div>
         )}
 

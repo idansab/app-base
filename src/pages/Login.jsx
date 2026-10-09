@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -76,6 +76,12 @@ export default function Login() {
               required
               autoComplete="current-password"
             />
+          </div>
+
+          <div className="text-left">
+            <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+              שכחת סיסמה?
+            </Link>
           </div>
 
           <button
