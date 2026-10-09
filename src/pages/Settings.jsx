@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Moon, Sun, Lock, HelpCircle, LogOut, LogIn, X } from 'lucide-react';
+import { Moon, Sun, Lock, HelpCircle, LogOut, LogIn, X, Store, ChevronLeft } from 'lucide-react';
+import useOwnerOverview from '@/hooks/useOwnerOverview';
 import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -9,6 +10,8 @@ export default function Settings() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { isAuthenticated, signOut, changePassword } = useAuth();
+  // the entry only exists for users who are approved owners of a business
+  const { hasApproved, unseen } = useOwnerOverview();
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
@@ -140,6 +143,34 @@ export default function Settings() {
             <span className="font-medium">מדיניות פרטיות</span>
           </motion.button>
         </motion.div>
+
+        {/* My business: visible only to approved owners */}
+        {isAuthenticated && hasApproved && (
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            onClick={() => navigate('/my-business')}
+            className="w-full flex items-center justify-between gap-3 bg-card rounded-2xl p-5 border border-border hover:bg-secondary/60 transition-colors text-right"
+          >
+            <ChevronLeft size={20} className="text-muted-foreground" />
+            <span className="flex items-center gap-3 flex-1 justify-end">
+              {unseen > 0 && (
+                <span
+                  className="rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-white"
+                  aria-label={`${unseen} עדכונים חדשים`}
+                >
+                  {unseen} חדש
+                </span>
+              )}
+              <span>
+                <span className="block font-bold text-foreground">העסקים שלי</span>
+                <span className="block text-xs text-muted-foreground">עריכה, נתונים וסטטוס בקשות</span>
+              </span>
+              <Store size={22} className="text-primary" />
+            </span>
+          </motion.button>
+        )}
 
         {/* About */}
         <motion.div

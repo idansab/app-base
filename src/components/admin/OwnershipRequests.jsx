@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, Inbox, Loader2, Phone, Undo2, X } from 'lucide-react';
+import { AlertTriangle, Check, Inbox, Loader2, Phone, Undo2, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 
 const RELATIONS = { owner: 'בעלים', manager: 'מנהל', employee: 'עובד' };
@@ -9,6 +9,16 @@ const STATUS = {
   rejected: ['נדחה', 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'],
   revoked: ['בוטל', 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200'],
 };
+
+// Things worth a second look before approving
+function warnings(claim) {
+  const out = [];
+  if (claim.other_owners > 0) out.push(`כבר יש ${claim.other_owners} בעלים מאושרים במקום הזה`);
+  if (claim.user_claims >= 3) out.push(`המשתמש שלח ${claim.user_claims} בקשות בעלות`);
+  if (claim.relation !== 'owner') out.push(`הבקשה היא כ${RELATIONS[claim.relation] || claim.relation}. אמת בזהירות`);
+  return out;
+}
+
 const FILTERS = [['pending', 'ממתינות'], ['approved', 'מאושרות'], ['all', 'הכול']];
 
 /** Review queue for "I own this business" claims. Approving makes the user an owner of that place. */
@@ -116,15 +126,54 @@ export default function OwnershipRequests({ onError, onSuccess, onPendingChange 
                   {RELATIONS[claim.relation] || claim.relation}
                   {claim.contact_name ? ` · ${claim.contact_name}` : ''}
                 </p>
-                {claim.contact_phone && (
-                  <a href={`tel:${claim.contact_phone}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline" dir="ltr">
-                    <Phone size={14} /> {claim.contact_phone}
-                  </a>
+
+                {/* Verification aid: the PUBLIC phone of the business is the one to call */}
+                <div className="rounded-xl border border-border bg-secondary/40 p-3 text-sm space-y-1.5">
+                  <p className="font-medium text-foreground">אימות</p>
+                  <p className="flex items-center justify-between gap-2">
+                    {claim.place_phone ? (
+                      <a href={`tel:${claim.place_phone}`} className="inline-flex items-center gap-1 text-primary hover:underline" dir="ltr">
+                        <Phone size={14} /> {claim.place_phone}
+                      </a>
+                    ) : (
+                      <span className="text-amber-700 dark:text-amber-300">אין טלפון ציבורי למקום</span>
+                    )}
+                    <span className="text-muted-foreground">טלפון ציבורי של העסק (התקשר לזה)</span>
+                  </p>
+                  <p className="flex items-center justify-between gap-2">
+                    {claim.contact_phone ? (
+                      <a href={`tel:${claim.contact_phone}`} className="inline-flex items-center gap-1 text-primary hover:underline" dir="ltr">
+                        <Phone size={14} /> {claim.contact_phone}
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">לא הושאר</span>
+                    )}
+                    <span className="text-muted-foreground">טלפון המבקש</span>
+                  </p>
+                  {!claim.place_phone && (
+                    <p className="text-xs text-muted-foreground">
+                      בלי טלפון ציבורי כדאי לאמת בהודעה בעמוד העסק ברשתות, או במייל מדומיין העסק.
+                    </p>
+                  )}
+                </div>
+
+                {claim.status === 'pending' && warnings(claim).length > 0 && (
+                  <ul className="space-y-1" aria-label="אזהרות">
+                    {warnings(claim).map((text) => (
+                      <li key={text} className="flex items-start justify-end gap-1.5 text-xs text-amber-800 dark:text-amber-200">
+                        {text} <AlertTriangle size={14} className="shrink-0 mt-px" />
+                      </li>
+                    ))}
+                  </ul>
                 )}
+
                 {claim.note && <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{claim.note}</p>}
                 {claim.review_note && <p className="text-xs text-muted-foreground">הערת סקירה: {claim.review_note}</p>}
                 <p className="text-xs text-muted-foreground">
                   נשלחה {new Date(claim.created_at).toLocaleString('he-IL')}
+                  {claim.reviewed_at && claim.status !== 'pending'
+                    ? ` · הוחלט ${new Date(claim.reviewed_at).toLocaleString('he-IL')}${claim.reviewed_by_email ? ` על ידי ${claim.reviewed_by_email}` : ''}`
+                    : ''}
                 </p>
 
                 {rejecting?.id === claim.id ? (

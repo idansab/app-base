@@ -17,6 +17,7 @@ const Favorites = lazy(() => import('@/pages/Favorites'));
 const Trips = lazy(() => import('@/pages/Trips'));
 const Surprise = lazy(() => import('@/pages/Surprise'));
 const Contribute = lazy(() => import('@/pages/Contribute'));
+const MyBusiness = lazy(() => import('@/pages/MyBusiness'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const Studio = lazy(() => import('@/pages/Studio'));
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
         <Route element={<AppLayout />}>
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/contribute" element={<Contribute />} />
+          <Route path="/my-business" element={<MyBusiness />} />
           <Route path="/community-chat" element={<CommunityChat />} />
           <Route path="/studio" element={<Studio />} />
         </Route>
