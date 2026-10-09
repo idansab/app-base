@@ -129,11 +129,10 @@ export default function Trips() {
         duration_hours: Math.ceil(tripPlaces.length * 1.5),
       };
       setSavedTrips([newTrip, ...savedTrips]);
-        setTripTitle('');
-        setTripDescription('');
-        setTripPlaces([]);
-        setShowBuilder(false);
-      }
+      setTripTitle('');
+      setTripDescription('');
+      setTripPlaces([]);
+      setShowBuilder(false);
     } catch (e) {
       console.error('Error saving trip:', e);
       setSaveError('שגיאה בשמירת הטריפ. בדוק את האינטרנט או נסה שוב.');
