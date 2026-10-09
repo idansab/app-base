@@ -45,6 +45,9 @@ export default function Admin() {
     phone: '',
     tags: '',
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   // Load places
   useEffect(() => {
@@ -92,6 +95,58 @@ export default function Admin() {
     }
   };
 
+  // Handle image file selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showSuccess('בחר קובץ תמונה בלבד');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showSuccess('גודל התמונה גדול מדי (מקסימום 5MB)');
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImagePreview(event.target?.result || '');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Upload image to Supabase storage
+  const uploadImage = async (file) => {
+    try {
+      setUploading(true);
+      const fileName = `places/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${file.type.split('/')[1]}`;
+
+      const { data, error } = await supabase.storage
+        .from('place-images')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('place-images')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      setImageFile(null);
+      showSuccess('התמונה הועלתה בהצלחה');
+      return publicUrl;
+    } catch (e) {
+      console.error('Image upload failed:', e);
+      showSuccess('שגיאה בהעלאת התמונה');
+      throw e;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Save place
   const handleSavePlace = async () => {
     if (!formData.name || !formData.address || !formData.lat || !formData.lng) {
@@ -101,6 +156,13 @@ export default function Admin() {
 
     try {
       setLoading(true);
+      let imageUrl = formData.image_url;
+
+      // Upload image if selected
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
+
       const payload = {
         name: formData.name,
         category: formData.category,
@@ -110,7 +172,7 @@ export default function Admin() {
         lng: parseFloat(formData.lng),
         description: formData.description,
         short_description: formData.short_description,
-        image_url: formData.image_url,
+        image_url: imageUrl,
         rating: parseFloat(formData.rating),
         price_level: formData.price_level,
         opening_hours: formData.opening_hours,
@@ -148,6 +210,8 @@ export default function Admin() {
         phone: '',
         tags: '',
       });
+      setImageFile(null);
+      setImagePreview('');
       setEditingPlace(null);
       setShowForm(false);
       loadPlaces();
@@ -265,6 +329,8 @@ export default function Admin() {
       phone: place.phone,
       tags: (place.tags || []).join(', '),
     });
+    setImageFile(null);
+    setImagePreview('');
     setShowForm(true);
   };
 
@@ -619,17 +685,51 @@ export default function Admin() {
                     />
                   </div>
 
-                  {/* Image URL */}
+                  {/* Image */}
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      URL תמונה
+                      תמונה
                     </label>
-                    <input
-                      type="url"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
+
+                    {/* Image Preview */}
+                    {(imagePreview || formData.image_url) && (
+                      <div className="mb-4">
+                        <img
+                          src={imagePreview || formData.image_url}
+                          alt="preview"
+                          className="max-w-xs h-40 object-cover rounded-2xl border border-gray-300"
+                        />
+                      </div>
+                    )}
+
+                    {/* File Upload */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
+                        העלה תמונה
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        disabled={uploading}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right disabled:opacity-50"
+                      />
+                      {uploading && <p className="text-sm text-gray-500 mt-2">העלאת תמונה...</p>}
+                    </div>
+
+                    {/* URL Input */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
+                        או הזן URL תמונה
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                        placeholder="https://..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
+                      />
+                    </div>
                   </div>
 
                   {/* Rating */}
