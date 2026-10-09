@@ -2,59 +2,59 @@ import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/api/base44Client';
 
+/**
+ * UX gate only. The real protection is server-side: every admin write goes
+ * through Postgres RLS policies that call public.is_admin(). Nothing here is
+ * stored in localStorage, so there is no client-side flag to forge.
+ */
 export default function AdminProtectedRoute() {
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const checkAdmin = async () => {
       try {
-        const token = localStorage.getItem('admin_token');
-        const adminId = localStorage.getItem('admin_id');
-
-        if (!token || !adminId) {
-          setIsAdmin(false);
-          setLoading(false);
-          return;
-        }
-
-        // Verify token and admin status with Supabase
+        // getUser() validates the JWT against the auth server (getSession() does not)
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-        if (userError || !user || user.id !== adminId) {
-          localStorage.removeItem('admin_token');
-          localStorage.removeItem('admin_id');
-          setIsAdmin(false);
-          setLoading(false);
+        if (userError || !user) {
+          if (!cancelled) setIsAdmin(false);
           return;
         }
 
-        // Check if user is admin
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id);
-
-        if (profileError || !profiles || profiles.length === 0 || profiles[0].role !== 'admin') {
-          console.error('Admin profile check failed:', { profileError, profiles });
-          localStorage.removeItem('admin_token');
-          localStorage.removeItem('admin_id');
-          setIsAdmin(false);
-          setLoading(false);
-          return;
+        let admin = false;
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('is_admin');
+        if (!rpcError) {
+          admin = rpcResult === true;
+        } else {
+          // is_admin() not deployed yet (migration 005): fall back to own profile row
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+          admin = profile?.role === 'admin';
         }
-
-        setIsAdmin(true);
-      } catch (err) {
-        console.error('Admin check error:', err);
-        setIsAdmin(false);
+        if (!cancelled) setIsAdmin(admin);
+      } catch {
+        if (!cancelled) setIsAdmin(false);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     checkAdmin();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') setIsAdmin(false);
+    });
+
+    return () => {
+      cancelled = true;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   if (loading) {
