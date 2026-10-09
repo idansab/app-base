@@ -22,6 +22,7 @@ export default function Trips() {
   const [tripDescription, setTripDescription] = useState('');
   const [tripPlaces, setTripPlaces] = useState([]); // ordered array of place IDs
   const [savingTrip, setSavingTrip] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -244,36 +245,60 @@ export default function Trips() {
                 />
               </div>
 
-              {/* Places to Add */}
+              {/* Places to Add - Only Favorites */}
               <div>
-                <h3 className="font-semibold text-right mb-3">בחר מקומות</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-2 bg-secondary rounded-lg">
-                  {places.map(place => (
-                    <button
-                      key={place.id}
-                      onClick={() => handleAddToTrip(place.id)}
-                      disabled={tripPlaces.includes(place.id)}
-                      className={`text-right p-2 rounded-lg text-sm transition-all ${
-                        tripPlaces.includes(place.id)
-                          ? 'bg-primary text-white opacity-60 cursor-not-allowed'
-                          : 'bg-background text-foreground hover:bg-primary/20'
-                      }`}
-                    >
-                      {place.name}
-                    </button>
-                  ))}
-                </div>
+                <h3 className="font-semibold text-right mb-3">בחר מקומות מהמועדפים</h3>
+                {favorites.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-sm py-4">אין מקומות במועדפים עדיין</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-2 bg-secondary rounded-lg">
+                    {places
+                      .filter(p => favorites.includes(p.id))
+                      .map(place => (
+                        <button
+                          key={place.id}
+                          onClick={() => handleAddToTrip(place.id)}
+                          disabled={tripPlaces.includes(place.id)}
+                          className={`text-right p-2 rounded-lg text-sm transition-all ${
+                            tripPlaces.includes(place.id)
+                              ? 'bg-primary text-white opacity-60 cursor-not-allowed'
+                              : 'bg-background text-foreground hover:bg-primary/20'
+                          }`}
+                        >
+                          {place.name}
+                        </button>
+                      ))
+                    }
+                  </div>
+                )}
               </div>
 
-              {/* Trip Preview */}
+              {/* Trip Preview - Draggable */}
               {tripPlaces.length > 0 && (
                 <div className="bg-secondary rounded-lg p-3">
-                  <h4 className="font-semibold text-right mb-2">מקומות ({tripPlaces.length})</h4>
+                  <h4 className="font-semibold text-right mb-2">מקומות ({tripPlaces.length}) - גרור לשינוי סדר</h4>
                   <div className="space-y-2">
                     {tripPlaces.map((placeId, idx) => {
                       const place = places.find(p => p.id === placeId);
                       return (
-                        <div key={placeId} className="flex items-center justify-between bg-background p-2 rounded-lg text-sm">
+                        <div
+                          key={placeId}
+                          draggable
+                          onDragStart={() => setDraggedIndex(idx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={() => {
+                            if (draggedIndex !== null && draggedIndex !== idx) {
+                              const newPlaces = [...tripPlaces];
+                              [newPlaces[draggedIndex], newPlaces[idx]] = [newPlaces[idx], newPlaces[draggedIndex]];
+                              setTripPlaces(newPlaces);
+                            }
+                            setDraggedIndex(null);
+                          }}
+                          onDragEnd={() => setDraggedIndex(null)}
+                          className={`flex items-center justify-between bg-background p-2 rounded-lg text-sm cursor-move transition-all ${
+                            draggedIndex === idx ? 'opacity-50 bg-primary/10' : 'hover:bg-primary/5'
+                          }`}
+                        >
                           <button
                             onClick={() => handleRemoveFromTrip(placeId)}
                             className="p-1 hover:bg-red-100 rounded text-red-600"
@@ -324,15 +349,46 @@ export default function Trips() {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTrip(trip.id);
-                      }}
-                      className="p-1 hover:bg-red-100 rounded text-red-600"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTrip(trip.id);
+                        }}
+                        className="p-1 hover:bg-red-100 rounded text-red-600"
+                        title="מחק מסלול"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const tripData = trip.places_order.map(pid => places.find(p => p.id === pid)?.name).filter(Boolean).join(' -> ');
+                          const text = `${trip.title}: ${tripData}`;
+                          navigator.clipboard.writeText(text);
+                          alert('הועתק ללוח!');
+                        }}
+                        className="p-1 hover:bg-blue-100 rounded text-blue-600"
+                        title="שתף מסלול"
+                      >
+                        📋
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const placesText = trip.places_order
+                            .map(pid => places.find(p => p.id === pid)?.name)
+                            .filter(Boolean)
+                            .join(' -> ');
+                          const wazeUrl = `https://waze.com/route?to=${placesText}`;
+                          window.open(wazeUrl, '_blank');
+                        }}
+                        className="p-1 hover:bg-yellow-100 rounded text-yellow-600"
+                        title="ניווט בWaze"
+                      >
+                        🗺️
+                      </button>
+                    </div>
                     <div className="text-right flex-1">
                       <h3 className="font-bold text-lg">{trip.title}</h3>
                       {trip.description && <p className="text-sm text-muted-foreground">{trip.description}</p>}
