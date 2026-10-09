@@ -52,7 +52,13 @@ export default function Trips() {
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
           if (tripsError) throw tripsError;
-          setSavedTrips(tripsData || []);
+          const parsedTrips = (tripsData || []).map(trip => ({
+            ...trip,
+            places_order: typeof trip.places_order === 'string'
+              ? JSON.parse(trip.places_order)
+              : trip.places_order
+          }));
+          setSavedTrips(parsedTrips);
         }
       } catch (e) {
         console.error(e);
@@ -96,14 +102,20 @@ export default function Trips() {
           user_id: user.id,
           title: tripTitle,
           description: tripDescription,
-          places_order: tripPlaces,
-          duration_hours: Math.ceil(tripPlaces.length * 1.5), // rough estimate
+          places_order: JSON.stringify(tripPlaces),
+          duration_hours: Math.ceil(tripPlaces.length * 1.5),
         }])
-        .select();
+        .select('*');
 
       if (error) throw error;
-      if (data) {
-        setSavedTrips([data[0], ...savedTrips]);
+      if (data && data[0]) {
+        const newTrip = {
+          ...data[0],
+          places_order: typeof data[0].places_order === 'string'
+            ? JSON.parse(data[0].places_order)
+            : data[0].places_order
+        };
+        setSavedTrips([newTrip, ...savedTrips]);
         setTripTitle('');
         setTripDescription('');
         setTripPlaces([]);
