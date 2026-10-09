@@ -18,6 +18,7 @@ const Trips = lazy(() => import('@/pages/Trips'));
 const Surprise = lazy(() => import('@/pages/Surprise'));
 const Contribute = lazy(() => import('@/pages/Contribute'));
 const MyBusiness = lazy(() => import('@/pages/MyBusiness'));
+const ForBusiness = lazy(() => import('@/pages/ForBusiness'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const Studio = lazy(() => import('@/pages/Studio'));
@@ -57,6 +58,7 @@ const AuthenticatedApp = () => {
         <Route path="/trips" element={<Trips />} />
         <Route path="/surprise" element={<Surprise />} />
         <Route path="/about" element={<About />} />
+        <Route path="/for-business" element={<ForBusiness />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />

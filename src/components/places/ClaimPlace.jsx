@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { BadgeCheck, BarChart3, Clock, Loader2, Pencil, Store, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -21,12 +21,15 @@ const inputCls =
  * for the place until then. Shows the user's own claim status when one exists.
  */
 export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const autoHandled = useRef(false);
   const beta = useBetaInfo();
 
   const [claim, setClaim] = useState(null);
+  const [claimLoaded, setClaimLoaded] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ relation: 'owner', contact_name: '', contact_phone: '', note: '' });
   const [saving, setSaving] = useState(false);
@@ -38,6 +41,7 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
   const loadClaim = useCallback(async () => {
     if (!isAuthenticated || !user?.id || !place?.id) {
       setClaim(null);
+      setClaimLoaded(true);
       return;
     }
     const { data } = await supabase
@@ -47,6 +51,7 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
       .eq('user_id', user.id)
       .maybeSingle();
     setClaim(data || null);
+    setClaimLoaded(true);
   }, [isAuthenticated, user?.id, place?.id]);
 
   useEffect(() => {
@@ -70,6 +75,21 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
   useEffect(() => {
     loadPendingRequest();
   }, [loadPendingRequest]);
+
+  // Deep link (?claim=1, used by the "For business" page): open the form without scrolling
+  // to the bottom of the page. Signed-out visitors log in first and come back to the same link.
+  useEffect(() => {
+    if (autoHandled.current || searchParams.get('claim') !== '1' || !place?.id || authLoading || !claimLoaded) return;
+    autoHandled.current = true;
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete('claim');
+    setSearchParams(next, { replace: true });
+    if (!claim) setOpen(true);
+  }, [searchParams, place?.id, authLoading, claimLoaded, isAuthenticated, claim, navigate, location, setSearchParams]);
 
   if (!place?.id) return null;
 

@@ -20,8 +20,8 @@ export default function Login() {
     try {
       await signIn(email, password);
       // חזור לדף שניסה להיכנס אליו, או להome
-      const from = location.state?.from?.pathname || '/';
-      navigate(from);
+      const from = location.state?.from;
+      navigate(from?.pathname ? `${from.pathname}${from.search || ''}` : '/');
     } catch (err) {
       // Better error messages
       let errorMsg = err.message;
