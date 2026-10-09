@@ -12,7 +12,7 @@ const BASE_ITEMS = [
   { to: "/surprise", label: "הפתעה", icon: Sparkles },
 ];
 
-const AUTH_ITEM = { to: "/write-tip", label: "כתוב", icon: PenTool };
+const AUTH_ITEM = { to: "/community-chat", label: "קהילה", icon: PenTool };
 
 export default function BottomNav() {
   const { isAuthenticated, user } = useAuth();
