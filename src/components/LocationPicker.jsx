@@ -1,43 +1,63 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, X, Loader2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { MapPin, X, Loader2, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
 import { geocodeAddress, formatDistance } from '@/lib/geo';
+
+const ISRAELI_CITIES = [
+  'תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'רמת גן', 'אשדוד', 'פתח תקווה',
+  'ראשון לציון', 'הרצליה', 'רמלה', 'לוד', 'אשקלון', 'עפולה', 'צפת',
+  'קריאת שמונה', 'בית שאן', 'קריאת מלאכי', 'קריאת אונו', 'הוד השרון',
+  'קרית ים', 'קרית מוצקין', 'בנימינה', 'יהוד', 'שהם', 'מודיעין', 'חולון',
+  'ב״ש', 'בת ים', 'כפר סבא', 'נתניה', 'הרצליה', 'קיסריה', 'עכו'
+];
 
 export default function LocationPicker({ isOpen, onClose, onLocationChange, currentLocation, currentDistance }) {
   const { location, status, request } = useUserLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [distance, setDistance] = useState(currentDistance || 20);
   const [selectedLocation, setSelectedLocation] = useState(currentLocation || null);
+  const [selectedLocationName, setSelectedLocationName] = useState('');
+  const [isCurrentLocation, setIsCurrentLocation] = useState(false);
   const [isLoadingGeocode, setIsLoadingGeocode] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [showUnlimited, setShowUnlimited] = useState(currentDistance === null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    if (location) setSelectedLocation(location);
+    if (location) {
+      setSelectedLocation(location);
+      setIsCurrentLocation(true);
+      setSelectedLocationName('המיקום הנוכחי שלי');
+    }
   }, [location]);
 
-  const handleUseCurrentLocation = async () => {
-    const coords = await request();
-    if (coords) {
-      setSelectedLocation(coords);
-      setSearchQuery('');
-      setSearchError('');
+  const handleSearchQuery = (query) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      const filtered = ISRAELI_CITIES.filter(city =>
+        city.includes(query) || query.includes(city.charAt(0))
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setSearchError('הזן כתובת או עיר');
-      return;
-    }
+  const handleSelectSuggestion = async (city) => {
     setIsLoadingGeocode(true);
     setSearchError('');
     try {
-      const result = await geocodeAddress(searchQuery);
+      const result = await geocodeAddress(city);
       if (result) {
         setSelectedLocation({ lat: result.lat, lng: result.lng });
+        setSelectedLocationName(city);
+        setIsCurrentLocation(false);
         setSearchQuery('');
+        setShowSuggestions(false);
       } else {
         setSearchError('כתובת לא נמצאה');
       }
@@ -46,6 +66,26 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
     } finally {
       setIsLoadingGeocode(false);
     }
+  };
+
+  const handleUseCurrentLocation = async () => {
+    const coords = await request();
+    if (coords) {
+      setSelectedLocation(coords);
+      setIsCurrentLocation(true);
+      setSelectedLocationName('המיקום הנוכחי שלי');
+      setSearchQuery('');
+      setSearchError('');
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchError('הזן כתובת או עיר');
+      return;
+    }
+    await handleSelectSuggestion(searchQuery);
   };
 
   const handleApply = () => {
@@ -108,23 +148,52 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
         </button>
 
         {/* Manual Address Search */}
-        <div className="mb-8">
+        <div className="mb-8 relative">
           <label className="block text-sm font-medium text-gray-700 mb-3">או חפש כתובת/עיר</label>
           <div className="flex gap-2">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setSearchError('');
-              }}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="כגון: תל אביב, הרצל 10, באר שבע"
-              className="flex-1 px-4 py-3 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
-            />
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  handleSearchQuery(e.target.value);
+                  setSearchError('');
+                }}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onFocus={() => searchQuery && setShowSuggestions(true)}
+                placeholder="כגון: תל אביב, עפולה, באר שבע"
+                className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+              />
+
+              {/* Search Suggestions Dropdown */}
+              <AnimatePresence>
+                {showSuggestions && suggestions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 max-h-48 overflow-y-auto"
+                  >
+                    {suggestions.map((city, idx) => (
+                      <motion.button
+                        key={city}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: idx * 0.02 }}
+                        onClick={() => handleSelectSuggestion(city)}
+                        className="w-full px-4 py-3 text-right hover:bg-green-50 transition-colors border-b border-gray-100 last:border-b-0 text-sm text-gray-700"
+                      >
+                        {city}
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <button
               onClick={handleSearch}
-              disabled={isLoadingGeocode}
+              disabled={isLoadingGeocode || !searchQuery.trim()}
               className="px-6 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary transition-all hover:scale-105 hover:shadow-md disabled:opacity-50 flex-shrink-0 shadow-sm"
             >
               {isLoadingGeocode ? <Loader2 size={18} className="animate-spin" /> : 'חפש'}
@@ -136,11 +205,16 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
 
         {/* Selected Location Display */}
         {selectedLocation && (
-          <div className="mb-6 p-4 bg-blue-50 rounded-2xl text-right border border-blue-200">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-6 p-4 bg-blue-50 rounded-2xl text-right border border-blue-200"
+          >
             <p className="text-sm font-medium text-blue-900">
-              ✓ מיקום נבחר
+              ✓ {selectedLocationName}
+              {isCurrentLocation && ' (מיקום נוכחי)'}
             </p>
-          </div>
+          </motion.div>
         )}
 
         {/* Distance Slider */}
