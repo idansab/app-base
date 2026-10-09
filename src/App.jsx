@@ -18,6 +18,7 @@ import Contribute from '@/pages/Contribute';
 import Admin from '@/pages/Admin';
 import AdminLogin from '@/pages/AdminLogin';
 import Studio from '@/pages/Studio';
+import WriteTip from '@/pages/WriteTip';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
         <Route element={<AppLayout />}>
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/contribute" element={<Contribute />} />
+          <Route path="/write-tip" element={<WriteTip />} />
           <Route path="/studio" element={<Studio />} />
         </Route>
       </Route>
