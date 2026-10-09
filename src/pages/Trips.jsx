@@ -113,7 +113,7 @@ export default function Trips() {
           user_id: user.id,
           title: tripTitle,
           description: tripDescription,
-          places_order: tripPlaces,
+          places_order: JSON.stringify(tripPlaces),
           duration_hours: Math.ceil(tripPlaces.length * 1.5),
         }]);
 
