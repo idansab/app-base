@@ -1,358 +1,57 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LogOut, Plus, Edit2, Trash2, Upload, MapPin, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { LogOut, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ConfirmDialog from '@/components/ConfirmDialog';
-import { geocodeAddress } from '@/lib/geo';
 import { supabase } from '@/api/base44Client';
-import { CATEGORIES } from '@/lib/categories';
+import Dashboard from '@/components/admin/Dashboard';
+import PlacesManager from '@/components/admin/places/PlacesManager';
 import ModerationQueue from '@/components/admin/ModerationQueue';
 import UsersManager from '@/components/admin/UsersManager';
 import AuditLog from '@/components/admin/AuditLog';
-import Dashboard from '@/components/admin/Dashboard';
+
+const TABS = [
+  ['dashboard', 'לוח בקרה'],
+  ['approval', 'אישור מקומות'],
+  ['places', 'ניהול מקומות'],
+  ['moderation', 'טיפים ודיווחים'],
+  ['users', 'משתמשים'],
+  ['audit', 'יומן פעולות'],
+];
 
 export default function Admin() {
   const navigate = useNavigate();
-
   const [activeTab, setActiveTab] = useState('dashboard');
   const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0 });
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [places, setPlaces] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [editingPlace, setEditingPlace] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [geocoding, setGeocoding] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [messageIsError, setMessageIsError] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('recent');
-  const [selectedPlaces, setSelectedPlaces] = useState(new Set());
-  const [confirmDialog, setConfirmDialog] = useState({
-    isOpen: false,
-    title: '',
-    message: '',
-    action: null,
-    isLoading: false,
-  });
-
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'nature',
-    city: '',
-    address: '',
-    lat: '',
-    lng: '',
-    description: '',
-    short_description: '',
-    image_url: '',
-    rating: 4.5,
-    price_level: 'moderate',
-    opening_hours: '09:00-18:00',
-    phone: '',
-    tags: '',
-  });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState({ text: '', isError: false });
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data?.user?.id ?? null));
   }, []);
 
-  // Load places
-  useEffect(() => {
-    if (activeTab === 'places' || activeTab === 'approval') {
-      loadPlaces();
-    }
-  }, [activeTab]);
-
-  const loadPlaces = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('places')
-        .select('*')
-        .limit(100);
-      if (error) throw error;
-      setPlaces(data || []);
-    } catch (e) {
-      console.error('Failed to load places:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Geocode address
-  const handleGeocodeAddress = async () => {
-    if (!formData.address) return;
-    try {
-      setGeocoding(true);
-      const result = await geocodeAddress(formData.address);
-      if (result) {
-        setFormData(prev => ({
-          ...prev,
-          lat: result.lat.toString(),
-          lng: result.lng.toString(),
-        }));
-        showSuccess('הכתובת זוהתה בהצלחה');
-      } else {
-        showError('כתובת לא נמצאה');
-      }
-    } catch (e) {
-      console.error('Geocoding failed:', e);
-    } finally {
-      setGeocoding(false);
-    }
-  };
-
-  // Handle image file selection
-  const handleImageSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      showError('בחר קובץ תמונה בלבד');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showError('גודל התמונה גדול מדי (מקסימום 5MB)');
-      return;
-    }
-
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setImagePreview(event.target?.result || '');
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Upload image to Supabase storage
-  const uploadImage = async (file) => {
-    try {
-      setUploading(true);
-      const fileName = `places/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${file.type.split('/')[1]}`;
-
-      const { data, error } = await supabase.storage
-        .from('place-images')
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('place-images')
-        .getPublicUrl(fileName);
-
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
-      setImageFile(null);
-      showSuccess('התמונה הועלתה בהצלחה');
-      return publicUrl;
-    } catch (e) {
-      console.error('Image upload failed:', e);
-      showError('שגיאה בהעלאת התמונה');
-      throw e;
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Save place
-  const handleSavePlace = async () => {
-    if (!formData.name || !formData.address || !formData.lat || !formData.lng) {
-      showError('מלא את כל השדות הנדרשים');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      let imageUrl = formData.image_url;
-
-      // Upload image if selected
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
-      }
-
-      const payload = {
-        name: formData.name,
-        category: formData.category,
-        city: formData.city,
-        address: formData.address,
-        lat: parseFloat(formData.lat),
-        lng: parseFloat(formData.lng),
-        description: formData.description,
-        short_description: formData.short_description,
-        image_url: imageUrl,
-        rating: parseFloat(formData.rating),
-        price_level: formData.price_level,
-        opening_hours: formData.opening_hours,
-        phone: formData.phone,
-        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
-      };
-
-      if (editingPlace) {
-        const { error } = await supabase
-          .from('places')
-          .update(payload)
-          .eq('id', editingPlace.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('places')
-          .insert([{ ...payload, status: 'approved' }]);
-        if (error) throw error;
-      }
-
-      showSuccess('המקום נשמר בהצלחה');
-      setFormData({
-        name: '',
-        category: 'nature',
-        city: '',
-        address: '',
-        lat: '',
-        lng: '',
-        description: '',
-        short_description: '',
-        image_url: '',
-        rating: 4.5,
-        price_level: 'moderate',
-        opening_hours: '09:00-18:00',
-        phone: '',
-        tags: '',
-      });
-      setImageFile(null);
-      setImagePreview('');
-      setEditingPlace(null);
-      setShowForm(false);
-      loadPlaces();
-    } catch (e) {
-      console.error('Failed to save place:', e);
-      showError('שגיאה בשמירת המקום');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Approve/Reject place
-  const handleApprovePlace = async (id, status) => {
-    try {
-      const { error } = await supabase
-        .from('places')
-        .update({ status })
-        .eq('id', id);
-      if (error) throw error;
-      showSuccess(status === 'approved' ? 'המקום אושר בהצלחה' : 'המקום נדחה בהצלחה');
-      loadPlaces();
-    } catch (e) {
-      console.error('Failed to update place status:', e);
-      showError('שגיאה בעדכון הסטטוס');
-    }
-  };
-
-  // Delete place
-  const handleDeletePlace = (id) => {
-    setConfirmDialog({
-      isOpen: true,
-      title: 'מחק מקום',
-      message: 'בטוח שברצונך למחוק את המקום הזה? פעולה זו לא ניתנת לביטול.',
-      action: async () => {
-        try {
-          setConfirmDialog(prev => ({ ...prev, isLoading: true }));
-          const { error } = await supabase
-            .from('places')
-            .delete()
-            .eq('id', id);
-          if (error) throw error;
-          showSuccess('המקום נמחק בהצלחה');
-          setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isLoading: false });
-          loadPlaces();
-        } catch (e) {
-          console.error('Failed to delete place:', e);
-          showError('שגיאה במחיקת המקום');
-          setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isLoading: false });
-        }
-      },
-      isLoading: false,
-      variant: 'danger',
-      isDangerous: true,
-    });
-  };
-
-  const showSuccess = useCallback((msg) => {
-    setMessageIsError(false);
-    setSuccessMessage(msg);
-    setTimeout(() => setSuccessMessage(''), 3000);
+  // Stable identities: child components use these as effect dependencies
+  const showSuccess = useCallback((text) => {
+    setMessage({ text, isError: false });
+    setTimeout(() => setMessage({ text: '', isError: false }), 3000);
   }, []);
 
-  const showError = useCallback((msg) => {
-    setMessageIsError(true);
-    setSuccessMessage(msg);
-    setTimeout(() => setSuccessMessage(''), 5000);
+  const showError = useCallback((text) => {
+    setMessage({ text, isError: true });
+    setTimeout(() => setMessage({ text: '', isError: false }), 5000);
   }, []);
+
+  const setPendingPlaces = useCallback(
+    (places) => setPendingCounts((counts) => (counts.places === places ? counts : { ...counts, places })),
+    []
+  );
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/admin-login');
   };
 
-  // Filter and sort places
-  const filteredPlaces = places
-    .filter(place => {
-      if (statusFilter !== 'all' && place.status !== statusFilter) return false;
-      if (searchQuery && !(place.name || '').toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'recent') return new Date(b.created_at) - new Date(a.created_at);
-      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
-      return (a.name || '').localeCompare(b.name || '', 'he');
-    });
-
-  // Bulk update status
-  const handleBulkStatusUpdate = async (newStatus) => {
-    if (selectedPlaces.size === 0) return;
-    try {
-      const placeIds = Array.from(selectedPlaces);
-      const { error } = await supabase
-        .from('places')
-        .update({ status: newStatus })
-        .in('id', placeIds);
-      if (error) throw error;
-      showSuccess(`עודכנו ${placeIds.length} מקומות ל${newStatus}`);
-      setSelectedPlaces(new Set());
-      loadPlaces();
-    } catch (e) {
-      console.error('Bulk update failed:', e);
-      showError('שגיאה בעדכון קבוצתי');
-    }
-  };
-
-  const startEdit = (place) => {
-    setEditingPlace(place);
-    setFormData({
-      name: place.name,
-      category: place.category,
-      city: place.city ?? '',
-      address: place.address ?? '',
-      lat: String(place.lat ?? ''),
-      lng: String(place.lng ?? ''),
-      description: place.description ?? '',
-      short_description: place.short_description ?? '',
-      image_url: place.image_url || '',
-      rating: String(place.rating ?? 4.5),
-      price_level: place.price_level ?? 'moderate',
-      opening_hours: place.opening_hours ?? '09:00-18:00',
-      phone: place.phone ?? '',
-      tags: (place.tags || []).join(', '),
-    });
-    setImageFile(null);
-    setImagePreview('');
-    setShowForm(true);
-  };
-
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Tab Navigation */}
+      {/* Tab navigation */}
       <div className="sticky top-0 bg-card border-b border-border z-20">
         <div className="max-w-6xl mx-auto px-4 py-4 flex gap-4 justify-between items-center">
           <button
@@ -364,694 +63,83 @@ export default function Admin() {
             <span>התנתק</span>
           </button>
           <div className="flex flex-wrap gap-2 justify-end" role="tablist">
-            {[
-              ['dashboard', 'לוח בקרה'],
-              ['studio', 'סטודיו תוכן'],
-              ['approval', 'אישור מקומות'],
-              ['places', 'ניהול מקומות'],
-              ['moderation', 'טיפים ודיווחים'],
-              ['users', 'משתמשים'],
-              ['audit', 'יומן פעולות'],
-            ].map(([key, label]) => {
+            {TABS.map(([key, label]) => {
               const badge = key === 'approval' ? pendingCounts.places : key === 'moderation' ? pendingCounts.content : 0;
               return (
-              <button
-                key={key}
-                role="tab"
-                aria-selected={activeTab === key}
-                onClick={() => setActiveTab(key)}
-                className={`px-4 py-2 rounded-2xl text-sm font-medium transition-colors ${
-                  activeTab === key
-                    ? 'bg-green-600 text-white'
-                    : 'bg-secondary text-foreground hover:bg-secondary/80'
-                }`}
-              >
-                {label}
-                {badge > 0 && (
-                  <span
-                    className="mr-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[11px] font-bold text-white"
-                    aria-label={`${badge} ממתינים`}
-                  >
-                    {badge}
-                  </span>
-                )}
-              </button>
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={activeTab === key}
+                  onClick={() => setActiveTab(key)}
+                  className={`px-4 py-2 rounded-2xl text-sm font-medium transition-colors ${
+                    activeTab === key
+                      ? 'bg-green-600 text-white'
+                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  {label}
+                  {badge > 0 && (
+                    <span
+                      className="mr-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[11px] font-bold text-white"
+                      aria-label={`${badge} ממתינים`}
+                    >
+                      {badge}
+                    </span>
+                  )}
+                </button>
               );
             })}
           </div>
         </div>
       </div>
 
-      {/* Success Message */}
-      {successMessage && (
+      {/* Toast */}
+      {message.text && (
         <div
-          role={messageIsError ? 'alert' : 'status'}
+          role={message.isError ? 'alert' : 'status'}
           className={`fixed top-24 right-4 z-50 flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md border animate-in ${
-            messageIsError
+            message.isError
               ? 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 border-red-200 dark:border-red-800'
               : 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-200 border-green-200 dark:border-green-800'
           }`}
         >
-          {messageIsError ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
-          {successMessage}
+          {message.isError ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
+          {message.text}
         </div>
       )}
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {activeTab === 'dashboard' && (
-          <Dashboard onNavigate={setActiveTab} onCounts={setPendingCounts} />
+        {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} onCounts={setPendingCounts} />}
+
+        {activeTab === 'approval' && (
+          <PlacesManager
+            key="approval"
+            title="אישור מקומות"
+            initialStatus="pending"
+            onPendingChange={setPendingPlaces}
+            onError={showError}
+            onSuccess={showSuccess}
+          />
         )}
 
-        {activeTab === 'moderation' && (
-          <ModerationQueue onError={showError} onSuccess={showSuccess} />
+        {activeTab === 'places' && (
+          <PlacesManager
+            key="places"
+            title="ניהול מקומות"
+            onPendingChange={setPendingPlaces}
+            onError={showError}
+            onSuccess={showSuccess}
+          />
         )}
+
+        {activeTab === 'moderation' && <ModerationQueue onError={showError} onSuccess={showSuccess} />}
 
         {activeTab === 'users' && (
           <UsersManager currentUserId={currentUserId} onError={showError} onSuccess={showSuccess} />
         )}
 
         {activeTab === 'audit' && <AuditLog onError={showError} />}
-
-        {activeTab === 'studio' && (
-          <div>
-            <h1 className="text-2xl font-bold text-right mb-6 text-foreground">סטודיו תוכן מהיר</h1>
-
-            {/* Quick Publish Form */}
-            <div className="bg-card rounded-3xl p-6 mb-8 border border-border">
-              <h2 className="text-lg font-bold text-right mb-4 text-foreground">פרסום מהיר</h2>
-              <div className="space-y-4">
-                <textarea
-                  placeholder="כתוב טיפ או דיווח מהשטח..."
-                  className="w-full p-4 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right bg-background text-foreground"
-                  rows={4}
-                />
-                <div className="flex gap-3">
-                  <button className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
-                    <Upload size={18} />
-                    פרסום
-                  </button>
-                  <button className="px-4 py-3 border border-border rounded-2xl font-medium hover:bg-secondary transition-colors text-foreground">
-                    ביטול
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Tips */}
-            <div className="bg-white rounded-3xl p-6">
-              <h2 className="text-lg font-bold text-right mb-4">טיפים אחרונים</h2>
-              <div className="text-gray-600 text-right text-sm">
-                טבעת תוכן קהילתית תופיע כאן
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'places' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold text-right">ניהול מקומות</h1>
-              <button
-                onClick={() => {
-                  setEditingPlace(null);
-                  setFormData({
-                    name: '',
-                    category: 'nature',
-                    city: '',
-                    address: '',
-                    lat: '',
-                    lng: '',
-                    description: '',
-                    short_description: '',
-                    image_url: '',
-                    rating: 4.5,
-                    price_level: 'moderate',
-                    opening_hours: '09:00-18:00',
-                    phone: '',
-                    tags: '',
-                  });
-                  setShowForm(true);
-                }}
-                className="px-4 py-2 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <Plus size={18} />
-                הוסף מקום
-              </button>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="bg-card border border-border rounded-3xl p-6 mb-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Search */}
-                <div>
-                  <label htmlFor="search-places" className="block text-sm font-medium text-foreground mb-2">
-                    חיפוש
-                  </label>
-                  <input
-                    id="search-places"
-                    type="text"
-                    placeholder="חפש שם מקום..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-background text-foreground text-right"
-                  />
-                </div>
-
-                {/* Status Filter */}
-                <div>
-                  <label htmlFor="status-filter" className="block text-sm font-medium text-foreground mb-2">
-                    סטטוס
-                  </label>
-                  <select
-                    id="status-filter"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-background text-foreground"
-                  >
-                    <option value="all">הכל</option>
-                    <option value="approved">אושר</option>
-                    <option value="pending">ממתין</option>
-                    <option value="rejected">נדחה</option>
-                  </select>
-                </div>
-
-                {/* Sort */}
-                <div>
-                  <label htmlFor="sort-by" className="block text-sm font-medium text-foreground mb-2">
-                    מיון
-                  </label>
-                  <select
-                    id="sort-by"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-green-600 outline-none bg-background text-foreground"
-                  >
-                    <option value="recent">אחרונים</option>
-                    <option value="rating">דירוג</option>
-                    <option value="name">שם</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Bulk Actions */}
-              {selectedPlaces.size > 0 && (
-                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-blue-700 dark:text-blue-200 font-medium">
-                      {selectedPlaces.size} מקום נבחר
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleBulkStatusUpdate('approved')}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-                      >
-                        אישור
-                      </button>
-                      <button
-                        onClick={() => handleBulkStatusUpdate('rejected')}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-                      >
-                        דחייה
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="text-sm text-muted-foreground">
-                נמצאו {filteredPlaces.length} מקומות
-              </div>
-            </div>
-
-            {/* Form */}
-            {showForm && (
-              <div className="bg-white rounded-3xl p-6 mb-8">
-                <h2 className="text-lg font-bold text-right mb-6">
-                  {editingPlace ? 'עריכת מקום' : 'הוספת מקום חדש'}
-                </h2>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Name */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      שם המקום *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  {/* Category */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      קטגוריה
-                    </label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    >
-                      {CATEGORIES.map(cat => (
-                        <option key={cat.key} value={cat.key}>{cat.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Price Level */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      רמת מחיר
-                    </label>
-                    <select
-                      value={formData.price_level}
-                      onChange={(e) => setFormData({ ...formData, price_level: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    >
-                      <option value="free">חינם</option>
-                      <option value="budget">בתקציב</option>
-                      <option value="moderate">בינוני</option>
-                      <option value="expensive">יקר</option>
-                    </select>
-                  </div>
-
-                  {/* City */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      עיר
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  {/* Address */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      כתובת *
-                    </label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleGeocodeAddress}
-                        disabled={geocoding}
-                        className="px-4 py-2 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                      >
-                        {geocoding ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
-                        זהי כתובת
-                      </button>
-                      <input
-                        type="text"
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Coordinates */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      קו רוחב
-                    </label>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      value={formData.lat}
-                      onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      קו אורך
-                    </label>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      value={formData.lng}
-                      onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      תיאור קצר
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.short_description}
-                      onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  {/* Full Description */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      תיאור מלא
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                      rows={4}
-                    />
-                  </div>
-
-                  {/* Image */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      תמונה
-                    </label>
-
-                    {/* Image Preview */}
-                    {(imagePreview || formData.image_url) && (
-                      <div className="mb-4">
-                        <img
-                          src={imagePreview || formData.image_url}
-                          alt="preview"
-                          className="max-w-xs h-40 object-cover rounded-2xl border border-gray-300"
-                        />
-                      </div>
-                    )}
-
-                    {/* File Upload */}
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                        העלה תמונה
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageSelect}
-                        disabled={uploading}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right disabled:opacity-50"
-                      />
-                      {uploading && <p className="text-sm text-gray-500 mt-2">העלאת תמונה...</p>}
-                    </div>
-
-                    {/* URL Input */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                        או הזן URL תמונה
-                      </label>
-                      <input
-                        type="url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                        placeholder="https://..."
-                        className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Rating */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      דירוג
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="5"
-                      step="0.1"
-                      value={formData.rating}
-                      onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  {/* Hours */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      שעות פתיחה
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.opening_hours}
-                      onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      טלפון
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-
-                  {/* Tags */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                      תגיות (מופרדות בפסיקים)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.tags}
-                      onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
-                    />
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={handleSavePlace}
-                    disabled={loading}
-                    className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-                  >
-                    {loading ? <Loader2 size={18} className="animate-spin mx-auto" /> : 'שמור'}
-                  </button>
-                  <button
-                    onClick={() => setShowForm(false)}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-2xl font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    ביטול
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Places List */}
-            {loading && !showForm ? (
-              <div className="text-center py-12">
-                <Loader2 size={40} className="animate-spin mx-auto text-green-600" />
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {places.map(place => (
-                  <div
-                    key={place.id}
-                    className="bg-white rounded-2xl p-4 flex items-center justify-between hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex-1 text-right">
-                      <h3 className="font-bold text-lg">{place.name}</h3>
-                      <p className="text-sm text-gray-600">{place.city} • {place.category}</p>
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      <button
-                        onClick={() => startEdit(place)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDeletePlace(place.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Places Table */}
-            {!showForm && (
-              <div className="bg-card border border-border rounded-3xl overflow-hidden">
-                {loading ? (
-                  <div className="text-center py-12">
-                    <Loader2 size={40} className="animate-spin mx-auto text-green-600" />
-                  </div>
-                ) : filteredPlaces.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    אין מקומות תואמים
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-secondary border-b border-border">
-                        <tr>
-                          <th className="p-4 text-right">
-                            <input
-                              type="checkbox"
-                              checked={selectedPlaces.size === filteredPlaces.length}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedPlaces(new Set(filteredPlaces.map(p => p.id)));
-                                } else {
-                                  setSelectedPlaces(new Set());
-                                }
-                              }}
-                              aria-label="בחר הכל"
-                            />
-                          </th>
-                          <th className="p-4 text-right">שם</th>
-                          <th className="p-4 text-right">קטגוריה</th>
-                          <th className="p-4 text-right">סטטוס</th>
-                          <th className="p-4 text-right">דירוג</th>
-                          <th className="p-4 text-right">פעולות</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredPlaces.map(place => (
-                          <tr key={place.id} className="border-b border-border hover:bg-secondary/50">
-                            <td className="p-4">
-                              <input
-                                type="checkbox"
-                                checked={selectedPlaces.has(place.id)}
-                                onChange={(e) => {
-                                  const newSet = new Set(selectedPlaces);
-                                  if (e.target.checked) {
-                                    newSet.add(place.id);
-                                  } else {
-                                    newSet.delete(place.id);
-                                  }
-                                  setSelectedPlaces(newSet);
-                                }}
-                                aria-label={`בחר ${place.name}`}
-                              />
-                            </td>
-                            <td className="p-4 text-right font-medium">{place.name}</td>
-                            <td className="p-4 text-right text-muted-foreground">{place.category}</td>
-                            <td className="p-4 text-right">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                place.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200' :
-                                place.status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200' :
-                                'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200'
-                              }`}>
-                                {place.status === 'approved' ? 'אושר' : place.status === 'pending' ? 'ממתין' : 'נדחה'}
-                              </span>
-                            </td>
-                            <td className="p-4 text-right">{(place.rating || 0).toFixed(1)}</td>
-                            <td className="p-4 text-right flex gap-2 justify-end">
-                              <button
-                                onClick={() => startEdit(place)}
-                                className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
-                                aria-label={`ערוך ${place.name}`}
-                              >
-                                <Edit2 size={14} />
-                              </button>
-                              <button
-                                onClick={() => handleDeletePlace(place.id)}
-                                className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
-                                aria-label={`מחק ${place.name}`}
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'approval' && (
-          <div>
-            <h1 className="text-2xl font-bold text-right mb-6">אישור מקומות</h1>
-
-            {loading ? (
-              <div className="text-center py-12">
-                <Loader2 size={40} className="animate-spin mx-auto text-green-600" />
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {places.filter(p => p.status === 'pending').length === 0 ? (
-                  <div className="bg-white rounded-2xl p-8 text-center text-gray-600">
-                    אין מקומות המחכים לאישור
-                  </div>
-                ) : (
-                  places.filter(p => p.status === 'pending').map(place => (
-                    <div
-                      key={place.id}
-                      className="bg-white rounded-2xl p-6 border-2 border-yellow-200"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1 text-right">
-                          <h3 className="font-bold text-lg">{place.name}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{place.city} • {place.category}</p>
-                          <p className="text-sm text-gray-700 mt-2">{place.address}</p>
-                          {place.description && (
-                            <p className="text-sm text-gray-600 mt-2">{place.description}</p>
-                          )}
-                        </div>
-                        {place.image_url && (
-                          <img
-                            src={place.image_url}
-                            alt={place.name}
-                            className="w-20 h-20 object-cover rounded-lg ml-4 flex-shrink-0"
-                            onError={(e) => e.target.style.display = 'none'}
-                          />
-                        )}
-                      </div>
-                      <div className="flex gap-3 justify-end">
-                        <button
-                          onClick={() => handleApprovePlace(place.id, 'approved')}
-                          className="px-6 py-2 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors"
-                        >
-                          אשר
-                        </button>
-                        <button
-                          onClick={() => handleApprovePlace(place.id, 'rejected')}
-                          className="px-6 py-2 bg-red-600 text-white rounded-2xl font-medium hover:bg-red-700 transition-colors"
-                        >
-                          דחה
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-        )}
       </div>
-
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        isOpen={confirmDialog.isOpen}
-        title={confirmDialog.title}
-        message={confirmDialog.message}
-        variant={confirmDialog.variant || 'warning'}
-        isDangerous={confirmDialog.isDangerous}
-        isLoading={confirmDialog.isLoading}
-        confirmText="מחק"
-        cancelText="ביטול"
-        onConfirm={confirmDialog.action}
-        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
-      />
     </div>
   );
 }
