@@ -107,7 +107,7 @@ export default function Trips() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('trips')
         .insert([{
           user_id: user.id,
@@ -115,18 +115,20 @@ export default function Trips() {
           description: tripDescription,
           places_order: tripPlaces,
           duration_hours: Math.ceil(tripPlaces.length * 1.5),
-        }])
-        .select();
+        }]);
 
       if (error) throw error;
-      if (data && data[0]) {
-        const newTrip = {
-          ...data[0],
-          places_order: typeof data[0].places_order === 'string'
-            ? JSON.parse(data[0].places_order)
-            : data[0].places_order
-        };
-        setSavedTrips([newTrip, ...savedTrips]);
+
+      // Create local trip object for immediate display
+      const newTrip = {
+        id: 'temp-' + Date.now(),
+        user_id: user.id,
+        title: tripTitle,
+        description: tripDescription,
+        places_order: tripPlaces,
+        duration_hours: Math.ceil(tripPlaces.length * 1.5),
+      };
+      setSavedTrips([newTrip, ...savedTrips]);
         setTripTitle('');
         setTripDescription('');
         setTripPlaces([]);
