@@ -102,7 +102,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
         <div className="p-6 space-y-6">
           {/* Hero Image Carousel */}
           {getPlaceImages(place).length > 0 && (
-            <ImageCarousel images={getPlaceImages(place)} title={place.name} />
+            <ImageCarousel images={getPlaceImages(place)} title={place.name} credits={place.image_credits} />
           )}
 
           {(place.opening_schedule || place.kosher === 'kosher') && (

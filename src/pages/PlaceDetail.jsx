@@ -355,7 +355,7 @@ export default function PlaceDetail() {
         {getPlaceImages(place).length > 1 && (
           <section className="mb-12" aria-label="גלריית תמונות">
             <h2 className="text-xl font-bold text-right mb-4">תמונות</h2>
-            <ImageCarousel images={getPlaceImages(place)} title={place.name} />
+            <ImageCarousel images={getPlaceImages(place)} title={place.name} credits={place.image_credits} />
           </section>
         )}
 

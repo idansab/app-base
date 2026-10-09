@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { commonsFilePage, licenseUrl } from '@/lib/commonsImages';
 
-export default function ImageCarousel({ images, title }) {
+export default function ImageCarousel({ images, title, credits }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -30,6 +31,10 @@ export default function ImageCarousel({ images, title }) {
       opacity: 0,
     }),
   };
+
+  const credit = credits?.[images[current]];
+  const fileUrl = credit ? commonsFilePage(images[current]) : null;
+  const licUrl = credit ? licenseUrl(credit.license) : null;
 
   const paginate = (newDirection) => {
     setDirection(newDirection);
@@ -97,6 +102,16 @@ export default function ImageCarousel({ images, title }) {
           </div>
         )}
       </div>
+
+      {credit && (
+        <p className="px-3 py-1.5 text-[11px] text-muted-foreground bg-slate-50/50" dir="ltr">
+          Photo:{' '}
+          {fileUrl ? <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">{credit.author}</a> : credit.author}
+          {' · '}
+          {licUrl ? <a href={licUrl} target="_blank" rel="noopener noreferrer" className="underline">{credit.license}</a> : credit.license}
+          {' · Wikimedia Commons'}
+        </p>
+      )}
 
       {/* Thumbnail Strip */}
       {images.length > 1 && (
