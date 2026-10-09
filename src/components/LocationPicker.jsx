@@ -21,7 +21,6 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
   const [isCurrentLocation, setIsCurrentLocation] = useState(false);
   const [isLoadingGeocode, setIsLoadingGeocode] = useState(false);
   const [searchError, setSearchError] = useState('');
-  const [showUnlimited, setShowUnlimited] = useState(currentDistance === null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -90,7 +89,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
 
   const handleApply = () => {
     if (!selectedLocation) return;
-    onLocationChange(selectedLocation, showUnlimited ? null : distance);
+    onLocationChange(selectedLocation, distance);
     onClose();
   };
 
@@ -221,31 +220,17 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-gray-700">מרחק חיפוש</span>
-            {!showUnlimited && <span className="text-xl font-bold text-green-600">{distance} ק״מ</span>}
+            <span className="text-xl font-bold text-green-600">{distance} ק״מ</span>
           </div>
 
-          {!showUnlimited && (
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={distance}
-              onChange={(e) => setDistance(Number(e.target.value))}
-              className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-green-600"
-            />
-          )}
-
-          {/* Unlimited Toggle */}
-          <button
-            onClick={() => setShowUnlimited(!showUnlimited)}
-            className={`w-full mt-4 p-3 rounded-2xl font-medium transition-all ${
-              showUnlimited
-                ? 'bg-primary text-white hover:shadow-md'
-                : 'bg-sand text-text-primary hover:bg-primary-light hover:shadow-sm'
-            }`}
-          >
-            {showUnlimited ? '✓ ללא הגבלת מרחק' : 'ללא הגבלת מרחק'}
-          </button>
+          <input
+            type="range"
+            min="1"
+            max="100"
+            value={distance}
+            onChange={(e) => setDistance(Number(e.target.value))}
+            className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-green-600"
+          />
         </div>
 
         {/* Action Buttons */}
