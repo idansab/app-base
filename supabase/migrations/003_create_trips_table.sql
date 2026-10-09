@@ -16,23 +16,23 @@ ALTER TABLE trips ENABLE ROW LEVEL SECURITY;
 -- Allow users to read their own trips
 CREATE POLICY "Users can read own trips"
 ON trips FOR SELECT
-USING (auth.uid()::text = user_id);
+USING (user_id = auth.uid()::text);
 
 -- Allow users to insert their own trips
 CREATE POLICY "Users can insert own trips"
 ON trips FOR INSERT
-WITH CHECK (auth.uid()::text = user_id);
+WITH CHECK (user_id = auth.uid()::text);
 
 -- Allow users to update their own trips
 CREATE POLICY "Users can update own trips"
 ON trips FOR UPDATE
-USING (auth.uid()::text = user_id)
-WITH CHECK (auth.uid()::text = user_id);
+USING (user_id = auth.uid()::text)
+WITH CHECK (user_id = auth.uid()::text);
 
 -- Allow users to delete their own trips
 CREATE POLICY "Users can delete own trips"
 ON trips FOR DELETE
-USING (auth.uid()::text = user_id);
+USING (user_id = auth.uid()::text);
 
 -- Create index for user_id lookups
 CREATE INDEX IF NOT EXISTS idx_trips_user_id ON trips(user_id);
