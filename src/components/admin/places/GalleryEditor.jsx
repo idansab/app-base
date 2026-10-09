@@ -7,7 +7,7 @@ import { uploadPlaceImage, validateImageFile } from '@/lib/uploadPlaceImage';
  * Ordered gallery of up to MAX_PLACE_IMAGES images. The first image is the cover
  * shown on cards. Order is changed with the arrow buttons (keyboard accessible).
  */
-export default function GalleryEditor({ images, onChange, onError, onSuccess }) {
+export default function GalleryEditor({ images, onChange, onError, onSuccess, allowUrl = true }) {
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(0);
   const [urlOpen, setUrlOpen] = useState(false);
@@ -170,7 +170,7 @@ export default function GalleryEditor({ images, onChange, onError, onSuccess }) 
         }}
       />
 
-      {urlOpen ? (
+      {!allowUrl ? null : urlOpen ? (
         <div className="flex gap-2">
           <button type="button" onClick={addUrl} className="px-3 rounded-xl bg-secondary text-sm hover:bg-secondary/80">
             הוסף

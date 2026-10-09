@@ -9,7 +9,11 @@ import { getPlaceImages } from '@/lib/placeImages';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import { supabase } from '@/api/base44Client';
 
-export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation, isFavorite, onFavoriteToggle }) {
+export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, userLocation, isFavorite, onFavoriteToggle }) {
+  // after an owner edit we show the fresh row until the parent list reloads
+  const [updatedPlace, setUpdatedPlace] = useState(null);
+  const place = updatedPlace && updatedPlace.id === placeProp?.id ? updatedPlace : placeProp;
+
   const [tips, setTips] = useState([]);
   const [newTipText, setNewTipText] = useState('');
   const [submittingTip, setSubmittingTip] = useState(false);
@@ -175,7 +179,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
             </motion.div>
           )}
 
-          <ClaimPlace place={place} />
+          <ClaimPlace place={place} onPlaceUpdated={setUpdatedPlace} />
 
           {/* Action Buttons */}
           <motion.div

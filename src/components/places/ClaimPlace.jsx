@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BadgeCheck, Clock, Loader2, Store, X } from 'lucide-react';
+import { BadgeCheck, Clock, Loader2, Pencil, Store, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { formatBetaDate, useBetaInfo } from '@/lib/beta';
+import OwnerEditor from '@/components/places/OwnerEditor';
 
 const RELATIONS = [
   ['owner', 'בעל/ת העסק'],
@@ -18,7 +19,7 @@ const inputCls =
  * "Are you the owner?" entry point on a place. Claims are reviewed by an admin; nothing changes
  * for the place until then. Shows the user's own claim status when one exists.
  */
-export default function ClaimPlace({ place, className = '' }) {
+export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +30,8 @@ export default function ClaimPlace({ place, className = '' }) {
   const [form, setForm] = useState({ relation: 'owner', contact_name: '', contact_phone: '', note: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [pendingRequest, setPendingRequest] = useState(false);
 
   const loadClaim = useCallback(async () => {
     if (!isAuthenticated || !user?.id || !place?.id) {
@@ -47,6 +50,24 @@ export default function ClaimPlace({ place, className = '' }) {
   useEffect(() => {
     loadClaim();
   }, [loadClaim]);
+
+  // an owner may already have an update waiting for review
+  const loadPendingRequest = useCallback(async () => {
+    if (claim?.status !== 'approved' || !place?.id) {
+      setPendingRequest(false);
+      return;
+    }
+    const { count } = await supabase
+      .from('place_update_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('place_id', place.id)
+      .eq('status', 'pending');
+    setPendingRequest((count ?? 0) > 0);
+  }, [claim?.status, place?.id]);
+
+  useEffect(() => {
+    loadPendingRequest();
+  }, [loadPendingRequest]);
 
   if (!place?.id) return null;
 
@@ -100,8 +121,33 @@ export default function ClaimPlace({ place, className = '' }) {
   // ---- status line instead of the button once the user has a claim ----
   if (claim?.status === 'approved') {
     return (
-      <div className={`flex items-center justify-end gap-2 text-sm text-green-700 ${className}`}>
-        אתה רשום כבעלים של המקום <BadgeCheck size={18} />
+      <div className={`space-y-3 ${className}`}>
+        <div className="flex items-center justify-end gap-2 text-sm text-green-700">
+          אתה רשום כבעלים של המקום <BadgeCheck size={18} />
+        </div>
+        {pendingRequest && (
+          <p className="text-xs text-gray-600 text-right flex items-center justify-end gap-1">
+            יש לך בקשת עדכון שממתינה לאישור <Clock size={12} />
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-green-600 text-white font-medium hover:bg-green-700 transition-colors"
+        >
+          <Pencil size={18} />
+          ערוך את פרטי העסק
+        </button>
+        {editing && (
+          <OwnerEditor
+            place={place}
+            onClose={() => {
+              setEditing(false);
+              loadPendingRequest();
+            }}
+            onSaved={onPlaceUpdated}
+          />
+        )}
       </div>
     );
   }
@@ -145,7 +191,6 @@ export default function ClaimPlace({ place, className = '' }) {
             <p className="text-sm text-gray-600">
               נבדוק את הבקשה ונחזור אליך בטלפון. אחרי האישור תוכל לעדכן את פרטי העסק
               {beta?.active ? ` בחינם עד ${formatBetaDate(beta.ends_at)}` : ''}.
-              אפשרות העדכון תיפתח בקרוב.
             </p>
 
             <label className="block">

@@ -9,12 +9,14 @@ import UsersManager from '@/components/admin/UsersManager';
 import AuditLog from '@/components/admin/AuditLog';
 import OwnershipRequests from '@/components/admin/OwnershipRequests';
 import BetaSettings from '@/components/admin/BetaSettings';
+import UpdateRequests from '@/components/admin/UpdateRequests';
 
 const TABS = [
   ['dashboard', 'לוח בקרה'],
   ['approval', 'אישור מקומות'],
   ['places', 'ניהול מקומות'],
   ['moderation', 'טיפים ודיווחים'],
+  ['updates', 'בקשות עדכון'],
   ['owners', 'בעלות על מקומות'],
   ['users', 'משתמשים'],
   ['audit', 'יומן פעולות'],
@@ -24,7 +26,7 @@ const TABS = [
 export default function Admin() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0, owners: 0 });
+  const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0, owners: 0, updates: 0 });
   const [currentUserId, setCurrentUserId] = useState(null);
   const [message, setMessage] = useState({ text: '', isError: false });
 
@@ -53,6 +55,11 @@ export default function Admin() {
     []
   );
 
+  const setPendingUpdates = useCallback(
+    (updates) => setPendingCounts((counts) => (counts.updates === updates ? counts : { ...counts, updates })),
+    []
+  );
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/admin-login');
@@ -77,6 +84,7 @@ export default function Admin() {
                 key === 'approval' ? pendingCounts.places
                 : key === 'moderation' ? pendingCounts.content
                 : key === 'owners' ? pendingCounts.owners
+                : key === 'updates' ? pendingCounts.updates
                 : 0;
               return (
                 <button
@@ -146,6 +154,10 @@ export default function Admin() {
         )}
 
         {activeTab === 'moderation' && <ModerationQueue onError={showError} onSuccess={showSuccess} />}
+
+        {activeTab === 'updates' && (
+          <UpdateRequests onPendingChange={setPendingUpdates} onError={showError} onSuccess={showSuccess} />
+        )}
 
         {activeTab === 'owners' && (
           <OwnershipRequests onPendingChange={setPendingOwners} onError={showError} onSuccess={showSuccess} />

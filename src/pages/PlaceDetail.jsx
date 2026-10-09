@@ -492,7 +492,7 @@ export default function PlaceDetail() {
         </motion.div>
 
         <div className="mt-12 max-w-md mx-auto">
-          <ClaimPlace place={place} />
+          <ClaimPlace place={place} onPlaceUpdated={setPlace} />
         </div>
       </div>
     </div>

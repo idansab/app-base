@@ -6,8 +6,36 @@ const ACTIONS = {
   status_change: 'שינוי סטטוס',
   delete: 'מחיקה',
   role_change: 'שינוי הרשאה',
+  config_change: 'שינוי הגדרות',
+  owner_edit: 'עריכה על ידי בעל עסק',
+  apply_request: 'אישור בקשת עדכון',
 };
-const TARGETS = { places: 'מקום', tips: 'טיפ', reports: 'דיווח', profiles: 'משתמש' };
+const TARGETS = {
+  places: 'מקום',
+  tips: 'טיפ',
+  reports: 'דיווח',
+  profiles: 'משתמש',
+  place_owners: 'בעלות על מקום',
+  place_update_requests: 'בקשת עדכון',
+  app_config: 'הגדרות',
+};
+const FIELD_LABELS = {
+  short_description: 'תיאור קצר', description: 'תיאור', phone: 'טלפון', opening_hours: 'שעות', opening_schedule: 'שעות',
+  images: 'תמונות', kosher: 'כשרות', kosher_note: 'כשרות', price_level: 'מחיר', tags: 'תגיות',
+};
+
+// A short human line for the details column; never prints raw objects
+function describeDetails(details) {
+  if (!details) return '';
+  if (Array.isArray(details.fields)) {
+    return `שדות: ${[...new Set(details.fields.map((f) => FIELD_LABELS[f] || f))].join(', ')}`;
+  }
+  if (typeof details.from === 'string' && typeof details.to === 'string') return `(${details.from} ← ${details.to})`;
+  if (details.to && typeof details.to === 'object' && details.to.ends_at) {
+    return `סוף בטא: ${new Date(details.to.ends_at).toLocaleDateString('he-IL')}, הטבה לכולם: ${details.to.everyone_pro ? 'כן' : 'לא'}`;
+  }
+  return '';
+}
 
 export default function AuditLog({ onError }) {
   const [rows, setRows] = useState([]);
@@ -54,7 +82,7 @@ export default function AuditLog({ onError }) {
         <li key={r.id} className="bg-card border border-border rounded-2xl p-4 text-right text-sm">
           <p className="font-medium text-foreground">
             {ACTIONS[r.action] || r.action} · {TARGETS[r.target_type] || r.target_type}
-            {r.details?.from && r.details?.to ? ` (${r.details.from} ← ${r.details.to})` : ''}
+            {describeDetails(r.details) ? ` ${describeDetails(r.details)}` : ''}
           </p>
           <p className="text-xs text-muted-foreground" dir="ltr">
             {new Date(r.created_at).toLocaleString('he-IL')} · {r.target_id}
