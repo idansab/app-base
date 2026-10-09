@@ -36,9 +36,27 @@ export default function CommunityChat() {
 
   const username = user?.email?.split('@')[0] || 'משתמש';
 
+  // Delete expired messages
+  const deleteExpiredMessages = async () => {
+    try {
+      const { error } = await supabase
+        .from('community_messages')
+        .delete()
+        .lt('expires_at', new Date().toISOString());
+
+      if (error) throw error;
+      await loadMessages();
+    } catch (e) {
+      console.error('Failed to delete expired messages:', e);
+    }
+  };
+
   // Load messages
   useEffect(() => {
     loadMessages();
+
+    // Delete expired messages every minute
+    const cleanupInterval = setInterval(deleteExpiredMessages, 60000);
 
     // Subscribe to new messages
     const channel = supabase
@@ -65,6 +83,7 @@ export default function CommunityChat() {
 
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(cleanupInterval);
     };
   }, []);
 
