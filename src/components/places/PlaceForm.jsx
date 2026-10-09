@@ -4,8 +4,8 @@ import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock 
 import { supabase } from '@/api/base44Client';
 
 const CATEGORIES = [
-  { id: 'coffee_food', label: 'עגלות קפה ואוכל' },
-  { id: 'trips', label: 'טיולים' },
+  { id: 'food', label: 'עגלות קפה ואוכל' },
+  { id: 'nature', label: 'טבע וטיולים' },
   { id: 'nightlife', label: 'חיי לילה' },
   { id: 'shopping', label: 'שווקים וקניות' },
   { id: 'culture', label: 'תרבות' },
@@ -67,7 +67,7 @@ const FormInput = ({ label, helper, error, ...props }) => (
 export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
   const [formData, setFormData] = useState({
     name: '',
-    category: 'coffee_food',
+    category: 'food',
     city: '',
     address: '',
     lat: 0,

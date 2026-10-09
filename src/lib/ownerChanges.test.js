@@ -6,7 +6,7 @@ const IMG = 'https://x.supabase.co/storage/v1/object/public/place-images/places/
 const place = {
   id: '1',
   name: 'קפה',
-  category: 'cafe',
+  category: 'food',
   city: 'עפולה',
   address: 'רחוב 1',
   lat: 32.6,

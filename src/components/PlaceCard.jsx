@@ -6,8 +6,13 @@ import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 
 const CATEGORY_MAP = {
   'coffee_food': 'עגלות קפה ואוכל',
-  'trips': 'טיולים',
-  'food': 'אוכל ושתייה',
+  'trips': 'טבע וטיולים',
+  'cafe': 'עגלות קפה ואוכל',
+  'hiking': 'טבע וטיולים',
+  'view': 'טבע וטיולים',
+  'beach': 'טבע וטיולים',
+  'family': 'טבע וטיולים',
+  'food': 'עגלות קפה ואוכל',
   'nature': 'טבע וטיולים',
   'nightlife': 'חיי לילה',
   'shopping': 'קניות ושווקים',

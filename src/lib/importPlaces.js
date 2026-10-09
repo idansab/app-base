@@ -66,8 +66,8 @@ export function classify(tags = {}) {
   if (tags.leisure === 'nature_reserve' || tags.boundary === 'national_park' || tags.boundary === 'protected_area') {
     return { category: 'nature', kind: 'reserve', label: 'שמורת טבע או גן לאומי' };
   }
-  if (tags.tourism === 'viewpoint') return { category: 'view', kind: 'viewpoint', label: 'נקודת תצפית' };
-  if (tags.natural === 'beach') return { category: 'beach', kind: 'beach', label: 'חוף' };
+  if (tags.tourism === 'viewpoint') return { category: 'nature', kind: 'viewpoint', label: 'נקודת תצפית' };
+  if (tags.natural === 'beach') return { category: 'nature', kind: 'beach', label: 'חוף' };
   if (tags.tourism === 'museum') return { category: 'culture', kind: 'museum', label: 'מוזיאון' };
   if (/^(archaeological_site|ruins|castle|fort|monument|memorial)$/.test(tags.historic || '')) {
     return { category: 'culture', kind: 'historic', label: 'אתר היסטורי' };

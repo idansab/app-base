@@ -4,7 +4,7 @@ import { MapPin, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 
 const CATEGORIES = [
-  { id: 'food', label: 'אוכל ושתייה', icon: '🍽️' },
+  { id: 'food', label: 'עגלות קפה ואוכל', icon: '🍽️' },
   { id: 'nature', label: 'טבע וטיולים', icon: '🏞️' },
   { id: 'nightlife', label: 'חיי לילה', icon: '🌙' },
   { id: 'shopping', label: 'קניות ושווקים', icon: '🛍️' },

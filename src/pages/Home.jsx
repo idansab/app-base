@@ -10,6 +10,7 @@ import { isOpenNow } from '@/lib/openingHours';
 import useUserLocation from '@/hooks/useUserLocation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/api/base44Client';
+import { normalizeCategory } from '@/lib/categories';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
@@ -177,7 +178,7 @@ export default function Home() {
   // Filter and sort places
   const baseFiltered = places
     .filter(place => {
-      if (selectedCategory !== 'all' && place.category !== selectedCategory) return false;
+      if (selectedCategory !== 'all' && normalizeCategory(place.category) !== selectedCategory) return false;
       if (searchQuery && !place.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (userLocation && maxDistance != null) {
         const distance = haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng);

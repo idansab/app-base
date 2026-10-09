@@ -1,5 +1,6 @@
 // Pure helpers for the admin places manager (no React, no network) so they can be unit-tested.
 import { hasUsableSchedule, requiresHours, summarizeSchedule, validateSchedule } from '@/lib/openingHours';
+import { normalizeCategory } from '@/lib/categories';
 import { MAX_PLACE_IMAGES, getPlaceImages } from '@/lib/placeImages';
 
 export const STATUS_LABELS = {
@@ -57,7 +58,7 @@ export const getIssues = (place) =>
 
 export const EMPTY_FORM = {
   name: '',
-  category: 'other',
+  category: 'food',
   city: '',
   address: '',
   lat: '',
@@ -78,7 +79,7 @@ export const EMPTY_FORM = {
 
 export const placeToForm = (place) => ({
   name: place.name ?? '',
-  category: place.category ?? 'other',
+  category: normalizeCategory(place.category) ?? 'food',
   city: place.city ?? '',
   address: place.address ?? '',
   lat: place.lat == null ? '' : String(place.lat),

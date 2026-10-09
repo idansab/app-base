@@ -55,8 +55,8 @@ describe('classify', () => {
     expect(classify({ natural: 'spring' })).toMatchObject({ category: 'nature', label: 'מעיין' });
     expect(classify({ waterway: 'waterfall' }).category).toBe('nature');
     expect(classify({ leisure: 'nature_reserve' }).category).toBe('nature');
-    expect(classify({ tourism: 'viewpoint' }).category).toBe('view');
-    expect(classify({ natural: 'beach' }).category).toBe('beach');
+    expect(classify({ tourism: 'viewpoint' }).category).toBe('nature');
+    expect(classify({ natural: 'beach' }).category).toBe('nature');
     expect(classify({ tourism: 'museum' }).category).toBe('culture');
     expect(classify({ historic: 'ruins' }).category).toBe('culture');
     expect(classify({ amenity: 'marketplace' }).category).toBe('shopping');
