@@ -226,14 +226,14 @@ export default function Home() {
         className="px-4 max-w-6xl mx-auto -mt-8 relative z-10"
       >
         <div className="flex gap-3 items-center">
-          <div className="flex-1 flex items-center gap-3 px-6 py-4 bg-card border border-border rounded-3xl shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex-1 flex items-center gap-3 px-6 py-4 bg-card border border-border rounded-3xl shadow-lg hover:shadow-xl transition-shadow focus-within:ring-0 focus-within:border-border">
             <Search size={20} className="text-primary flex-shrink-0" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="מה באי לעשום?"
-              className="flex-1 outline-none text-right bg-transparent text-foreground placeholder:text-muted-foreground font-medium"
+              placeholder="מה בא לך לעשות?"
+              className="home-search-input flex-1 outline-none focus:outline-none focus-visible:ring-0 text-right bg-transparent text-foreground placeholder:text-muted-foreground font-medium"
             />
           </div>
           <button

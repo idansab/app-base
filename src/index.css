@@ -203,3 +203,9 @@ html[data-focus-outline="true"] input:focus-visible {
   outline: 4px solid hsl(var(--primary)) !important;
   outline-offset: 2px !important;
 }
+
+/* Remove ring from search input in home page */
+.home-search-input:focus-visible {
+  ring: none;
+  box-shadow: none;
+}
