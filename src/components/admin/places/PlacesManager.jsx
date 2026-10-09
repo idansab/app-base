@@ -627,7 +627,7 @@ export default function PlacesManager({
       {undo && (
         <div
           role="status"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 rounded-2xl bg-foreground text-background px-5 py-3 shadow-lg"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 rounded-2xl bg-foreground text-background px-5 py-3 shadow-lg"
         >
           <span className="text-sm">{undo.label}</span>
           <button onClick={runUndo} className="flex items-center gap-1 text-sm font-semibold underline">

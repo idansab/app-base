@@ -195,7 +195,7 @@ export default function PlaceDrawer({
   const hasCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng)) && form.lat !== '' && form.lng !== '';
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-start" role="dialog" aria-modal="true" aria-label="עריכת מקום">
+    <div className="fixed inset-0 z-[45] flex justify-start" role="dialog" aria-modal="true" aria-label="עריכת מקום">
       <button
         className="absolute inset-0 bg-black/40"
         aria-label="סגור"
@@ -437,7 +437,7 @@ export default function PlaceDrawer({
             </>
           )}
         </div>
-        <p className="px-4 pb-2 text-[11px] text-muted-foreground text-center">Ctrl+S לשמירה · Esc לסגירה</p>
+        <p className="px-4 pb-3 text-[11px] text-muted-foreground text-center hidden sm:block">Ctrl+S לשמירה · Esc לסגירה</p>
       </aside>
     </div>
   );
