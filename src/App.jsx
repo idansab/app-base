@@ -26,6 +26,10 @@ import ResetPassword from '@/pages/ResetPassword';
 import Settings from '@/pages/Settings';
 import About from '@/pages/About';
 import PlaceDetail from '@/pages/PlaceDetail';
+import TermsOfService from '@/pages/TermsOfService';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import AccessibilityStatement from '@/pages/AccessibilityStatement';
+import CookiePolicy from '@/pages/CookiePolicy';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,6 +71,10 @@ const AuthenticatedApp = () => {
         <Route path="/surprise" element={<Surprise />} />
         <Route path="/about" element={<About />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/accessibility" element={<AccessibilityStatement />} />
+        <Route path="/cookies" element={<CookiePolicy />} />
       </Route>
 
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
