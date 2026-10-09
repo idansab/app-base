@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, MapPin, Phone, Clock, Star, Heart, Share2, Navigation } from 'lucide-react';
+import { X, MapPin, Phone, Clock, Heart, Share2, Navigation } from 'lucide-react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import ImageCarousel from '@/components/ImageCarousel';
 import { supabase } from '@/api/base44Client';

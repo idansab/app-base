@@ -9,8 +9,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gsbbtrknnkdihdlojwbd.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'sb_placeholder_key_set_via_cloudflare_secrets';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+}
 
 let supabase;
 try {
@@ -22,16 +25,37 @@ try {
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',').map(o => o.trim());
+app.use(cors({ origin: ALLOWED_ORIGINS }));
+app.use(bodyParser.json({ limit: '100kb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '100kb' }));
 
 // ---- Auth middleware ----
-const auth = (req, res, next) => {
+// Verifies the Supabase JWT (never trusts the mere presence of a header) and
+// loads the role from public.profiles. The service-role client bypasses RLS,
+// so every write route below must check req.user itself.
+const auth = async (req, res, next) => {
+  req.user = null;
   const token = req.headers.authorization?.split(' ')[1];
-  req.user = token ? { id: 'user-1', email: 'demo@ma-yesh-po.com', role: 'admin' } : null;
+  if (token) {
+    const { data, error } = await supabase.auth.getUser(token);
+    if (!error && data?.user) {
+      const { data: profile } = await supabase
+        .from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+      req.user = { id: data.user.id, email: data.user.email, role: profile?.role || 'user' };
+    }
+  }
   next();
 };
+const requireUser = (req, res, next) =>
+  req.user ? next() : res.status(401).json({ error: 'Authentication required' });
+const requireAdmin = (req, res, next) =>
+  req.user?.role === 'admin' ? next() : res.status(req.user ? 403 : 401).json({ error: 'Admin only' });
+
+const PLACE_FIELDS = ['name', 'description', 'short_description', 'category', 'city', 'address',
+  'lat', 'lng', 'image_url', 'rating', 'price_level', 'opening_hours', 'phone', 'tags'];
+const pick = (body, fields) =>
+  Object.fromEntries(fields.filter(f => body?.[f] !== undefined).map(f => [f, body[f]]));
 
 // ---- Health check ----
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
@@ -39,17 +63,23 @@ app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 // ---- Places CRUD ----
 app.get('/api/places', async (req, res) => {
   try {
-    const { category, city, q, limit = 30, offset = 0, status } = req.query;
+    const { category, city, q, status } = req.query;
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 30, 1), 100);
+    const offset = Math.max(parseInt(req.query.offset) || 0, 0);
 
-    let query = supabase.from('places').select('*');
+    let query = supabase.from('places').select('*', { count: 'exact' });
 
-    if (status) query = query.eq('status', status);
-    else query = query.eq('status', 'approved');
+    const requestedStatus = status && status !== 'approved' ? status : 'approved';
+    if (requestedStatus !== 'approved') {
+      await auth(req, res, () => {});
+      if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    }
+    query = query.eq('status', requestedStatus);
     if (category) query = query.eq('category', category);
     if (city) query = query.eq('city', city);
 
     const { data, error, count } = await query
-      .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
@@ -64,39 +94,41 @@ app.get('/api/places', async (req, res) => {
 
     res.json({
       data: results,
-      meta: { total: count || results.length, limit: parseInt(limit), offset: parseInt(offset) }
+      meta: { total: count || results.length, limit, offset }
     });
   } catch (error) {
     console.error('Error fetching places:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/places/:id', async (req, res) => {
+app.get('/api/places/:id', auth, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('places')
       .select('*')
       .eq('id', req.params.id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Place not found' });
+    if (!data || (data.status !== 'approved' && req.user?.role !== 'admin')) {
+      return res.status(404).json({ error: 'Place not found' });
+    }
 
     res.json(data);
   } catch (error) {
     console.error('Error fetching place:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.post('/api/places', auth, async (req, res) => {
+app.post('/api/places', auth, requireUser, async (req, res) => {
   try {
     const place = {
       id: uuidv4(),
-      ...req.body,
-      status: req.user?.role === 'admin' ? 'approved' : 'pending',
-      created_by_id: req.user?.id || 'anonymous',
+      ...pick(req.body, PLACE_FIELDS),
+      status: req.user.role === 'admin' ? 'approved' : 'pending',
+      created_by_id: req.user.id,
       created_at: new Date().toISOString(),
     };
 
@@ -111,15 +143,15 @@ app.post('/api/places', auth, async (req, res) => {
     res.status(201).json(data);
   } catch (error) {
     console.error('Error creating place:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.patch('/api/places/:id', auth, async (req, res) => {
+app.patch('/api/places/:id', auth, requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('places')
-      .update({ ...req.body, updated_at: new Date().toISOString() })
+      .update({ ...pick(req.body, PLACE_FIELDS), updated_at: new Date().toISOString() })
       .eq('id', req.params.id)
       .select()
       .single();
@@ -130,11 +162,11 @@ app.patch('/api/places/:id', auth, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error updating place:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.delete('/api/places/:id', auth, async (req, res) => {
+app.delete('/api/places/:id', auth, requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('places')
@@ -149,14 +181,16 @@ app.delete('/api/places/:id', auth, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error deleting place:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.patch('/api/places/:id/status', auth, async (req, res) => {
+app.patch('/api/places/:id/status', auth, requireAdmin, async (req, res) => {
   try {
     const { status } = req.body;
-    if (!status) return res.status(400).json({ error: 'Status required' });
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
 
     const { data, error } = await supabase
       .from('places')
@@ -171,18 +205,18 @@ app.patch('/api/places/:id/status', auth, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error updating status:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // ---- Tips ----
 app.get('/api/tips', async (req, res) => {
   try {
-    const { placeId, status } = req.query;
+    const { placeId } = req.query;
 
-    let query = supabase.from('tips').select('*');
+    // Public endpoint: approved tips only
+    let query = supabase.from('tips').select('*').eq('status', 'approved');
     if (placeId) query = query.eq('place_id', placeId);
-    if (status) query = query.eq('status', status);
 
     const { data, error } = await query;
     if (error) throw error;
@@ -190,17 +224,18 @@ app.get('/api/tips', async (req, res) => {
     res.json(data || []);
   } catch (error) {
     console.error('Error fetching tips:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.post('/api/tips', auth, async (req, res) => {
+app.post('/api/tips', auth, requireUser, async (req, res) => {
   try {
     const tip = {
       id: uuidv4(),
-      ...req.body,
-      status: 'approved',
-      created_by_id: req.user?.id,
+      place_id: req.body?.place_id,
+      content: String(req.body?.content ?? '').slice(0, 2000),
+      status: 'pending',
+      created_by_id: req.user.id,
       created_at: new Date().toISOString(),
     };
 
@@ -215,14 +250,14 @@ app.post('/api/tips', auth, async (req, res) => {
     res.status(201).json(data);
   } catch (error) {
     console.error('Error creating tip:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // ---- Favorites ----
-app.get('/api/favorites', auth, async (req, res) => {
+app.get('/api/favorites', auth, requireUser, async (req, res) => {
   try {
-    const userId = req.user?.id || 'anonymous';
+    const userId = req.user.id;
 
     const { data, error } = await supabase
       .from('favorites')
@@ -234,16 +269,16 @@ app.get('/api/favorites', auth, async (req, res) => {
     res.json(data || []);
   } catch (error) {
     console.error('Error fetching favorites:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.post('/api/favorites', auth, async (req, res) => {
+app.post('/api/favorites', auth, requireUser, async (req, res) => {
   try {
     const favorite = {
       id: uuidv4(),
       place_id: req.body.place_id,
-      user_id: req.user?.id || 'anonymous',
+      user_id: req.user.id,
     };
 
     const { data, error } = await supabase
@@ -257,13 +292,13 @@ app.post('/api/favorites', auth, async (req, res) => {
     res.status(201).json(data);
   } catch (error) {
     console.error('Error adding favorite:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.delete('/api/favorites/:placeId', auth, async (req, res) => {
+app.delete('/api/favorites/:placeId', auth, requireUser, async (req, res) => {
   try {
-    const userId = req.user?.id || 'anonymous';
+    const userId = req.user.id;
 
     const { data, error } = await supabase
       .from('favorites')
@@ -279,18 +314,19 @@ app.delete('/api/favorites/:placeId', auth, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error removing favorite:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// ---- Geocoding (mock) ----
-app.post('/api/geocode', express.json(), async (req, res) => {
+// ---- Geocoding ----
+app.post('/api/geocode', auth, requireUser, async (req, res) => {
   const { address } = req.body;
   if (!address) return res.status(400).json({ error: 'Address required' });
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Israel')}`
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Israel')}`,
+      { headers: { 'User-Agent': 'ma-yesh-po/1.0' } }
     );
     const data = await response.json();
 
@@ -315,7 +351,6 @@ if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
   if (typeof window === 'undefined' && typeof navigator === 'undefined') {
     app.listen(PORT, () => {
       console.log(`✅ API server running on http://localhost:${PORT}`);
-      console.log(`📊 Using Supabase: ${SUPABASE_URL}`);
     });
   }
 }

@@ -8,7 +8,7 @@ import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { useAuth } from '@/lib/AuthContext';
-import { base44, supabase } from '@/api/base44Client';
+import { supabase } from '@/api/base44Client';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,7 +18,7 @@ export default function AdminLogin() {
 
     try {
       // Sign in with Supabase
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -27,34 +28,29 @@ export default function AdminLogin() {
         return;
       }
 
-      // Check if user is admin by looking for admin_role in metadata or custom claim
+      // Server-side check (public.is_admin / profiles RLS); nothing is stored client-side
       const { data: { user } } = await supabase.auth.getUser();
+      let admin = false;
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('is_admin');
+      if (!rpcError) {
+        admin = rpcResult === true;
+      } else if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        admin = profile?.role === 'admin';
+      }
 
-      // Get user profile to check role
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id);
-
-      if (profileError || !profiles || profiles.length === 0 || profiles[0].role !== 'admin') {
-        console.error('Admin check failed:', {
-          profileError: profileError?.message,
-          profileErrorCode: profileError?.code,
-          profileErrorStatus: profileError?.status,
-          profiles
-        });
+      if (!admin) {
         setError('אינך מורשה לגישה ל Admin');
         await supabase.auth.signOut();
         return;
       }
 
-      // Store admin token (JWT from Supabase session)
-      const token = data.session.access_token;
-      localStorage.setItem('admin_token', token);
-      localStorage.setItem('admin_id', user.id);
-
       // Navigate to admin
-      navigate('/admin');
+      navigate(location.state?.from?.pathname || '/admin', { replace: true });
     } catch (err) {
       console.error('Login error:', err);
       setError('שגיאה בהתחברות');

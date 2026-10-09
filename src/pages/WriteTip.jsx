@@ -39,7 +39,8 @@ export default function WriteTip() {
     { id: 'review', label: '⭐ ביקורת', emoji: '⭐' },
   ];
 
-  const username = user?.email?.split('@')[0] || 'משתמש';
+  
+  const username = user?.user_metadata?.display_name || 'משתמש';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,14 +58,14 @@ export default function WriteTip() {
           user_id: user.id,
           content: content.trim(),
           type: tipType,
-          status: 'approved',
+          status: 'pending',
         }]);
 
       if (error) throw error;
 
       setMessage({
         type: 'success',
-        text: '✅ הטיפ שלך פורסם!'
+        text: '✅ הטיפ נשלח ויפורסם לאחר אישור מנהל'
       });
       setContent('');
       setTipType('tip');

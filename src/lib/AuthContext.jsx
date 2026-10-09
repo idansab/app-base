@@ -27,7 +27,6 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null);
       setIsAuthenticated(!!session?.user);
-      console.log('✅ Auth state changed:', event, session?.user?.email);
     });
 
     return () => subscription?.unsubscribe();
@@ -35,37 +34,29 @@ export function AuthProvider({ children }) {
 
   const signUp = async (email, password) => {
     try {
-      console.log('🔄 Signing up with:', email);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin + '/auth/callback'
+          emailRedirectTo: window.location.origin
         }
       });
 
       if (error) {
-        console.error('❌ Signup error:', error.code, error.message);
-        throw new Error(error.message);
+          throw new Error(error.message);
       }
-
-      console.log('✅ Signup successful:', data.user?.email);
       return data;
     } catch (error) {
-      console.error('❌ Signup failed:', error);
       throw error;
     }
   };
 
   const signIn = async (email, password) => {
     try {
-      console.log('🔄 Signing in with:', email);
-      console.log('📍 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        console.error('❌ Login error:', error.code, error.message);
         if (error.message?.includes('Invalid login credentials')) {
           throw new Error('אימייל או סיסמה לא נכונים');
         }
@@ -74,13 +65,10 @@ export function AuthProvider({ children }) {
         }
         throw error;
       }
-
-      console.log('✅ Login successful:', data.user?.email);
       setUser(data.user);
       setIsAuthenticated(true);
       return data;
     } catch (error) {
-      console.error('❌ Login failed:', error);
       throw error;
     }
   };
@@ -90,11 +78,32 @@ export function AuthProvider({ children }) {
       await supabase.auth.signOut();
       setUser(null);
       setIsAuthenticated(false);
-      console.log('✅ Logged out');
     } catch (error) {
       console.error('❌ Logout error:', error);
       throw error;
     }
+  };
+
+  const requestPasswordReset = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw new Error(error.message);
+  };
+
+  const updatePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    if (!user?.email) throw new Error('יש להתחבר מחדש');
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    if (verifyError) throw new Error('הסיסמה הנוכחית שגויה');
+    await updatePassword(newPassword);
   };
 
   const value = {
@@ -104,6 +113,9 @@ export function AuthProvider({ children }) {
     signUp,
     signIn,
     signOut,
+    requestPasswordReset,
+    updatePassword,
+    changePassword,
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader2, ArrowRight } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -14,49 +14,14 @@ export default function CommunityChat() {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-4"
-        >
-          <p className="text-2xl text-muted-foreground">צריך להתחבר לקהילה</p>
-          <button
-            onClick={() => navigate('/login')}
-            className="px-6 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary/90"
-          >
-            התחברות
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  const username = user?.email?.split('@')[0] || 'משתמש';
-
-  // Delete expired messages
-  const deleteExpiredMessages = async () => {
-    try {
-      const { error } = await supabase
-        .from('community_messages')
-        .delete()
-        .lt('expires_at', new Date().toISOString());
-
-      if (error) throw error;
-      await loadMessages();
-    } catch (e) {
-      console.error('Failed to delete expired messages:', e);
-    }
-  };
+  // Never derive the public chat name from the email address
+  const username = user?.user_metadata?.display_name || `משתמש ${(user?.id || '').slice(0, 4)}`;
 
   // Load messages
   useEffect(() => {
     loadMessages();
 
-    // Delete expired messages every minute
-    const cleanupInterval = setInterval(deleteExpiredMessages, 60000);
+    // Expired messages are hidden server-side by the RLS select policy (expires_at > now())
 
     // Subscribe to new messages
     const channel = supabase
@@ -83,7 +48,6 @@ export default function CommunityChat() {
 
     return () => {
       supabase.removeChannel(channel);
-      clearInterval(cleanupInterval);
     };
   }, []);
 
@@ -133,6 +97,26 @@ export default function CommunityChat() {
       setSending(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-4"
+        >
+          <p className="text-2xl text-muted-foreground">צריך להתחבר לקהילה</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="px-6 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary/90"
+          >
+            התחברות
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 flex flex-col">

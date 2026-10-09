@@ -1,22 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, LogOut } from 'lucide-react';
-import { Plus, Edit2, Trash2, Upload, MapPin, Loader2, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { LogOut, Plus, Edit2, Trash2, Upload, MapPin, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { geocodeAddress } from '@/lib/geo';
 import { supabase } from '@/api/base44Client';
-const CATEGORIES = ['nature', 'culture', 'food', 'shopping', 'sports', 'entertainment'];
+import { CATEGORIES } from '@/lib/categories';
+import ModerationQueue from '@/components/admin/ModerationQueue';
+import UsersManager from '@/components/admin/UsersManager';
+import AuditLog from '@/components/admin/AuditLog';
+import Dashboard from '@/components/admin/Dashboard';
 
 export default function Admin() {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('studio');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0 });
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingPlace, setEditingPlace] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [messageIsError, setMessageIsError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
@@ -48,6 +54,10 @@ export default function Admin() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data?.user?.id ?? null));
+  }, []);
 
   // Load places
   useEffect(() => {
@@ -86,7 +96,7 @@ export default function Admin() {
         }));
         showSuccess('הכתובת זוהתה בהצלחה');
       } else {
-        showSuccess('כתובת לא נמצאה');
+        showError('כתובת לא נמצאה');
       }
     } catch (e) {
       console.error('Geocoding failed:', e);
@@ -101,12 +111,12 @@ export default function Admin() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      showSuccess('בחר קובץ תמונה בלבד');
+      showError('בחר קובץ תמונה בלבד');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      showSuccess('גודל התמונה גדול מדי (מקסימום 5MB)');
+      showError('גודל התמונה גדול מדי (מקסימום 5MB)');
       return;
     }
 
@@ -140,7 +150,7 @@ export default function Admin() {
       return publicUrl;
     } catch (e) {
       console.error('Image upload failed:', e);
-      showSuccess('שגיאה בהעלאת התמונה');
+      showError('שגיאה בהעלאת התמונה');
       throw e;
     } finally {
       setUploading(false);
@@ -150,7 +160,7 @@ export default function Admin() {
   // Save place
   const handleSavePlace = async () => {
     if (!formData.name || !formData.address || !formData.lat || !formData.lng) {
-      showSuccess('מלא את כל השדות הנדרשים');
+      showError('מלא את כל השדות הנדרשים');
       return;
     }
 
@@ -189,7 +199,7 @@ export default function Admin() {
       } else {
         const { error } = await supabase
           .from('places')
-          .insert([{ ...payload, status: 'pending' }]);
+          .insert([{ ...payload, status: 'approved' }]);
         if (error) throw error;
       }
 
@@ -217,7 +227,7 @@ export default function Admin() {
       loadPlaces();
     } catch (e) {
       console.error('Failed to save place:', e);
-      showSuccess('שגיאה בשמירת המקום');
+      showError('שגיאה בשמירת המקום');
     } finally {
       setLoading(false);
     }
@@ -235,7 +245,7 @@ export default function Admin() {
       loadPlaces();
     } catch (e) {
       console.error('Failed to update place status:', e);
-      showSuccess('שגיאה בעדכון הסטטוס');
+      showError('שגיאה בעדכון הסטטוס');
     }
   };
 
@@ -258,7 +268,7 @@ export default function Admin() {
           loadPlaces();
         } catch (e) {
           console.error('Failed to delete place:', e);
-          showSuccess('שגיאה במחיקת המקום');
+          showError('שגיאה במחיקת המקום');
           setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isLoading: false });
         }
       },
@@ -268,14 +278,19 @@ export default function Admin() {
     });
   };
 
-  const showSuccess = (msg) => {
+  const showSuccess = useCallback((msg) => {
+    setMessageIsError(false);
     setSuccessMessage(msg);
     setTimeout(() => setSuccessMessage(''), 3000);
-  };
+  }, []);
+
+  const showError = useCallback((msg) => {
+    setMessageIsError(true);
+    setSuccessMessage(msg);
+    setTimeout(() => setSuccessMessage(''), 5000);
+  }, []);
 
   const handleLogout = async () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_id');
     await supabase.auth.signOut();
     navigate('/admin-login');
   };
@@ -284,13 +299,13 @@ export default function Admin() {
   const filteredPlaces = places
     .filter(place => {
       if (statusFilter !== 'all' && place.status !== statusFilter) return false;
-      if (searchQuery && !place.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (searchQuery && !(place.name || '').toLowerCase().includes(searchQuery.toLowerCase())) return false;
       return true;
     })
     .sort((a, b) => {
       if (sortBy === 'recent') return new Date(b.created_at) - new Date(a.created_at);
       if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
-      return a.name.localeCompare(b.name, 'he');
+      return (a.name || '').localeCompare(b.name || '', 'he');
     });
 
   // Bulk update status
@@ -308,6 +323,7 @@ export default function Admin() {
       loadPlaces();
     } catch (e) {
       console.error('Bulk update failed:', e);
+      showError('שגיאה בעדכון קבוצתי');
     }
   };
 
@@ -316,17 +332,17 @@ export default function Admin() {
     setFormData({
       name: place.name,
       category: place.category,
-      city: place.city,
-      address: place.address,
-      lat: place.lat.toString(),
-      lng: place.lng.toString(),
-      description: place.description,
-      short_description: place.short_description,
+      city: place.city ?? '',
+      address: place.address ?? '',
+      lat: String(place.lat ?? ''),
+      lng: String(place.lng ?? ''),
+      description: place.description ?? '',
+      short_description: place.short_description ?? '',
       image_url: place.image_url || '',
-      rating: place.rating.toString(),
-      price_level: place.price_level,
-      opening_hours: place.opening_hours,
-      phone: place.phone,
+      rating: String(place.rating ?? 4.5),
+      price_level: place.price_level ?? 'moderate',
+      opening_hours: place.opening_hours ?? '09:00-18:00',
+      phone: place.phone ?? '',
       tags: (place.tags || []).join(', '),
     });
     setImageFile(null);
@@ -347,50 +363,75 @@ export default function Admin() {
             <LogOut size={18} />
             <span>התנתק</span>
           </button>
-          <div className="flex gap-4">
-          <button
-            onClick={() => setActiveTab('studio')}
-            className={`px-6 py-2 rounded-2xl font-medium transition-colors ${
-              activeTab === 'studio'
-                ? 'bg-green-600 text-white'
-                : 'bg-secondary text-foreground hover:bg-secondary/80'
-            }`}
-          >
-            סטודיו תוכן
-          </button>
-          <button
-            onClick={() => setActiveTab('approval')}
-            className={`px-6 py-2 rounded-2xl font-medium transition-colors ${
-              activeTab === 'approval'
-                ? 'bg-green-600 text-white'
-                : 'bg-secondary text-foreground hover:bg-secondary/80'
-            }`}
-          >
-            אישור מקומות
-          </button>
-          <button
-            onClick={() => setActiveTab('places')}
-            className={`px-6 py-2 rounded-2xl font-medium transition-colors ${
-              activeTab === 'places'
-                ? 'bg-green-600 text-white'
-                : 'bg-secondary text-foreground hover:bg-secondary/80'
-            }`}
-          >
-            ניהול מקומות
-          </button>
+          <div className="flex flex-wrap gap-2 justify-end" role="tablist">
+            {[
+              ['dashboard', 'לוח בקרה'],
+              ['studio', 'סטודיו תוכן'],
+              ['approval', 'אישור מקומות'],
+              ['places', 'ניהול מקומות'],
+              ['moderation', 'טיפים ודיווחים'],
+              ['users', 'משתמשים'],
+              ['audit', 'יומן פעולות'],
+            ].map(([key, label]) => {
+              const badge = key === 'approval' ? pendingCounts.places : key === 'moderation' ? pendingCounts.content : 0;
+              return (
+              <button
+                key={key}
+                role="tab"
+                aria-selected={activeTab === key}
+                onClick={() => setActiveTab(key)}
+                className={`px-4 py-2 rounded-2xl text-sm font-medium transition-colors ${
+                  activeTab === key
+                    ? 'bg-green-600 text-white'
+                    : 'bg-secondary text-foreground hover:bg-secondary/80'
+                }`}
+              >
+                {label}
+                {badge > 0 && (
+                  <span
+                    className="mr-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[11px] font-bold text-white"
+                    aria-label={`${badge} ממתינים`}
+                  >
+                    {badge}
+                  </span>
+                )}
+              </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Success Message */}
       {successMessage && (
-        <div className="fixed top-24 right-4 z-50 flex items-center gap-2 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-200 px-6 py-3 rounded-2xl shadow-md border border-green-200 dark:border-green-800 animate-in">
-          <CheckCircle size={20} />
+        <div
+          role={messageIsError ? 'alert' : 'status'}
+          className={`fixed top-24 right-4 z-50 flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md border animate-in ${
+            messageIsError
+              ? 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 border-red-200 dark:border-red-800'
+              : 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-200 border-green-200 dark:border-green-800'
+          }`}
+        >
+          {messageIsError ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
           {successMessage}
         </div>
       )}
 
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {activeTab === 'dashboard' && (
+          <Dashboard onNavigate={setActiveTab} onCounts={setPendingCounts} />
+        )}
+
+        {activeTab === 'moderation' && (
+          <ModerationQueue onError={showError} onSuccess={showSuccess} />
+        )}
+
+        {activeTab === 'users' && (
+          <UsersManager currentUserId={currentUserId} onError={showError} onSuccess={showSuccess} />
+        )}
+
+        {activeTab === 'audit' && <AuditLog onError={showError} />}
+
         {activeTab === 'studio' && (
           <div>
             <h1 className="text-2xl font-bold text-right mb-6 text-foreground">סטודיו תוכן מהיר</h1>
@@ -574,7 +615,7 @@ export default function Admin() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-600 text-right"
                     >
                       {CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat.key} value={cat.key}>{cat.label}</option>
                       ))}
                     </select>
                   </div>

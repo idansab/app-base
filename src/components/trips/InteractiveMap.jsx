@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, ExternalLink, Loader2 } from 'lucide-react';
+import { MapPin, ExternalLink } from 'lucide-react';
 
 const BreathingPulse = ({ children, delay = 0 }) => (
   <motion.div

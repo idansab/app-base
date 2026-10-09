@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Heart } from 'lucide-react';
-import { motion } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';

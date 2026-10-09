@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Heart, MapPin, Mail, Github } from 'lucide-react';
+import { Heart, Github } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();

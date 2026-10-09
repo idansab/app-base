@@ -8,8 +8,41 @@ import { useAuth } from '@/lib/AuthContext';
 export default function Settings() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
-  const { isAuthenticated, signOut } = useAuth();
-  const [language, setLanguage] = useState('he');
+  const { isAuthenticated, signOut, changePassword } = useAuth();
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+
+  const closePasswordModal = () => {
+    setChangePasswordOpen(false);
+    setPwForm({ current: '', next: '', confirm: '' });
+    setPwError('');
+    setPwSuccess(false);
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwError('');
+    if (pwForm.next.length < 8) {
+      setPwError('הסיסמה החדשה חייבת להיות לפחות 8 תווים');
+      return;
+    }
+    if (pwForm.next !== pwForm.confirm) {
+      setPwError('הסיסמאות החדשות לא תואמות');
+      return;
+    }
+    setPwLoading(true);
+    try {
+      await changePassword(pwForm.current, pwForm.next);
+      setPwSuccess(true);
+      setTimeout(closePasswordModal, 1500);
+    } catch (err) {
+      setPwError(err.message || 'שגיאה בשינוי הסיסמה');
+    } finally {
+      setPwLoading(false);
+    }
+  };
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
@@ -73,19 +106,6 @@ export default function Settings() {
               />
             </motion.button>
           </motion.div>
-
-          {/* Language */}
-          <div className="flex items-center justify-between p-4 bg-secondary rounded-lg">
-            <label className="font-medium text-foreground">שפה</label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="he">עברית</option>
-              <option value="en">English</option>
-            </select>
-          </div>
         </motion.div>
 
         {/* Privacy & Security */}
@@ -246,7 +266,7 @@ export default function Settings() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 flex items-end z-50"
-            onClick={() => setChangePasswordOpen(false)}
+            onClick={closePasswordModal}
           >
             <motion.div
               initial={{ y: '100%' }}
@@ -258,7 +278,7 @@ export default function Settings() {
             >
               <div className="flex items-center justify-between mb-6">
                 <button
-                  onClick={() => setChangePasswordOpen(false)}
+                  onClick={closePasswordModal}
                   className="p-2 hover:bg-secondary rounded-full transition-colors"
                 >
                   <X size={24} className="text-foreground" />
@@ -267,38 +287,40 @@ export default function Settings() {
                 <div className="w-10" />
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">סיסמה ישנה</label>
-                  <input
-                    type="password"
-                    placeholder="הזן סיסמה ישנה"
-                    className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                {pwError && (
+                  <p role="alert" className="text-sm text-red-600 dark:text-red-400">{pwError}</p>
+                )}
+                {pwSuccess && (
+                  <p role="status" className="text-sm text-green-600 dark:text-green-400">הסיסמה עודכנה בהצלחה</p>
+                )}
+                {[
+                  ['current', 'סיסמה נוכחית', 'current-password'],
+                  ['next', 'סיסמה חדשה', 'new-password'],
+                  ['confirm', 'אשר סיסמה חדשה', 'new-password'],
+                ].map(([key, label, autoComplete]) => (
+                  <div key={key}>
+                    <label htmlFor={`pw-${key}`} className="block text-sm font-medium text-foreground mb-2">{label}</label>
+                    <input
+                      id={`pw-${key}`}
+                      type="password"
+                      value={pwForm[key]}
+                      onChange={(e) => setPwForm({ ...pwForm, [key]: e.target.value })}
+                      autoComplete={autoComplete}
+                      required
+                      className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                ))}
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">סיסמה חדשה</label>
-                  <input
-                    type="password"
-                    placeholder="הזן סיסמה חדשה"
-                    className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">אשר סיסמה</label>
-                  <input
-                    type="password"
-                    placeholder="אשר סיסמה חדשה"
-                    className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                <button className="w-full p-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors mt-6">
-                  שנה סיסמה
+                <button
+                  type="submit"
+                  disabled={pwLoading || pwSuccess}
+                  className="w-full p-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors mt-6"
+                >
+                  {pwLoading ? 'מעדכן...' : 'שנה סיסמה'}
                 </button>
-              </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

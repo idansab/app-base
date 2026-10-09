@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, MapPin, Send } from 'lucide-react';
-import { motion } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
-import { geocodeAddress, haversineKm } from '@/lib/geo';
+import { haversineKm } from '@/lib/geo';
 import { supabase } from '@/api/base44Client';
 
 export default function Studio() {
@@ -24,16 +23,6 @@ export default function Studio() {
           .eq('status', 'approved');
         if (error) throw error;
         setPlaces(allPlaces || []);
-
-        // Find nearest place
-        if (userLocation && data.data && data.data.length > 0) {
-          const nearest = data.data.reduce((closest, place) => {
-            const dist = haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng);
-            const closestDist = haversineKm(userLocation.lat, userLocation.lng, closest.lat, closest.lng);
-            return dist < closestDist ? place : closest;
-          });
-          setNearestPlace(nearest);
-        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -42,11 +31,26 @@ export default function Studio() {
     };
 
     loadPlaces();
-  }, [userLocation]);
+  }, []);
+
+  useEffect(() => {
+    if (!userLocation || places.length === 0) {
+      setNearestPlace(null);
+      return;
+    }
+    const withCoords = places.filter(p => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng)));
+    if (withCoords.length === 0) return;
+    const nearest = withCoords.reduce((closest, place) => {
+      const dist = haversineKm(userLocation.lat, userLocation.lng, Number(place.lat), Number(place.lng));
+      const closestDist = haversineKm(userLocation.lat, userLocation.lng, Number(closest.lat), Number(closest.lng));
+      return dist < closestDist ? place : closest;
+    });
+    setNearestPlace(nearest);
+  }, [places, userLocation]);
 
   const handlePublishQuick = async () => {
     if (!quickContent.trim() || !nearestPlace) {
-      alert('כתוב טיפ בחר מקום');
+      alert('כתוב טיפ ובחר מקום');
       return;
     }
 
@@ -62,7 +66,7 @@ export default function Studio() {
         }]);
 
       if (error) throw error;
-      alert('🎉 פורסם בהצלחה!');
+      alert('🎉 הטיפ נשלח ויפורסם לאחר אישור מנהל');
       setQuickContent('');
     } catch (e) {
       alert('שגיאה בפרסום: ' + e.message);
