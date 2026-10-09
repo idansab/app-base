@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Heart,
   Inbox,
+  KeyRound,
   Loader2,
   MapPin,
   MessageSquare,
@@ -130,18 +131,19 @@ export default function Dashboard({ onNavigate, onCounts }) {
     setError('');
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     try {
-      const [pendingPlaces, approvedPlaces, pendingTips, pendingReports, users, newUsers] = await Promise.all([
+      const [pendingPlaces, approvedPlaces, pendingTips, pendingReports, users, newUsers, pendingOwners] = await Promise.all([
         count(head('places').eq('status', 'pending')),
         count(head('places').eq('status', 'approved')),
         count(head('tips').eq('status', 'pending')),
         count(head('reports').eq('status', 'pending')),
         count(head('profiles')),
         count(head('profiles').gte('created_at', weekAgo)),
+        count(head('place_owners').eq('status', 'pending')),
       ]);
-      const next = { pendingPlaces, approvedPlaces, pendingTips, pendingReports, users, newUsers };
+      const next = { pendingPlaces, approvedPlaces, pendingTips, pendingReports, users, newUsers, pendingOwners };
       setStats(next);
       setUpdatedAt(new Date());
-      onCounts?.({ places: pendingPlaces, content: pendingTips + pendingReports });
+      onCounts?.({ places: pendingPlaces, content: pendingTips + pendingReports, owners: pendingOwners });
 
       const { data, error: rpcError } = await supabase.rpc('admin_dashboard_stats');
       if (rpcError) {
@@ -181,7 +183,7 @@ export default function Dashboard({ onNavigate, onCounts }) {
     );
   }
 
-  const totalPending = stats.pendingPlaces + stats.pendingTips + stats.pendingReports;
+  const totalPending = stats.pendingPlaces + stats.pendingTips + stats.pendingReports + stats.pendingOwners;
   const topMax = Math.max(1, ...(charts?.top_places || []).map((p) => p.count));
   const catMax = Math.max(1, ...(charts?.categories || []).map((c) => c.count));
 
@@ -208,8 +210,9 @@ export default function Dashboard({ onNavigate, onCounts }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <TodoCard icon={MapPin} label="מקומות ממתינים" value={stats.pendingPlaces} tab="approval" onNavigate={onNavigate} />
+        <TodoCard icon={KeyRound} label="בקשות בעלות" value={stats.pendingOwners} tab="owners" onNavigate={onNavigate} />
         <TodoCard icon={MessageSquare} label="טיפים ממתינים" value={stats.pendingTips} tab="moderation" onNavigate={onNavigate} />
         <TodoCard icon={Inbox} label="דיווחים ממתינים" value={stats.pendingReports} tab="moderation" onNavigate={onNavigate} />
       </div>

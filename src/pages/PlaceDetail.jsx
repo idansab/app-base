@@ -9,6 +9,7 @@ import ImageCarousel from '@/components/ImageCarousel';
 import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
+import ClaimPlace from '@/components/places/ClaimPlace';
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
@@ -489,6 +490,10 @@ export default function PlaceDetail() {
             )}
           </AnimatePresence>
         </motion.div>
+
+        <div className="mt-12 max-w-md mx-auto">
+          <ClaimPlace place={place} />
+        </div>
       </div>
     </div>
   );
