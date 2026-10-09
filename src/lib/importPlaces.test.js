@@ -57,6 +57,9 @@ describe('classify', () => {
     expect(classify({ leisure: 'nature_reserve' }).category).toBe('nature');
     expect(classify({ tourism: 'viewpoint' }).category).toBe('nature');
     expect(classify({ natural: 'beach' }).category).toBe('nature');
+    expect(classify({ amenity: 'bar' }).category).toBe('nightlife');
+    expect(classify({ amenity: 'pub' }).label).toBe('פאב');
+    expect(classify({ amenity: 'nightclub' }).category).toBe('nightlife');
     expect(classify({ tourism: 'museum' }).category).toBe('culture');
     expect(classify({ historic: 'ruins' }).category).toBe('culture');
     expect(classify({ amenity: 'marketplace' }).category).toBe('shopping');

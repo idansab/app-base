@@ -73,6 +73,9 @@ export function classify(tags = {}) {
     return { category: 'culture', kind: 'historic', label: 'אתר היסטורי' };
   }
   if (tags.tourism === 'attraction') return { category: 'culture', kind: 'attraction', label: 'אתר מבקרים' };
+  if (tags.amenity === 'bar') return { category: 'nightlife', kind: 'bar', label: 'בר' };
+  if (tags.amenity === 'pub') return { category: 'nightlife', kind: 'pub', label: 'פאב' };
+  if (tags.amenity === 'nightclub') return { category: 'nightlife', kind: 'nightclub', label: 'מועדון' };
   if (tags.amenity === 'marketplace') return { category: 'shopping', kind: 'market', label: 'שוק' };
   return null;
 }
