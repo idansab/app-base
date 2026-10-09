@@ -4,8 +4,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import PlaceCard from '@/components/PlaceCard';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { supabase } from '@/api/base44Client';
+import L from 'leaflet';
 
 export default function Trips() {
+  // Refs for map
+  const mapRef = React.useRef(null);
+
   // State for places & favorites
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -417,6 +421,37 @@ export default function Trips() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
+            {/* Trip Info & Actions */}
+            <div className="bg-card rounded-2xl p-6 border border-border">
+              <h2 className="font-bold text-2xl text-right mb-2">{selectedTrip.title}</h2>
+              {selectedTrip.description && <p className="text-muted-foreground text-right mb-4">{selectedTrip.description}</p>}
+
+              {/* Quick Actions */}
+              <div className="flex gap-2 justify-center mb-4">
+                <button
+                  onClick={() => {
+                    const placesText = tripPlacesData.map(p => p.name).join(' -> ');
+                    const text = `${selectedTrip.title}: ${placesText}`;
+                    navigator.clipboard.writeText(text);
+                    alert('הועתק ללוח!');
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  📋 שתף
+                </button>
+                <button
+                  onClick={() => {
+                    const placesText = tripPlacesData.map(p => p.name).join(' -> ');
+                    const wazeUrl = `https://waze.com/route?to=${placesText}`;
+                    window.open(wazeUrl, '_blank');
+                  }}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                >
+                  🗺️ Waze
+                </button>
+              </div>
+            </div>
+
             {/* Trip Route Visualization */}
             {tripPlacesData.length > 0 && (
               <div className="bg-card rounded-2xl p-6 border border-border">
