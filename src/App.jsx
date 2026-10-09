@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Navigate, Route, Routes, Outlet } from 'react-
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
+import { AccessibilityProvider } from '@/lib/AccessibilityContext';
+import AccessibilityMenu from '@/components/AccessibilityMenu';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -103,13 +105,16 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <ScrollToTop />
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
+        <AccessibilityProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router>
+              <ScrollToTop />
+              <AuthenticatedApp />
+              <AccessibilityMenu />
+            </Router>
+            <Toaster />
+          </QueryClientProvider>
+        </AccessibilityProvider>
       </AuthProvider>
     </ThemeProvider>
   )

@@ -170,3 +170,36 @@
     scrollbar-width: none;
   }
 }
+
+/* Accessibility Styles */
+html[data-high-contrast="true"] {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --secondary: 0 0% 90%;
+  --secondary-foreground: 0 0% 0%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+}
+
+html[data-high-contrast="true"].dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 20%;
+  --card-foreground: 0 0% 100%;
+  --secondary: 0 0% 30%;
+  --secondary-foreground: 0 0% 100%;
+}
+
+html[data-focus-outline="true"] *:focus-visible {
+  outline: 4px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
+
+html[data-focus-outline="true"] button:focus-visible,
+html[data-focus-outline="true"] a:focus-visible,
+html[data-focus-outline="true"] input:focus-visible {
+  outline: 4px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
