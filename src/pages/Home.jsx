@@ -202,29 +202,50 @@ export default function Home() {
         </div>
       )}
 
+      {/* Hero Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-b from-green-50 to-background py-12 md:py-16"
+      >
+        <div className="px-4 max-w-6xl mx-auto text-center space-y-3">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+            מה יש פה?
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            גלול מקומות באזור — עם טיפים מהקהילה
+          </p>
+        </div>
+      </motion.div>
+
       {/* Search Bar */}
-      <div className="px-4 max-w-6xl mx-auto py-3">
-        <div className="flex gap-2 items-center">
-          <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-2xl">
-            <Search size={18} className="text-muted-foreground" />
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="px-4 max-w-6xl mx-auto -mt-8 relative z-10"
+      >
+        <div className="flex gap-3 items-center">
+          <div className="flex-1 flex items-center gap-3 px-6 py-4 bg-white border border-border rounded-3xl shadow-lg hover:shadow-xl transition-shadow">
+            <Search size={20} className="text-primary flex-shrink-0" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="חפשו מקום לטייל"
-              className="flex-1 outline-none text-right bg-transparent text-sm text-foreground placeholder:text-muted-foreground"
+              placeholder="מה באי לעשום?"
+              className="flex-1 outline-none text-right bg-transparent text-foreground placeholder:text-gray-400 font-medium"
             />
           </div>
           <button
             onClick={() => setLocationPickerOpen(true)}
-            className="p-3 bg-primary text-white rounded-full hover:bg-primary transition-all hover:scale-105 duration-300 flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg"
+            className="p-4 bg-primary text-white rounded-3xl hover:bg-primary/90 transition-all hover:scale-110 duration-300 flex items-center justify-center flex-shrink-0 shadow-lg hover:shadow-xl"
             aria-label="בחר מיקום ומרחק"
             title="בחר מיקום ומרחק"
           >
-            <MapPin size={20} />
+            <MapPin size={24} />
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Category Tabs - Horizontal Scroll */}
       <div className="z-20 overflow-x-auto">
