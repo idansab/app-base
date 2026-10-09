@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
+import ClaimPlace from '@/components/places/ClaimPlace';
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
@@ -468,6 +469,10 @@ export default function PlaceDetail() {
             )}
           </AnimatePresence>
         </motion.div>
+
+        <div className="mt-12 max-w-md mx-auto">
+          <ClaimPlace place={place} />
+        </div>
       </div>
     </div>
   );

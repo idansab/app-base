@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, Phone, Clock, Heart, Share2, Navigation } from 'lucide-react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import ImageCarousel from '@/components/ImageCarousel';
+import ClaimPlace from '@/components/places/ClaimPlace';
 import { supabase } from '@/api/base44Client';
 
 export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation, isFavorite, onFavoriteToggle }) {
@@ -173,6 +174,8 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place, userLocation
               <p className="text-sm leading-relaxed text-gray-700">{place.description}</p>
             </motion.div>
           )}
+
+          <ClaimPlace place={place} />
 
           {/* Action Buttons */}
           <motion.div

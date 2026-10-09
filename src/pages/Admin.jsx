@@ -7,20 +7,24 @@ import PlacesManager from '@/components/admin/places/PlacesManager';
 import ModerationQueue from '@/components/admin/ModerationQueue';
 import UsersManager from '@/components/admin/UsersManager';
 import AuditLog from '@/components/admin/AuditLog';
+import OwnershipRequests from '@/components/admin/OwnershipRequests';
+import BetaSettings from '@/components/admin/BetaSettings';
 
 const TABS = [
   ['dashboard', 'לוח בקרה'],
   ['approval', 'אישור מקומות'],
   ['places', 'ניהול מקומות'],
   ['moderation', 'טיפים ודיווחים'],
+  ['owners', 'בעלות על מקומות'],
   ['users', 'משתמשים'],
   ['audit', 'יומן פעולות'],
+  ['settings', 'הגדרות'],
 ];
 
 export default function Admin() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0 });
+  const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0, owners: 0 });
   const [currentUserId, setCurrentUserId] = useState(null);
   const [message, setMessage] = useState({ text: '', isError: false });
 
@@ -44,6 +48,11 @@ export default function Admin() {
     []
   );
 
+  const setPendingOwners = useCallback(
+    (owners) => setPendingCounts((counts) => (counts.owners === owners ? counts : { ...counts, owners })),
+    []
+  );
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/admin-login');
@@ -64,7 +73,11 @@ export default function Admin() {
           </button>
           <div className="flex flex-wrap gap-2 justify-end" role="tablist">
             {TABS.map(([key, label]) => {
-              const badge = key === 'approval' ? pendingCounts.places : key === 'moderation' ? pendingCounts.content : 0;
+              const badge =
+                key === 'approval' ? pendingCounts.places
+                : key === 'moderation' ? pendingCounts.content
+                : key === 'owners' ? pendingCounts.owners
+                : 0;
               return (
                 <button
                   key={key}
@@ -133,6 +146,12 @@ export default function Admin() {
         )}
 
         {activeTab === 'moderation' && <ModerationQueue onError={showError} onSuccess={showSuccess} />}
+
+        {activeTab === 'owners' && (
+          <OwnershipRequests onPendingChange={setPendingOwners} onError={showError} onSuccess={showSuccess} />
+        )}
+
+        {activeTab === 'settings' && <BetaSettings onError={showError} onSuccess={showSuccess} />}
 
         {activeTab === 'users' && (
           <UsersManager currentUserId={currentUserId} onError={showError} onSuccess={showSuccess} />
