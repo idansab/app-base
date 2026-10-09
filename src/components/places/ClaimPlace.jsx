@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BadgeCheck, Clock, Loader2, Pencil, Store, X } from 'lucide-react';
+import { BadgeCheck, BarChart3, Clock, Loader2, Pencil, Store, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { formatBetaDate, useBetaInfo } from '@/lib/beta';
 import OwnerEditor from '@/components/places/OwnerEditor';
+import PlaceStats from '@/components/places/PlaceStats';
 
 const RELATIONS = [
   ['owner', 'בעל/ת העסק'],
@@ -31,6 +32,7 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   const [pendingRequest, setPendingRequest] = useState(false);
 
   const loadClaim = useCallback(async () => {
@@ -138,6 +140,15 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
           <Pencil size={18} />
           ערוך את פרטי העסק
         </button>
+        <button
+          type="button"
+          onClick={() => setShowStats(true)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-green-600 text-green-700 font-medium hover:bg-green-50 transition-colors"
+        >
+          <BarChart3 size={18} />
+          סטטיסטיקות
+        </button>
+        {showStats && <PlaceStats place={place} onClose={() => setShowStats(false)} />}
         {editing && (
           <OwnerEditor
             place={place}

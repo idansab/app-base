@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, Phone, Heart, Share2, Navigation } from 'lucide-react';
 import { haversineKm, formatDistance } from '@/lib/geo';
@@ -6,6 +6,7 @@ import ImageCarousel from '@/components/ImageCarousel';
 import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
+import { trackPlaceEvent } from '@/lib/trackPlace';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import { supabase } from '@/api/base44Client';
 
@@ -13,6 +14,11 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
   // after an owner edit we show the fresh row until the parent list reloads
   const [updatedPlace, setUpdatedPlace] = useState(null);
   const place = updatedPlace && updatedPlace.id === placeProp?.id ? updatedPlace : placeProp;
+
+  // one anonymous 'view' per visitor and place (throttled inside trackPlaceEvent)
+  useEffect(() => {
+    if (isOpen && placeProp?.id) trackPlaceEvent(placeProp.id, 'view');
+  }, [isOpen, placeProp?.id]);
 
   const [tips, setTips] = useState([]);
   const [newTipText, setNewTipText] = useState('');
@@ -146,6 +152,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
             {place.phone && (
               <a
                 href={`tel:${place.phone}`}
+                onClick={() => trackPlaceEvent(place.id, 'call')}
                 className="flex items-start gap-3 text-right hover:bg-gray-50 p-3 rounded-lg transition-colors"
               >
                 <div className="flex-1">
@@ -189,7 +196,10 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
             className="flex gap-3"
           >
             <button
-              onClick={onFavoriteToggle}
+              onClick={() => {
+                if (!isFavorite) trackPlaceEvent(place.id, 'favorite');
+                onFavoriteToggle();
+              }}
               className={`flex-1 p-3 rounded-2xl font-medium transition-all ${
                 isFavorite
                   ? 'bg-red-100 text-red-600 hover:bg-red-200'
@@ -204,6 +214,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
                 href={`https://waze.com/ul?ll=${place.lat},${place.lng}&navigate=yes`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackPlaceEvent(place.id, 'navigate')}
                 className="flex-1 p-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
               >
                 <Navigation size={18} />
@@ -212,7 +223,10 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
             )}
 
             <button
-              onClick={() => navigator.share?.({ title: place.name, text: place.description })}
+              onClick={() => {
+                trackPlaceEvent(place.id, 'share');
+                navigator.share?.({ title: place.name, text: place.description });
+              }}
               className="flex-1 p-3 bg-slate-100 text-gray-700 rounded-2xl font-medium hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
             >
               <Share2 size={18} />

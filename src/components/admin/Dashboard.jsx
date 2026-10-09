@@ -122,6 +122,7 @@ function BarRow({ label, value, max, suffix = '' }) {
 export default function Dashboard({ onNavigate, onCounts }) {
   const [stats, setStats] = useState(null);
   const [charts, setCharts] = useState(null);
+  const [topViewed, setTopViewed] = useState(null);
   const [chartsUnavailable, setChartsUnavailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -146,6 +147,10 @@ export default function Dashboard({ onNavigate, onCounts }) {
       setStats(next);
       setUpdatedAt(new Date());
       onCounts?.({ places: pendingPlaces, content: pendingTips + pendingReports, owners: pendingOwners, updates: pendingUpdates });
+
+      supabase.rpc('admin_top_places', { p_days: 7, p_limit: 5 }).then(({ data: top, error: topError }) => {
+        setTopViewed(topError ? null : top);
+      });
 
       const { data, error: rpcError } = await supabase.rpc('admin_dashboard_stats');
       if (rpcError) {
@@ -248,6 +253,20 @@ export default function Dashboard({ onNavigate, onCounts }) {
               </ul>
             )}
           </Panel>
+
+          {topViewed && (
+            <Panel title="הכי נצפים" subtitle="7 הימים האחרונים">
+              {topViewed.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-6 text-center">עדיין אין נתוני צפיות</p>
+              ) : (
+                <ul className="space-y-3">
+                  {topViewed.map((p) => (
+                    <BarRow key={p.place_id} label={p.place_name} value={p.views} max={Math.max(1, ...topViewed.map((x) => x.views))} suffix=" צפיות" />
+                  ))}
+                </ul>
+              )}
+            </Panel>
+          )}
 
           <Panel title="מקומות לפי קטגוריה" subtitle="מקומות מאושרים בלבד">
             <ul className="space-y-3">

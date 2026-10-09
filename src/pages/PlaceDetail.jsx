@@ -9,6 +9,7 @@ import ImageCarousel from '@/components/ImageCarousel';
 import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
+import { trackPlaceEvent } from '@/lib/trackPlace';
 import ClaimPlace from '@/components/places/ClaimPlace';
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
@@ -19,7 +20,8 @@ const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   />
 );
 
-const DirectionalButton = ({ children, ...props }) => {
+const DirectionalButton = ({ children, as = 'button', ...props }) => {
+  const Tag = as === 'a' ? motion.a : motion.button; // a real link, so the browser actually navigates
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e) => {
@@ -31,7 +33,7 @@ const DirectionalButton = ({ children, ...props }) => {
   };
 
   return (
-    <motion.button
+    <Tag
       {...props}
       onMouseMove={handleMouseMove}
       whileHover={{ scale: 1.02 }}
@@ -47,7 +49,7 @@ const DirectionalButton = ({ children, ...props }) => {
         className="absolute inset-0 bg-gradient-to-l from-green-700/20 pointer-events-none"
       />
       <span className="relative z-10">{children}</span>
-    </motion.button>
+    </Tag>
   );
 };
 
@@ -135,8 +137,14 @@ export default function PlaceDetail() {
     loadPlace();
   }, [id]);
 
+  // one anonymous 'view' per visitor and place
+  useEffect(() => {
+    if (place?.id) trackPlaceEvent(place.id, 'view');
+  }, [place?.id]);
+
   const handleFavoriteToggle = async () => {
     if (!place) return;
+    if (!isFavorite) trackPlaceEvent(place.id, 'favorite');
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -328,6 +336,7 @@ export default function PlaceDetail() {
             <BreathingPulse delay={0.2}>
               <a
                 href={`tel:${place.phone}`}
+                onClick={() => trackPlaceEvent(place.id, 'call')}
                 className="p-6 bg-white rounded-3xl border border-green-200 shadow-[0_20px_40px_-15px_rgba(22,163,74,0.08)] text-right hover:shadow-[0_20px_40px_-15px_rgba(22,163,74,0.15)] transition-shadow"
               >
                 <p className="text-xs font-medium text-gray-600 mb-2 tracking-tight">טלפון</p>
@@ -364,6 +373,7 @@ export default function PlaceDetail() {
               href={`https://waze.com/ul?ll=${place.lat},${place.lng}&navigate=yes`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackPlaceEvent(place.id, 'navigate')}
               className="p-4 bg-green-600 text-white flex items-center justify-center gap-2"
             >
               <Navigation size={20} />
@@ -384,7 +394,10 @@ export default function PlaceDetail() {
           </DirectionalButton>
 
           <DirectionalButton
-            onClick={() => navigator.share?.({ title: place.name, text: place.description })}
+            onClick={() => {
+              trackPlaceEvent(place.id, 'share');
+              navigator.share?.({ title: place.name, text: place.description });
+            }}
             className="p-4 bg-slate-100 text-gray-700 flex items-center justify-center gap-2"
           >
             <Share2 size={20} />
