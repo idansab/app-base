@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
+import QuickContentStudio from '@/components/QuickContentStudio';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { useAuth } from '@/lib/AuthContext';
@@ -311,6 +312,11 @@ export default function Home() {
             שם
           </button>
         </div>
+      </div>
+
+      {/* Quick Content Studio */}
+      <div className="px-4 max-w-6xl mx-auto py-6">
+        <QuickContentStudio />
       </div>
 
       {/* Places Grid */}
