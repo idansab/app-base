@@ -55,6 +55,7 @@
     "@supabase/server": "^1.9.1",
     "@supabase/supabase-js": "^2.117.2",
     "@tanstack/react-query": "^5.84.1",
+    "@tanstack/react-virtual": "^3.14.14",
     "body-parser": "^2.3.0",
     "canvas-confetti": "^1.9.4",
     "chokidar": "^5.0.0",
