@@ -13,8 +13,13 @@ export const CATEGORY_SOURCES = {
     cocktail_bar: 'בר קוקטיילים', sports_bar: 'בר ספורט', hookah_bar: 'בר נרגילה', dance_club: 'מועדון',
     night_club: 'מועדון', comedy_club: 'קומדי קלאב', karaoke: 'קריוקי', lounge: 'לאונג׳',
   },
-  food: { food_truck: 'משאית אוכל', coffee_shop: 'בית קפה', cafe: 'בית קפה', street_vendor: 'דוכן אוכל' },
+  food: { coffee_shop: 'בית קפה', cafe: 'בית קפה', tea_room: 'בית תה', bubble_tea_shop: 'בועות תה' },
+  // food trucks, carts and stalls (the "עגלות" of the site)
+  carts: { food_truck_stand: 'עגלת אוכל' },
 };
+
+/** --category values that are stored under a different app category. */
+export const PROFILE_CATEGORY = { carts: 'food' };
 
 /** Areas for --area, as [south, west, north, east]. */
 export const AREAS = {
@@ -37,8 +42,9 @@ const NAME_OK = /[A-Za-z֐-׿]/;
  * Overture row -> database row (status "pending"), or null when it is not good enough.
  * Row shape: { id, name, taxonomy, confidence, address, city, country, lat, lng, status }.
  */
-export function toPlaceRow(rec, category, { minConfidence = 0.6 } = {}) {
-  const labels = CATEGORY_SOURCES[category];
+export function toPlaceRow(rec, profile, { minConfidence = 0.6 } = {}) {
+  const category = PROFILE_CATEGORY[profile] || profile;
+  const labels = CATEGORY_SOURCES[profile];
   const label = labels?.[rec.taxonomy];
   const name = String(rec.name ?? '').replace(/\s+/g, ' ').trim();
   if (!label || !rec.id) return null;

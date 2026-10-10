@@ -32,6 +32,13 @@ describe('toPlaceRow', () => {
   });
 });
 
+describe('carts profile', () => {
+  it('stores food trucks and stalls under the food category', () => {
+    expect(toPlaceRow(rec({ taxonomy: 'food_truck_stand', name: 'Falafel Cart' }), 'carts')).toMatchObject({ category: 'food', tags: ['עגלת אוכל'] });
+    expect(toPlaceRow(rec({ taxonomy: 'coffee_shop' }), 'carts')).toBeNull();
+  });
+});
+
 describe('spreadByCity', () => {
   it('caps rows per city and prefers higher confidence', () => {
     const rows = ['a', 'b', 'c'].map((n, i) => ({ name: n, city: 'Haifa', _confidence: 0.5 + i / 10 }))
