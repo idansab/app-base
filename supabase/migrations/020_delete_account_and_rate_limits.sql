@@ -2,8 +2,9 @@
 
 -- 1. delete_my_account() ---------------------------------------------------------------------
 -- Removes the caller's personal data and their auth user. Rows with a UUID foreign key to
--- auth.users (trips, place_owners, place_update_requests, profiles, user_tips) go through ON DELETE CASCADE.
--- Rows keyed by a TEXT user id are cleaned up here. Approved places are public content: they stay, anonymised.
+-- auth.users (trips, place_owners, place_update_requests, profiles) go through ON DELETE CASCADE.
+-- Rows keyed by a TEXT user id are cleaned up here. Approved places are public content and stay;
+-- their created_by_id becomes an orphaned id that no longer maps to any person.
 CREATE OR REPLACE FUNCTION public.delete_my_account()
 RETURNS void
 LANGUAGE plpgsql
@@ -23,15 +24,13 @@ BEGIN
   END IF;
 
   DELETE FROM public.favorites WHERE user_id = uid::text;
+  DELETE FROM public.user_tips WHERE user_id = uid::text;
   DELETE FROM public.tips WHERE created_by_id = uid::text;
   DELETE FROM public.reports WHERE created_by_id = uid::text;
   DELETE FROM public.places WHERE created_by_id = uid::text AND status <> 'approved';
-  UPDATE public.places SET created_by_id = NULL WHERE created_by_id = uid::text;
   DELETE FROM public.community_messages WHERE user_id::text = uid::text;
 
-  -- uploaded images live in place-images/places/<uid>/
-  DELETE FROM storage.objects
-   WHERE bucket_id = 'place-images' AND name LIKE 'places/' || uid::text || '/%';
+  -- uploaded images (place-images/places/<uid>/) cannot be deleted from SQL; the client removes them via the Storage API
 
   DELETE FROM auth.users WHERE id = uid;
 END;
