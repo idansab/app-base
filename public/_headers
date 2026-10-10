@@ -1,0 +1,14 @@
+# Security headers for Cloudflare Pages (https://developers.cloudflare.com/pages/configuration/headers/)
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), payment=(), usb=(), geolocation=(self)
+  Strict-Transport-Security: max-age=31536000
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://thumb.wikimedia.org https://upload.wikimedia.org https://images.unsplash.com https://*.tile.openstreetmap.org https://picsum.photos https://fastly.picsum.photos; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://nominatim.openstreetmap.org; frame-src https://www.openstreetmap.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/placeholders/*
+  Cache-Control: public, max-age=604800
