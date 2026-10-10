@@ -15,12 +15,14 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { CATEGORIES, getCategory } from '@/lib/categories';
+import { placeholderFor } from '@/lib/placeholders';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import PlaceDrawer from './PlaceDrawer';
 import {
   ISSUES,
   STATUS_LABELS,
   getIssues,
+  getWarnings,
   matchesQuery,
   placeToForm,
   placesToCsv,
@@ -435,12 +437,16 @@ export default function PlacesManager({
               onClick={() => setIssue(issue === key ? 'all' : key)}
               aria-pressed={issue === key}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                issue === key
-                  ? 'bg-amber-500 text-white border-amber-500'
-                  : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-700'
+                def.info
+                  ? issue === key
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-muted/70'
+                  : issue === key
+                    ? 'bg-amber-500 text-white border-amber-500'
+                    : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-700'
               }`}
             >
-              <AlertTriangle size={12} />
+              {!def.info && <AlertTriangle size={12} />}
               {def.label} <span className="tabular-nums">{issueCounts[key]}</span>
             </button>
           ) : null
@@ -525,7 +531,7 @@ export default function PlacesManager({
             <tbody>
               {pageItems.map((place) => {
                 const cat = getCategory(place.category);
-                const placeIssues = getIssues(place);
+                const placeWarnings = getWarnings(place);
                 return (
                   <tr
                     key={place.id}
@@ -544,9 +550,9 @@ export default function PlacesManager({
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 rounded-lg bg-muted overflow-hidden shrink-0">
-                          {place.image_url && (
+                          {(place.image_url || placeholderFor(place)) && (
                             <img
-                              src={place.image_url}
+                              src={place.image_url || placeholderFor(place)}
                               alt=""
                               loading="lazy"
                               className="w-full h-full object-cover"
@@ -562,13 +568,13 @@ export default function PlacesManager({
                             {[place.city, place.address].filter(Boolean).join(' · ')}
                           </p>
                         </div>
-                        {placeIssues.length > 0 && (
+                        {placeWarnings.length > 0 && (
                           <span
-                            title={placeIssues.map((k) => ISSUES[k].label).join(', ')}
+                            title={placeWarnings.map((k) => ISSUES[k].label).join(', ')}
                             className="flex items-center gap-0.5 text-amber-600 text-xs shrink-0"
                           >
                             <AlertTriangle size={14} />
-                            {placeIssues.length}
+                            {placeWarnings.length}
                           </span>
                         )}
                       </div>

@@ -23,7 +23,8 @@ const isNum = (v) => v !== null && v !== '' && Number.isFinite(Number(v));
 
 /** Data-quality checks: the things worth fixing when going through the list. */
 export const ISSUES = {
-  no_image: { label: 'בלי תמונה', test: (p) => getPlaceImages(p).length === 0 },
+  // info: true = not a warning; the site shows an illustration instead (see lib/placeholders.js)
+  no_image: { label: 'רק תמונת המחשה (אין תמונה אמיתית)', info: true, test: (p) => getPlaceImages(p).length === 0 },
   no_hours: { label: 'בלי שעות מובנות', test: (p) => !p.opening_schedule },
   cart_no_hours: {
     label: 'עגלת קפה בלי שעות (חובה)',
@@ -50,6 +51,9 @@ export const ISSUES = {
         Number(p.lng) > IL_BOUNDS.lngMax),
   },
 };
+
+/** Issues that need fixing (info-only ones such as "illustration only" are excluded). */
+export const getWarnings = (place) => getIssues(place).filter((key) => !ISSUES[key].info);
 
 export const getIssues = (place) =>
   Object.entries(ISSUES)
