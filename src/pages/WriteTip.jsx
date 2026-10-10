@@ -75,7 +75,7 @@ export default function WriteTip() {
       console.error(e);
       setMessage({
         type: 'error',
-        text: 'שגיאה בפרסום הטיפ'
+        text: e?.message?.includes('rate limit') ? 'שלחת הרבה בזמן קצר. נסה שוב מאוחר יותר.' : 'שגיאה בפרסום הטיפ'
       });
     } finally {
       setLoading(false);

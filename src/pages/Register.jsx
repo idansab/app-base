@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import Turnstile, { TURNSTILE_SITE_KEY } from '@/components/common/Turnstile';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,8 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
@@ -29,7 +32,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const result = await signUp(email, password);
+      const result = await signUp(email, password, captcha);
       setError('');
       if (result?.session) {
         // Email confirmation disabled: already signed in
@@ -47,6 +50,7 @@ export default function Register() {
       }
       setError(errorMsg);
     } finally {
+      setCaptchaReset((n) => n + 1);
       setLoading(false);
     }
   };
@@ -118,9 +122,11 @@ export default function Register() {
             />
           </div>
 
+          <Turnstile onToken={setCaptcha} resetKey={captchaReset} />
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || (TURNSTILE_SITE_KEY && !captcha)}
             className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading && <Loader2 size={18} className="animate-spin" />}
