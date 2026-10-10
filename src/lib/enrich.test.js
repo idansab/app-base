@@ -24,6 +24,11 @@ describe('pickLinks', () => {
     expect(pickLinks(['https://tabitisrael.co.il/x', 'https://did.li/abc', 'https://ontopo.com/y'], []).website).toBeNull();
     expect(pickLinks(['http://www.223.co.il/'], []).website).toBe('http://www.223.co.il/');
   });
+  it('drops tracking parameters from social links and skips auto-generated sites', () => {
+    const l = pickLinks(['https://x.business.site/?copy'], ['https://www.instagram.com/a?igsh=1&utm_source=qr']);
+    expect(l.instagram).toBe('https://www.instagram.com/a');
+    expect(l.website).toBeNull();
+  });
   it('ignores junk and other networks', () => {
     expect(pickLinks(['javascript:alert(1)', 'ftp://x'], ['https://x.com/a'])).toEqual({ website: null, instagram: null, facebook: null });
   });

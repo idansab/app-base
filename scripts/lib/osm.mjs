@@ -63,3 +63,31 @@ export async function findOsmHours(places) {
   });
   return found;
 }
+
+/**
+ * Tags of the OpenStreetMap element that is the same venue as each place: same name (either way) within
+ * `radiusM` metres. Returns Map(index -> tags). Used to take phone / website / opening_hours when present.
+ */
+export async function findOsmTags(places, radiusM = 80) {
+  const found = new Map();
+  const nearby = [];
+  for (let i = 0; i < places.length; i += 25) {
+    const chunk = places.slice(i, i + 25);
+    const q = `[out:json][timeout:90];(${chunk.map((p) => `nwr(around:${radiusM},${p.lat},${p.lng})["name"];`).join('')});out center tags;`;
+    nearby.push(...(await overpass(q)));
+    await sleep(2500);
+  }
+  places.forEach((p, index) => {
+    for (const el of nearby) {
+      const t = el.tags || {};
+      const lat = el.lat ?? el.center?.lat;
+      const lng = el.lon ?? el.center?.lon;
+      if (lat == null || haversineKm(p.lat, p.lng, lat, lng) > radiusM / 1000) continue;
+      if (![t.name, t['name:he'], t['name:en']].some((n) => sameName(p.name, n))) continue;
+      if (!(t.opening_hours || t.phone || t['contact:phone'] || t.website || t['contact:website'])) continue;
+      found.set(index, t);
+      return;
+    }
+  });
+  return found;
+}

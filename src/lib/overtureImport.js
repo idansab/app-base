@@ -19,6 +19,10 @@ export const CATEGORY_SOURCES = {
   carts: { food_truck_stand: 'עגלת אוכל' },
 };
 
+/** Hebrew label for an Overture taxonomy value, whatever profile it belongs to. */
+export const labelForTaxonomy = (taxonomy) =>
+  Object.values(CATEGORY_SOURCES).map((labels) => labels[taxonomy]).find(Boolean) || null;
+
 /** --category values that are stored under a different app category. */
 export const PROFILE_CATEGORY = { carts: 'food' };
 

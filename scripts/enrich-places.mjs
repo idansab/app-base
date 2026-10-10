@@ -4,8 +4,9 @@
  *
  *   node scripts/enrich-places.mjs --places places.json --out enrich.sql
  *
- * places.json: [{ source: 'osm'|'overture', source_ref, name, lat, lng, city, address, label,
- *                 phones?, websites?, socials? }]   (phones/websites/socials come from Overture)
+ * places.json: [{ source: 'osm'|'overture'|'seed', source_ref (for 'seed': the database id), name, lat, lng, city, address, label,
+ *                 phones?, websites?, socials? }]
+ * For 'overture' places only the source_ref is required: the rest is read from Overture.
  *
  * Sources (all open): Overture (phone, website, social links), OpenStreetMap (phone, links, opening_hours,
  * matched to Overture places by name + distance), Wikidata (CC0 short Hebrew description).
@@ -16,12 +17,30 @@ import fs from 'node:fs';
 import { buildDescription, formatPhone, pickLinks } from '../src/lib/enrich.js';
 import { summarizeSchedule } from '../src/lib/openingHours.js';
 import { parseOsmHours } from '../src/lib/osmHours.js';
-import { UA, findOsmHours, overpass, sleep } from './lib/osm.mjs';
+import { labelForTaxonomy } from '../src/lib/overtureImport.js';
+import { UA, findOsmHours, findOsmTags, overpass, sleep } from './lib/osm.mjs';
+import { fetchOvertureByIds } from './lib/overture.mjs';
 
 const args = Object.fromEntries(
   process.argv.slice(2).reduce((acc, a, i, all) => (a.startsWith('--') ? [...acc, [a.slice(2), all[i + 1]]] : acc), [])
 );
 const places = JSON.parse(fs.readFileSync(args.places, 'utf8'));
+
+// Overture places given by id only: read their name, location and contact details from Overture itself
+const bare = places.filter((p) => p.source === 'overture' && !p.phones && !p.websites && !p.socials);
+if (bare.length) {
+  const details = await fetchOvertureByIds(bare.map((p) => p.source_ref));
+  for (const p of bare) {
+    const d = details.get(p.source_ref);
+    if (d) Object.assign(p, { name: p.name ?? d.name, lat: p.lat ?? d.lat, lng: p.lng ?? d.lng, city: p.city ?? d.city, address: p.address ?? d.address, label: p.label ?? labelForTaxonomy(d.taxonomy) ?? '', phones: d.phones, websites: d.websites, socials: d.socials });
+  }
+  console.error(`Overture details read for ${details.size}/${bare.length}`);
+}
+
+// Places added by hand (source 'seed', ref = database id): match an OpenStreetMap venue by name within 1.5 km
+const seeds = places.filter((p) => p.source === 'seed');
+const seedTags = seeds.length ? await findOsmTags(seeds, 1500) : new Map();
+console.error(`Seed places matched in OpenStreetMap: ${seedTags.size}/${seeds.length}`);
 const outFile = args.out || 'enrich.sql';
 const tagsOf = (el) => el.tags || {};
 const osmUrls = (t) => [t.website, t['contact:website'], t.url].filter(Boolean);
@@ -62,8 +81,8 @@ const osmHoursFor = (p) => ovHours.get(ovPlaces.indexOf(p))?.opening_schedule ??
 
 // ---- assemble -------------------------------------------------------------------------------------------
 const rows = places.map((p) => {
-  const t = p.source === 'osm' ? osmTags[p.source_ref] || {} : {};
-  const schedule = p.source === 'osm' ? parseOsmHours(t.opening_hours) : osmHoursFor(p);
+  const t = p.source === 'osm' ? osmTags[p.source_ref] || {} : p.source === 'seed' ? seedTags.get(seeds.indexOf(p)) || {} : {};
+  const schedule = p.source === 'overture' ? osmHoursFor(p) : parseOsmHours(t.opening_hours);
   return {
     source: p.source,
     ref: p.source_ref,
@@ -71,7 +90,7 @@ const rows = places.map((p) => {
     ...pickLinks([...(p.websites || []), ...osmUrls(t)], [...(p.socials || []), ...osmSocials(t)]),
     opening_schedule: schedule,
     opening_hours: schedule ? summarizeSchedule(schedule) : null,
-    description: buildDescription({ label: p.label, city: p.city, address: p.address, wikidata: wikidata[t.wikidata] }),
+    description: p.source === 'seed' ? null : buildDescription({ label: p.label, city: p.city, address: p.address, wikidata: wikidata[t.wikidata] }),
   };
 });
 
@@ -84,7 +103,8 @@ const sql = `update places p set
   opening_hours = case when p.opening_schedule is null and x.opening_schedule is not null then x.opening_hours else p.opening_hours end,
   description = coalesce(nullif(p.description, ''), x.description)
 from jsonb_to_recordset($j$${JSON.stringify(rows)}$j$::jsonb) as x(source text, ref text, phone text, website text, instagram text, facebook text, opening_schedule jsonb, opening_hours text, description text)
-where p.source = x.source and p.source_ref = x.ref
+where (p.source = x.source and p.source_ref = x.ref)
+   or (x.source = 'seed' and p.source is null and p.id::text = x.ref)
 returning p.name;`;
 fs.writeFileSync(outFile, sql);
 

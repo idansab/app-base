@@ -13,7 +13,7 @@ export function formatPhone(raw) {
 }
 
 // Booking / ordering / shortener links are not the business's own website.
-const NOT_A_WEBSITE = /(^|\.)(tabitisrael\.co\.il|tbit\.be|did\.li|ontopo\.(co\.il|com)|wolt\.com|10bis\.co\.il|bit\.ly)$/;
+const NOT_A_WEBSITE = /(^|\.)(tabitisrael\.co\.il|tbit\.be|did\.li|ontopo\.(co\.il|com)|wolt\.com|10bis\.co\.il|bit\.ly|business\.site|cmenu\.co\.il|hopa\.tech)$/;
 
 const isHttp = (u) => /^https?:\/\/[^\s<>"']+$/.test(u) && u.length <= 300;
 
@@ -29,8 +29,9 @@ export function pickLinks(urls = [], socials = []) {
     } catch {
       continue;
     }
-    if (/(^|\.)instagram\.com$/.test(host)) out.instagram ??= url;
-    else if (/(^|\.)(facebook|fb)\.com$/.test(host)) out.facebook ??= url;
+    // tracking parameters (igsh, utm_...) are dropped from social links
+    if (/(^|\.)instagram\.com$/.test(host)) out.instagram ??= url.split('?')[0];
+    else if (/(^|\.)(facebook|fb)\.com$/.test(host)) out.facebook ??= url.split('?')[0];
     else if (NOT_A_WEBSITE.test(host)) continue;
     else if (/(^|\.)(twitter|x|tiktok|linkedin|youtube|wa)\.(com|me)$/.test(host)) continue;
     else out.website ??= url;
