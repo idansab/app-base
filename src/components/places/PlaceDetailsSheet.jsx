@@ -7,6 +7,7 @@ import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
 import { trackPlaceEvent } from '@/lib/trackPlace';
+import PlaceLinks from '@/components/places/PlaceLinks';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import { supabase } from '@/api/base44Client';
 
@@ -162,6 +163,8 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
                 <Phone size={20} className="text-green-600 flex-shrink-0" />
               </a>
             )}
+
+            <PlaceLinks place={place} />
 
             {place.address && (
               <div className="flex items-start gap-3 text-right">

@@ -6,6 +6,7 @@ import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
 import ImageCarousel from '@/components/ImageCarousel';
+import PlaceLinks from '@/components/places/PlaceLinks';
 import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
@@ -345,6 +346,8 @@ export default function PlaceDetail() {
             </BreathingPulse>
           )}
         </motion.div>
+
+        <PlaceLinks place={place} className="mb-8" />
 
         {(place.kosher === 'kosher' || place.kosher === 'not_kosher') && (
           <div className="mb-8 p-6 bg-white rounded-3xl border border-slate-200/50">

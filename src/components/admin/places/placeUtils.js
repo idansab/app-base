@@ -73,6 +73,9 @@ export const EMPTY_FORM = {
   kosher: '',
   kosher_note: '',
   phone: '',
+  website: '',
+  instagram: '',
+  facebook: '',
   tags: '',
   status: 'approved',
 };
@@ -94,6 +97,9 @@ export const placeToForm = (place) => ({
   kosher: place.kosher ?? '',
   kosher_note: place.kosher_note ?? '',
   phone: place.phone ?? '',
+  website: place.website ?? '',
+  instagram: place.instagram ?? '',
+  facebook: place.facebook ?? '',
   tags: (place.tags || []).join(', '),
   status: place.status ?? 'approved',
 });
@@ -117,6 +123,10 @@ export function formToPayload(form) {
     if (!Number.isFinite(rating) || rating < 0 || rating > 5) errors.rating = 'דירוג בין 0 ל-5';
   }
 
+  for (const key of ['website', 'instagram', 'facebook']) {
+    const v = String(form[key] ?? '').trim();
+    if (v && !/^https?:\/\/[^\s<>"']+$/.test(v)) errors[key] = 'קישור חייב להתחיל ב-https://';
+  }
   if (form.images.length > MAX_PLACE_IMAGES) errors.images = `מקסימום ${MAX_PLACE_IMAGES} תמונות`;
   const scheduleError = validateSchedule(form.schedule);
   if (scheduleError) errors.schedule = scheduleError;
@@ -152,6 +162,9 @@ export function formToPayload(form) {
       kosher: form.kosher || null,
       kosher_note: form.kosher === 'kosher' ? orNull(form.kosher_note) : null,
       phone: orNull(form.phone),
+      website: orNull(form.website),
+      instagram: orNull(form.instagram),
+      facebook: orNull(form.facebook),
       tags: String(form.tags)
         .split(',')
         .map((t) => t.trim())
@@ -179,6 +192,9 @@ const CSV_COLUMNS = [
   ['status', 'סטטוס'],
   ['rating', 'דירוג'],
   ['phone', 'טלפון'],
+  ['website', 'אתר'],
+  ['instagram', 'אינסטגרם'],
+  ['facebook', 'פייסבוק'],
   ['opening_hours', 'שעות פתיחה'],
   ['price_level', 'רמת מחיר'],
   ['tags', 'תגיות'],

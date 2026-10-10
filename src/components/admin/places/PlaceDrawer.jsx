@@ -270,6 +270,15 @@ export default function PlaceDrawer({
             <Field label="טלפון">
               <input className={`${inputCls} border-border`} dir="ltr" value={form.phone} onChange={set('phone')} />
             </Field>
+            <Field label="אתר" error={errors.website} className="col-span-2">
+              <input className={`${inputCls} border-border`} dir="ltr" placeholder="https://" value={form.website} onChange={set('website')} />
+            </Field>
+            <Field label="אינסטגרם" error={errors.instagram}>
+              <input className={`${inputCls} border-border`} dir="ltr" placeholder="https://" value={form.instagram} onChange={set('instagram')} />
+            </Field>
+            <Field label="פייסבוק" error={errors.facebook}>
+              <input className={`${inputCls} border-border`} dir="ltr" placeholder="https://" value={form.facebook} onChange={set('facebook')} />
+            </Field>
             <Field label="כתובת *" error={errors.address} className="col-span-2">
               <div className="flex gap-2">
                 <button

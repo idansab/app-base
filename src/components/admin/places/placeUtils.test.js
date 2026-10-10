@@ -136,3 +136,12 @@ describe('matchesQuery', () => {
     expect(matchesQuery(good, '   ')).toBe(true);
   });
 });
+
+describe('link fields', () => {
+  it('accepts http(s) links and rejects anything else', async () => {
+    const { formToPayload, EMPTY_FORM } = await import('./placeUtils');
+    const base = { ...EMPTY_FORM, name: 'x', address: 'y', lat: '32', lng: '35' };
+    expect(formToPayload({ ...base, website: 'https://a.co.il', facebook: '' }).payload.website).toBe('https://a.co.il');
+    expect(formToPayload({ ...base, website: 'javascript:alert(1)' }).errors.website).toBeTruthy();
+  });
+});
