@@ -11,4 +11,8 @@ export default defineConfig({
   plugins: [
     react(),
   ],
+  // vitest: only the app's own tests (skills under .claude/ ship their own node:test files)
+  test: {
+    exclude: ["node_modules/**", "dist/**", ".claude/**"],
+  },
 });

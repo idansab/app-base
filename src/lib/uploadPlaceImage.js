@@ -16,7 +16,11 @@ export async function uploadPlaceImage(file) {
   const problem = validateImageFile(file);
   if (problem) throw new Error(problem);
 
-  const path = `places/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${IMAGE_EXT[file.type]}`;
+  // Uploads go to the signed-in user's own folder (enforced by the storage policy as well)
+  const { data: { session } } = await supabase.auth.getSession();
+  const uid = session?.user?.id;
+  if (!uid) throw new Error('צריך להתחבר כדי להעלות תמונה');
+  const path = `places/${uid}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${IMAGE_EXT[file.type]}`;
   const { error } = await supabase.storage.from('place-images').upload(path, file);
   if (error) throw error;
   return supabase.storage.from('place-images').getPublicUrl(path).data.publicUrl;

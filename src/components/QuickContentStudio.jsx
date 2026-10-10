@@ -38,14 +38,14 @@ export default function QuickContentStudio() {
           user_id: user.id,
           content: content.trim(),
           type: tipType,
-          status: 'approved', // Auto-approve for now
+          status: 'pending', // moderated: the database rejects anything else from regular users
         }]);
 
       if (error) throw error;
 
       setMessage({
         type: 'success',
-        text: '✅ הטיפ שלך פורסם!'
+        text: '✅ הטיפ נשלח לאישור ויתפרסם בקרוב'
       });
       setContent('');
       setTipType('tip');
