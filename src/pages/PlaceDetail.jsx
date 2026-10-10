@@ -6,6 +6,7 @@ import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
 import ImageCarousel from '@/components/ImageCarousel';
+import { placeholderFor } from '@/lib/placeholders';
 import PlaceLinks from '@/components/places/PlaceLinks';
 import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
@@ -358,7 +359,7 @@ export default function PlaceDetail() {
         {getPlaceImages(place).length > 1 && (
           <section className="mb-12" aria-label="גלריית תמונות">
             <h2 className="text-xl font-bold text-right mb-4">תמונות</h2>
-            <ImageCarousel images={getPlaceImages(place)} title={place.name} credits={place.image_credits} />
+            <ImageCarousel images={getPlaceImages(place)} title={place.name} credits={place.image_credits} placeholder={placeholderFor(place)} />
           </section>
         )}
 

@@ -3,6 +3,7 @@ import { Heart, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import { formatDistance } from '@/lib/geo';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
+import { placeholderFor } from '@/lib/placeholders';
 
 const CATEGORY_MAP = {
   'coffee_food': 'עגלות קפה ואוכל',
@@ -41,14 +42,20 @@ export default function PlaceCard({
     >
       {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
-        {!imageFailed && (place.images?.[0] || place.image_url) && (
+        {!imageFailed && (place.images?.[0] || place.image_url || placeholderFor(place)) && (
           <img
-            src={place.images?.[0] || place.image_url}
+            src={place.images?.[0] || place.image_url || placeholderFor(place)}
             alt={place.name}
             loading="lazy"
             onError={() => setImageFailed(true)}
             className="w-full h-full object-cover"
           />
+        )}
+
+        {!(place.images?.[0] || place.image_url) && !imageFailed && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">
+            להמחשה בלבד
+          </span>
         )}
 
         {/* Favorite Button - Top Left */}

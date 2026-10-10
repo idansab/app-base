@@ -1,6 +1,8 @@
 import React from "react";
 import { Heart, Navigation, Star } from "lucide-react";
 import { Image } from "@/components/ui/image";
+import { placeholderFor } from "@/lib/placeholders";
+import { getPlaceImages } from "@/lib/placeImages";
 import { getCategory } from "@/lib/categories";
 import { formatDistance, haversineKm } from "@/lib/geo";
 import { PRICE_SYMBOLS } from "@/lib/labels";
@@ -30,10 +32,15 @@ export default function PlaceCard({
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
         <Image
-          src={place.image_url}
+          src={place.image_url || placeholderFor(place)}
           alt={place.name}
           className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
         />
+        {!getPlaceImages(place).length && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">
+            להמחשה בלבד
+          </span>
+        )}
         <span
           className={cn(
             "absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur",

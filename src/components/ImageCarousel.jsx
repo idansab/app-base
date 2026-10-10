@@ -3,9 +3,20 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { commonsFilePage, licenseUrl } from '@/lib/commonsImages';
 
-export default function ImageCarousel({ images, title, credits }) {
+export default function ImageCarousel({ images, title, credits, placeholder }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
+
+  if ((!images || images.length === 0) && placeholder) {
+    return (
+      <div className="relative w-full h-64 overflow-hidden rounded-2xl bg-muted">
+        <img src={placeholder} alt="" className="w-full h-full object-cover" loading="lazy" />
+        <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white">
+          *התמונה להמחשה בלבד*
+        </span>
+      </div>
+    );
+  }
 
   if (!images || images.length === 0) {
     return (

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, Phone, Heart, Share2, Navigation } from 'lucide-react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import ImageCarousel from '@/components/ImageCarousel';
+import { placeholderFor } from '@/lib/placeholders';
 import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
@@ -103,7 +104,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
         <div className="p-6 space-y-6">
           {/* Hero Image Carousel */}
           {getPlaceImages(place).length > 0 && (
-            <ImageCarousel images={getPlaceImages(place)} title={place.name} credits={place.image_credits} />
+            <ImageCarousel images={getPlaceImages(place)} title={place.name} credits={place.image_credits} placeholder={placeholderFor(place)} />
           )}
 
           {(place.opening_schedule || place.kosher === 'kosher') && (
