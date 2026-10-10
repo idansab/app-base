@@ -13,7 +13,11 @@
  *   --per-city    at most this many from one city (default 5)
  *   --existing    JSON [{name,lat,lng,source,source_ref}] to dedupe against when there is no service key
  *   --out         where to write the batch JSON (default import-batch.json)
+ *   --no-hours    skip the OpenStreetMap opening hours lookup (faster)
  *   --apply       insert into Supabase as status "pending" (needs the two env vars below)
+ *
+ * Each place also gets phone, website / Facebook / Instagram links (Overture), opening hours when OpenStreetMap
+ * has them for the same venue, and a short factual description. Nothing is copied from business websites.
  *
  * Environment (never committed): SUPABASE_URL (or VITE_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY.
  * With the key the script reads every existing place (pending too) so duplicates are impossible;
@@ -23,6 +27,7 @@ import fs from 'node:fs';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { removeDuplicates } from '../src/lib/importPlaces.js';
 import { AREAS, CATEGORY_SOURCES, spreadByCity, toPlaceRow } from '../src/lib/overtureImport.js';
+import { findOsmHours } from './lib/osm.mjs';
 
 const args = Object.fromEntries(
   process.argv.slice(2).reduce((acc, a, i, all) => (a.startsWith('--') ? [...acc, [a.slice(2), all[i + 1]?.startsWith('--') || all[i + 1] === undefined ? true : all[i + 1]]] : acc), [])
@@ -78,13 +83,23 @@ async function fetchOverture() {
   const taxa = Object.keys(CATEGORY_SOURCES[category]).map((t) => `'${t}'`).join(',');
   const result = await conn.runAndReadAll(`
     select id, names.primary as name, taxonomy.primary as taxonomy, confidence, operating_status as status,
-           addresses[1].freeform as address, addresses[1].locality as city, addresses[1].country as country,
+           phones, websites, socials, addresses[1].freeform as address, addresses[1].locality as city, addresses[1].country as country,
            (bbox.ymin + bbox.ymax) / 2 as lat, (bbox.xmin + bbox.xmax) / 2 as lng
     from read_parquet('s3://overturemaps-us-west-2/release/${release}/theme=places/type=place/*', hive_partitioning=1)
     where bbox.xmin between ${west} and ${east} and bbox.ymin between ${south} and ${north}
       and taxonomy.primary in (${taxa}) and confidence >= ${MIN_CONF}
     order by confidence desc limit 5000`);
-  return result.getRowObjects().map((r) => ({ ...r, confidence: Number(r.confidence), lat: Number(r.lat), lng: Number(r.lng) }));
+  // DuckDB returns list columns as { items: [...] }
+  const list = (v) => (Array.isArray(v) ? v : v?.items ?? []);
+  return result.getRowObjects().map((r) => ({
+    ...r,
+    confidence: Number(r.confidence),
+    lat: Number(r.lat),
+    lng: Number(r.lng),
+    phones: list(r.phones),
+    websites: list(r.websites),
+    socials: list(r.socials),
+  }));
 }
 
 const existing = await loadExisting();
@@ -93,6 +108,13 @@ const raw = await fetchOverture();
 const rows = raw.map((r) => toPlaceRow(r, category, { minConfidence: MIN_CONF })).filter((r) => r && !knownRefs.has(r.source_ref));
 const { kept, dropped } = removeDuplicates(rows, existing);
 const picked = spreadByCity(kept, COUNT, PER_CITY);
+
+// opening hours from OpenStreetMap when a matching element has them (skip with --no-hours)
+if (!args['no-hours'] && picked.length) {
+  const hours = await findOsmHours(picked);
+  hours.forEach((h, i) => Object.assign(picked[i], h));
+  console.error(`Opening hours found for ${hours.size}/${picked.length}`);
+}
 
 fs.writeFileSync(outFile, JSON.stringify({ rows: picked, dropped: dropped.map((d) => ({ candidate: d.candidate.name, clashesWith: d.clash.name })) }, null, 2));
 console.log(picked.map((r) => `${r.city ?? '-'} | ${r.name} | ${r.address} | ${r._confidence}`).join('\n'));

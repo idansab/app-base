@@ -32,6 +32,16 @@ describe('toPlaceRow', () => {
   });
 });
 
+describe('contact details', () => {
+  it('carries phone, links and a description', () => {
+    const row = toPlaceRow(rec({ phones: ['+972506374636'], websites: ['https://bar.co.il/'], socials: ['https://www.facebook.com/1'] }), 'nightlife');
+    expect(row).toMatchObject({ phone: '050-6374636', website: 'https://bar.co.il/', facebook: 'https://www.facebook.com/1', description: 'בר בTel Aviv.' });
+  });
+  it('leaves them empty when the source has none', () => {
+    expect(toPlaceRow(rec(), 'nightlife')).toMatchObject({ phone: null, website: null });
+  });
+});
+
 describe('carts profile', () => {
   it('stores food trucks and stalls under the food category', () => {
     expect(toPlaceRow(rec({ taxonomy: 'food_truck_stand', name: 'Falafel Cart' }), 'carts')).toMatchObject({ category: 'food', tags: ['עגלת אוכל'] });

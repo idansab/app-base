@@ -1,5 +1,6 @@
 // Pure helpers for importing places from Overture Maps (no network, no database).
 // Used by scripts/import-places.mjs and unit-tested in overtureImport.test.js.
+import { buildDescription, formatPhone, pickLinks } from './enrich.js';
 import { isGenericName, normalizeName } from './importPlaces.js';
 // Rough bounding box of Israel (same as the admin places manager uses)
 const IL_BOUNDS = { latMin: 29.4, latMax: 33.4, lngMin: 34.2, lngMax: 35.95 };
@@ -40,7 +41,8 @@ const NAME_OK = /[A-Za-z֐-׿]/;
 
 /**
  * Overture row -> database row (status "pending"), or null when it is not good enough.
- * Row shape: { id, name, taxonomy, confidence, address, city, country, lat, lng, status }.
+ * Row shape: { id, name, taxonomy, confidence, address, city, country, lat, lng, status,
+ * phones?, websites?, socials? }.
  */
 export function toPlaceRow(rec, profile, { minConfidence = 0.6 } = {}) {
   const category = PROFILE_CATEGORY[profile] || profile;
@@ -70,6 +72,9 @@ export function toPlaceRow(rec, profile, { minConfidence = 0.6 } = {}) {
     lat: Number(lat.toFixed(6)),
     lng: Number(lng.toFixed(6)),
     short_description: city ? `${label} · ${city}` : label,
+    description: buildDescription({ label, city }),
+    phone: formatPhone(rec.phones?.[0]),
+    ...pickLinks(rec.websites || [], rec.socials || []),
     tags: [label],
     status: 'pending',
     source: 'overture',
