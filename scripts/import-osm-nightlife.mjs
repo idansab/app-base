@@ -19,7 +19,7 @@ const UA = 'ma-yesh-po-import/1.0 (contact: idansabah15@gmail.com)';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // [label, lat, lng, radius km, how many]
-const AREAS = [
+const MAIN_AREAS = [
   ['תל אביב', 32.0733, 34.7818, 4, 7],
   ['ירושלים', 31.7800, 35.2200, 4, 4],
   ['חיפה', 32.8100, 34.9900, 4, 4],
@@ -29,6 +29,18 @@ const AREAS = [
   ['נוף הגליל ונצרת', 32.7000, 35.3200, 8, 2],
   ['הרצליה ונתניה', 32.2400, 34.8500, 9, 2],
 ];
+// --set north: the north, where Hebrew-named bars are rare in OSM (English names are accepted too)
+const NORTH_AREAS = [
+  ['טבריה', 32.7900, 35.5300, 5, 2],
+  ['נוף הגליל', 32.7000, 35.3200, 6, 2],
+  ['נצרת', 32.7000, 35.3000, 5, 1],
+  ['עכו ונהריה', 32.9300, 35.0800, 8, 2],
+  ['כרמיאל וצפת', 32.9200, 35.3000, 12, 2],
+  ['קריית שמונה והגליל העליון', 33.2000, 35.5700, 15, 1],
+  ['עפולה והעמק', 32.6100, 35.2900, 10, 1],
+  ['זכרון יעקב וקיסריה', 32.5500, 34.9200, 10, 1],
+];
+const AREAS = args.set === 'north' ? NORTH_AREAS : MAIN_AREAS;
 const ENDPOINTS = ['https://overpass.openstreetmap.fr/api/interpreter', 'https://overpass-api.de/api/interpreter'];
 
 async function overpass(query) {
@@ -69,7 +81,8 @@ for (const [label, lat, lng, km, quota] of AREAS) {
     .map((el) => {
       const tags = el.tags || {};
       const kind = classify(tags);
-      const name = hebrewName(tags);
+      // Hebrew name when there is one; otherwise the plain name (Latin script is fine for bars)
+      const name = hebrewName(tags) || (tags.name && /[A-Za-z֐-׿]/.test(tags.name) ? tags.name.trim() : null);
       const clat = el.lat ?? el.center?.lat;
       const clng = el.lon ?? el.center?.lon;
       if (!kind || !name || isGenericName(name) || clat == null) return null;

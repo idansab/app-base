@@ -119,7 +119,15 @@ export default function Footer() {
               >
                 © תורמי OpenStreetMap
               </a>{' '}
-              (רישיון ODbL)
+              (רישיון ODbL) ·{' '}
+              <a
+                href="https://overturemaps.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white"
+              >
+                Overture Maps
+              </a>
             </p>
           </div>
         </motion.div>

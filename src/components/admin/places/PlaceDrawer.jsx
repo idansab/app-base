@@ -348,6 +348,11 @@ export default function PlaceDrawer({
           />
           {errors.schedule && <p className="text-xs text-red-600 text-right">{errors.schedule}</p>}
 
+          {place?.source === 'overture' && (
+            <p className="text-xs text-muted-foreground text-right">
+              מקור: Overture Maps ({place.source_license || 'CDLA-Permissive-2.0'}). יובא אוטומטית: כדאי לבדוק שם, מיקום וקטגוריה לפני אישור.
+            </p>
+          )}
           {place?.source === 'osm' && place.source_ref && (
             <p className="text-xs text-muted-foreground text-right">
               מקור:{' '}
