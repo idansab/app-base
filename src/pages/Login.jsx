@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import Turnstile, { TURNSTILE_SITE_KEY } from '@/components/common/Turnstile';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn } = useAuth();
@@ -18,7 +21,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      await signIn(email, password, captcha);
       // חזור לדף שניסה להיכנס אליו, או להome
       const from = location.state?.from;
       navigate(from?.pathname ? `${from.pathname}${from.search || ''}` : '/');
@@ -32,6 +35,7 @@ export default function Login() {
       }
       setError(errorMsg);
     } finally {
+      setCaptchaReset((n) => n + 1);
       setLoading(false);
     }
   };
@@ -84,9 +88,11 @@ export default function Login() {
             </Link>
           </div>
 
+          <Turnstile onToken={setCaptcha} resetKey={captchaReset} />
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || (TURNSTILE_SITE_KEY && !captcha)}
             className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading && <Loader2 size={18} className="animate-spin" />}

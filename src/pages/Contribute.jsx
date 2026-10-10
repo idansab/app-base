@@ -97,7 +97,7 @@ export default function Contribute() {
           window.location.href = '/';
         }, 2000);
       } else {
-        setErrorMessage(error?.message || 'שגיאה בשליחת הטופס');
+        setErrorMessage(error?.message?.includes('rate limit') ? 'שלחת הרבה בזמן קצר. נסה שוב מאוחר יותר.' : (error?.message || 'שגיאה בשליחת הטופס'));
         setStatus('error');
       }
     } catch (err) {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import Turnstile, { TURNSTILE_SITE_KEY } from '@/components/common/Turnstile';
 
 export default function ForgotPassword() {
   const { requestPasswordReset } = useAuth();
@@ -9,18 +10,21 @@ export default function ForgotPassword() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await requestPasswordReset(email.trim());
+      await requestPasswordReset(email.trim(), captcha);
       // Same message whether or not the account exists (no account enumeration)
       setSent(true);
     } catch {
       setError('לא הצלחנו לשלוח את המייל. נסה שוב בעוד רגע.');
     } finally {
+      setCaptchaReset((n) => n + 1);
       setLoading(false);
     }
   };
@@ -56,9 +60,11 @@ export default function ForgotPassword() {
                 autoComplete="email"
               />
             </div>
+            <Turnstile onToken={setCaptcha} resetKey={captchaReset} />
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (TURNSTILE_SITE_KEY && !captcha)}
               className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 size={18} className="animate-spin" />}

@@ -32,13 +32,14 @@ export function AuthProvider({ children }) {
     return () => subscription?.unsubscribe();
   }, []);
 
-  const signUp = async (email, password) => {
+  const signUp = async (email, password, captchaToken) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin
+          emailRedirectTo: window.location.origin,
+          captchaToken
         }
       });
 
@@ -51,10 +52,14 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const signIn = async (email, password) => {
+  const signIn = async (email, password, captchaToken) => {
     try {
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: { captchaToken },
+      });
 
       if (error) {
         if (error.message?.includes('Invalid login credentials')) {
@@ -84,9 +89,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const requestPasswordReset = async (email) => {
+  const requestPasswordReset = async (email, captchaToken) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
+      captchaToken,
     });
     if (error) throw new Error(error.message);
   };
@@ -106,6 +112,17 @@ export function AuthProvider({ children }) {
     await updatePassword(newPassword);
   };
 
+  const deleteAccount = async () => {
+    const { error } = await supabase.rpc('delete_my_account');
+    if (error) {
+      if (error.message?.includes('last admin')) throw new Error('אי אפשר למחוק את חשבון המנהל האחרון');
+      throw new Error('מחיקת החשבון נכשלה. נסה שוב או צור קשר.');
+    }
+    await supabase.auth.signOut().catch(() => {});
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
   const value = {
     user,
     loading,
@@ -116,6 +133,7 @@ export function AuthProvider({ children }) {
     requestPasswordReset,
     updatePassword,
     changePassword,
+    deleteAccount,
   };
 
   return (

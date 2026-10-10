@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Moon, Sun, Lock, HelpCircle, LogOut, LogIn, X, Store, ChevronLeft } from 'lucide-react';
+import { Moon, Sun, Lock, HelpCircle, Trash2, LogOut, LogIn, X, Store, ChevronLeft } from 'lucide-react';
 import useOwnerOverview from '@/hooks/useOwnerOverview';
 import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function Settings() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
-  const { isAuthenticated, signOut, changePassword } = useAuth();
+  const { isAuthenticated, signOut, changePassword, deleteAccount } = useAuth();
   // the entry only exists for users who are approved owners of a business
   const { hasApproved, unseen } = useOwnerOverview();
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
@@ -44,6 +45,23 @@ export default function Settings() {
       setPwError(err.message || 'שגיאה בשינוי הסיסמה');
     } finally {
       setPwLoading(false);
+    }
+  };
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await deleteAccount();
+      setDeleteOpen(false);
+      navigate('/');
+    } catch (err) {
+      setDeleteError(err.message);
+    } finally {
+      setDeleting(false);
     }
   };
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -142,6 +160,18 @@ export default function Settings() {
             <HelpCircle size={20} className="text-muted-foreground" />
             <span className="font-medium">מדיניות פרטיות</span>
           </motion.button>
+
+          {isAuthenticated && (
+            <motion.button
+              onClick={() => { setDeleteError(''); setDeleteOpen(true); }}
+              className="w-full p-4 mt-3 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-colors flex items-center justify-between text-right"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Trash2 size={20} />
+              <span className="font-medium">מחיקת החשבון שלי</span>
+            </motion.button>
+          )}
         </motion.div>
 
         {/* My business: visible only to approved owners */}
@@ -221,6 +251,18 @@ export default function Settings() {
             התחברות
           </motion.button>
         )}
+
+        <ConfirmDialog
+          isOpen={deleteOpen}
+          variant="danger"
+          isDangerous
+          title="מחיקת החשבון"
+          message={deleteError || 'החשבון והנתונים האישיים שלך (מועדפים, טיולים, טיפים ודיווחים) יימחקו לצמיתות. אי אפשר לשחזר.'}
+          confirmText="מחק לצמיתות"
+          isLoading={deleting}
+          onConfirm={handleDeleteAccount}
+          onCancel={() => setDeleteOpen(false)}
+        />
       </div>
 
       {/* Privacy Policy Modal */}
