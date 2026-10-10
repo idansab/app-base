@@ -7,7 +7,7 @@ export const PLACEHOLDER_KINDS = ['spring', 'viewpoint', 'beach', 'nature', 'bar
 
 // How many pictures exist per kind: public/placeholders/<kind>.jpg, <kind>-2.jpg, <kind>-3.jpg ...
 // Raise a number here after adding files; a place always gets the same variant (chosen by its id).
-export const PLACEHOLDER_VARIANTS = Object.fromEntries(PLACEHOLDER_KINDS.map((kind) => [kind, 1]));
+export const PLACEHOLDER_VARIANTS = { ...Object.fromEntries(PLACEHOLDER_KINDS.map((kind) => [kind, 1])), bar: 3 };
 
 // Checked in order against the place name and its first tag (the kind label from the importer).
 const RULES = [

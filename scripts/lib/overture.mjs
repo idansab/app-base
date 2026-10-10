@@ -2,7 +2,16 @@
 import { DuckDBInstance } from '@duckdb/node-api';
 
 export async function latestRelease() {
-  const res = await fetch('https://overturemaps-us-west-2.s3.amazonaws.com/?prefix=release/&delimiter=/');
+  let res;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      res = await fetch('https://overturemaps-us-west-2.s3.amazonaws.com/?prefix=release/&delimiter=/', { signal: AbortSignal.timeout(20000) });
+      break;
+    } catch (e) {
+      if (attempt === 3) throw e;
+      await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
+    }
+  }
   const releases = [...(await res.text()).matchAll(/<Prefix>release\/([^<]+)\/<\/Prefix>/g)].map((m) => m[1]).sort();
   return releases.at(-1);
 }
