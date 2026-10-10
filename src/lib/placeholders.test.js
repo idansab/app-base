@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { placeholderFor, placeholderKind, placeholderSrc } from './placeholders';
+import { PLACEHOLDER_VARIANTS, placeholderFor, placeholderKind, placeholderSrc } from './placeholders';
 
 describe('placeholderKind', () => {
   it('picks the kind from the label or name', () => {
@@ -30,5 +30,20 @@ describe('placeholderFor', () => {
   });
   it('never points outside the known set', () => {
     expect(placeholderSrc('../../etc')).toBe('/placeholders/nature.jpg');
+  });
+});
+
+describe('variants', () => {
+  it('is stable per place and spreads places over the available pictures', () => {
+    const original = PLACEHOLDER_VARIANTS.bar;
+    PLACEHOLDER_VARIANTS.bar = 3;
+    try {
+      expect(placeholderSrc('bar', 'abc')).toBe(placeholderSrc('bar', 'abc'));
+      const seen = new Set(Array.from({ length: 40 }, (_, i) => placeholderSrc('bar', `id-${i}`)));
+      expect(seen.size).toBe(3);
+      expect([...seen].every((s) => /^\/placeholders\/bar(-[23])?\.jpg$/.test(s))).toBe(true);
+    } finally {
+      PLACEHOLDER_VARIANTS.bar = original;
+    }
   });
 });

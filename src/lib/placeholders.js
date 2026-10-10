@@ -5,6 +5,10 @@ import { getPlaceImages } from './placeImages.js';
 
 export const PLACEHOLDER_KINDS = ['spring', 'viewpoint', 'beach', 'nature', 'bar', 'cafe', 'cart', 'market', 'museum', 'heritage'];
 
+// How many pictures exist per kind: public/placeholders/<kind>.jpg, <kind>-2.jpg, <kind>-3.jpg ...
+// Raise a number here after adding files; a place always gets the same variant (chosen by its id).
+export const PLACEHOLDER_VARIANTS = Object.fromEntries(PLACEHOLDER_KINDS.map((kind) => [kind, 1]));
+
 // Checked in order against the place name and its first tag (the kind label from the importer).
 const RULES = [
   ['cart', /עגלת|דוכן|פודטראק|משאית אוכל|food truck/i],
@@ -28,7 +32,13 @@ export function placeholderKind(place) {
   return BY_CATEGORY[normalizeCategory(place?.category)] || 'nature';
 }
 
-export const placeholderSrc = (kind) => `/placeholders/${PLACEHOLDER_KINDS.includes(kind) ? kind : 'nature'}.jpg`;
+const hash = (text) => [...String(text ?? '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
+
+export function placeholderSrc(kind, seed = '') {
+  const safe = PLACEHOLDER_KINDS.includes(kind) ? kind : 'nature';
+  const variant = (hash(seed) % (PLACEHOLDER_VARIANTS[safe] || 1)) + 1;
+  return `/placeholders/${safe}${variant > 1 ? `-${variant}` : ''}.jpg`;
+}
 
 /** The picture to show for a place without photos, or null when it has real ones. */
-export const placeholderFor = (place) => (getPlaceImages(place).length > 0 ? null : placeholderSrc(placeholderKind(place)));
+export const placeholderFor = (place) => (getPlaceImages(place).length > 0 ? null : placeholderSrc(placeholderKind(place), place?.id ?? place?.name));
