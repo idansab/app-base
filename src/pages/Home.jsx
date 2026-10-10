@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
+import VirtualPlaceGrid from '@/components/places/VirtualPlaceGrid';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
 import { isOpenNow } from '@/lib/openingHours';
@@ -51,13 +52,21 @@ export default function Home() {
     const loadPlaces = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('places')
-          .select('*')
-          .eq('status', 'approved')
-          .limit(200);
-        if (error) throw error;
-        setPlaces(data || []);
+        // The API caps one response at 1000 rows: page through until everything is loaded
+        const PAGE = 1000;
+        const all = [];
+        for (let from = 0; ; from += PAGE) {
+          const { data, error } = await supabase
+            .from('places')
+            .select('*')
+            .eq('status', 'approved')
+            .order('id')
+            .range(from, from + PAGE - 1);
+          if (error) throw error;
+          all.push(...(data || []));
+          if (!data || data.length < PAGE) break;
+        }
+        setPlaces(all);
 
         // Load favorites
         const { data: { user } } = await supabase.auth.getUser();
@@ -386,14 +395,15 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPlaces.map(place => {
+          <VirtualPlaceGrid
+            items={filteredPlaces}
+            getKey={(place) => place.id}
+            renderItem={(place) => {
               const distance = userLocation
                 ? haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng)
                 : null;
               return (
                 <PlaceCard
-                  key={place.id}
                   place={place}
                   distance={distance}
                   isFavorite={favorites.includes(place.id)}
@@ -401,8 +411,8 @@ export default function Home() {
                   onClick={() => setSelectedPlace(place)}
                 />
               );
-            })}
-          </div>
+            }}
+          />
         )}
       </div>
 
