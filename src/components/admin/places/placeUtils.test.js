@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getIssues, formToPayload, placeToForm, placesToCsv, matchesQuery, EMPTY_FORM } from './placeUtils';
+import { getIssues, getWarnings, formToPayload, placeToForm, placesToCsv, matchesQuery, EMPTY_FORM } from './placeUtils';
 
 const good = {
   id: '1',
@@ -143,5 +143,14 @@ describe('link fields', () => {
     const base = { ...EMPTY_FORM, name: 'x', address: 'y', lat: '32', lng: '35' };
     expect(formToPayload({ ...base, website: 'https://a.co.il', facebook: '' }).payload.website).toBe('https://a.co.il');
     expect(formToPayload({ ...base, website: 'javascript:alert(1)' }).errors.website).toBeTruthy();
+  });
+});
+
+describe('getWarnings', () => {
+  it('does not count "illustration only" as a problem', () => {
+    const noPhoto = { ...good, image_url: null, images: [] };
+    expect(getIssues(noPhoto)).toContain('no_image');
+    expect(getWarnings(noPhoto)).toEqual([]);
+    expect(getWarnings({ ...noPhoto, phone: '' })).toEqual(['no_phone']);
   });
 });
