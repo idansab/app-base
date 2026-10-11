@@ -17,6 +17,18 @@ export const CATEGORY_SOURCES = {
   food: { coffee_shop: 'בית קפה', cafe: 'בית קפה', tea_room: 'בית תה', bubble_tea_shop: 'בועות תה' },
   // food trucks, carts and stalls (the "עגלות" of the site)
   carts: { food_truck_stand: 'עגלת אוכל' },
+  // attractions and adventure sports: things you book and do, not just look at
+  attractions: {
+    amusement_park: 'פארק שעשועים', water_park: 'פארק מים', zoo: 'גן חיות', petting_zoo: 'חוות חיות',
+    aquarium: 'אקווריום', planetarium: 'פלנטריום', observatory: 'מצפה כוכבים',
+    escape_room: 'חדר בריחה', bowling_alley: 'באולינג', laser_tag: 'לייזר טאג', paintball: 'פיינטבול',
+    arcade: 'ארקייד', skate_park: 'סקייטפארק',
+    go_kart_club: 'קארטינג', atv_recreation_park: 'טרקטורונים', atv_rental_tour: 'טרקטורונים',
+    canoe_and_kayak_hire_service: 'קיאקים', rock_climbing_spot: 'טיפוס וסנפלינג', sky_diving: 'צניחה חופשית',
+    surfing: 'גלישה', scuba_diving_center: 'צלילה', diving_center: 'צלילה', horseback_riding_service: 'רכיבה על סוסים',
+    boat_tour: 'שייט', boat_rental_and_training: 'השכרת סירות והדרכה', jet_skis_rental: 'אופנועי ים', hot_air_balloons_tour: 'כדור פורח',
+    cable_car_service: 'רכבל', ski_resort: 'אתר סקי',
+  },
 };
 
 /** Hebrew label for an Overture taxonomy value, whatever profile it belongs to. */

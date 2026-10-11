@@ -18,6 +18,7 @@ const CATEGORY_MAP = {
   'nightlife': 'חיי לילה',
   'shopping': 'קניות ושווקים',
   'culture': 'תרבות',
+  'attractions': 'אטרקציות',
 };
 
 export default function PlaceCard({

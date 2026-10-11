@@ -9,6 +9,7 @@ const CATEGORIES = [
   { id: 'nightlife', label: 'חיי לילה' },
   { id: 'shopping', label: 'שווקים וקניות' },
   { id: 'culture', label: 'תרבות' },
+  { id: 'attractions', label: 'אטרקציות' },
 ];
 
 const FormSection = ({ title, icon: Icon, isOpen, onToggle, children }) => (
