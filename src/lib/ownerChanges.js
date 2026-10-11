@@ -1,5 +1,6 @@
 import { formToPayload, placeToForm } from '@/components/admin/places/placeUtils';
 import { summarizeSchedule } from '@/lib/openingHours';
+import { AMENITIES, cleanAmenities } from '@/lib/amenities';
 
 /**
  * What an owner may change. Fields that only make sense together are one group, so the admin
@@ -14,6 +15,7 @@ export const OWNER_GROUPS = [
   { key: 'images', label: 'תמונות', fields: ['images'] },
   { key: 'kosher', label: 'כשרות', fields: ['kosher', 'kosher_note'] },
   { key: 'price_level', label: 'רמת מחיר', fields: ['price_level'] },
+  { key: 'amenities', label: 'מאפיינים (נגישות וחניה)', fields: ['amenities'] },
   { key: 'tags', label: 'תגיות', fields: ['tags'] },
 ];
 
@@ -76,6 +78,12 @@ export function describeGroup(group, source) {
       return 'לא ידוע';
     case 'price_level':
       return PRICE_LABELS[source.price_level] || '—';
+    case 'amenities':
+      return (
+        cleanAmenities(source.amenities)
+          .map((key) => AMENITIES.find((a) => a.key === key)?.label)
+          .join(', ') || 'לא צוין'
+      );
     case 'tags':
       return (source.tags || []).join(', ') || '—';
     case 'images':

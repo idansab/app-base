@@ -6,6 +6,7 @@ import HoursEditor from '@/components/admin/places/HoursEditor';
 import { PRICE_LEVELS, placeToForm } from '@/components/admin/places/placeUtils';
 import { buildOwnerChanges } from '@/lib/ownerChanges';
 import { formatBetaDate, useBetaInfo } from '@/lib/beta';
+import AmenitiesField from '@/components/places/AmenitiesField';
 
 const inputCls =
   'w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground text-right focus:outline-none focus:ring-2 focus:ring-green-600';
@@ -166,6 +167,7 @@ export default function OwnerEditor({ place, onClose, onSaved }) {
                   </Field>
                 )}
               </div>
+              <AmenitiesField value={form.amenities} onChange={(amenities) => setForm((f) => ({ ...f, amenities }))} />
               <Field label="תגיות (מופרדות בפסיק)">
                 <input className={inputCls} value={form.tags} onChange={set('tags')} />
               </Field>

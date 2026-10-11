@@ -91,13 +91,18 @@ describe('groups', () => {
   });
 
   it('every group maps to fields the database accepts', () => {
-    const allowed = ['short_description', 'description', 'phone', 'opening_hours', 'opening_schedule', 'images', 'kosher', 'kosher_note', 'price_level', 'tags'];
+    const allowed = ['short_description', 'description', 'phone', 'opening_hours', 'opening_schedule', 'images', 'kosher', 'kosher_note', 'price_level', 'tags', 'amenities'];
     expect(OWNER_GROUPS.flatMap((g) => g.fields).sort()).toEqual([...allowed].sort());
   });
 });
 
 describe('describeGroup', () => {
   const g = (key) => OWNER_GROUPS.find((x) => x.key === key);
+
+  it('lists amenities by name, or says none were stated', () => {
+    expect(describeGroup(g('amenities'), { amenities: ['parking', 'wheelchair'] })).toBe('נגיש לנכים, חניה מסודרת');
+    expect(describeGroup(g('amenities'), { amenities: [] })).toBe('לא צוין');
+  });
 
   it('describes hours, kosher, price, tags and images', () => {
     expect(describeGroup(g('hours'), place)).toBe("א'-ה' 07:00-22:00");

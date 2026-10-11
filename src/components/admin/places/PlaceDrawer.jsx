@@ -14,6 +14,7 @@ import {
 import { supabase } from '@/api/base44Client';
 import { geocodeAddress } from '@/lib/geo';
 import { CATEGORIES } from '@/lib/categories';
+import AmenitiesField from '@/components/places/AmenitiesField';
 import GalleryEditor from './GalleryEditor';
 import HoursEditor from './HoursEditor';
 import {
@@ -347,6 +348,8 @@ export default function PlaceDrawer({
               </Field>
             )}
           </div>
+
+          <AmenitiesField value={form.amenities} onChange={(amenities) => setForm((f) => ({ ...f, amenities }))} label="מאפיינים (סמן רק מה שידוע בוודאות)" />
 
           <HoursEditor
             value={form.schedule}

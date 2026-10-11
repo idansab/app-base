@@ -1,4 +1,6 @@
-// What a visitor may suggest about a place. Must match sanitize_suggestion_changes() in migration 021.
+// What a visitor may suggest about a place. Must match sanitize_suggestion_changes() in migration 021
+// (and the amenities rule of sanitize_place_changes() in migration 022).
+import { cleanAmenities } from '@/lib/amenities';
 
 export const SUGGEST_REASONS = [
   { key: 'gone', label: 'המקום סגור או לא קיים', needsText: false },
@@ -32,6 +34,7 @@ export const placeToSuggestionForm = (place) => ({
   description: text(place?.description),
   opening_hours: text(place?.opening_hours),
   price_level: place?.price_level || '',
+  amenities: cleanAmenities(place?.amenities),
 });
 
 /**
@@ -54,6 +57,11 @@ export function buildSuggestionChanges(place, form) {
 
   if (form.price_level && form.price_level !== baseline.price_level) {
     if (PRICE_LEVELS.includes(form.price_level)) changes.price_level = form.price_level;
+  }
+  // unlike text boxes, an unticked box is an opinion: the visitor sees what we know and can correct it
+  if (Array.isArray(form.amenities)) {
+    const wanted = cleanAmenities(form.amenities);
+    if (JSON.stringify(wanted) !== JSON.stringify(baseline.amenities)) changes.amenities = wanted;
   }
   return { changes, errors };
 }
