@@ -91,6 +91,8 @@ async function rewrite({ request, next, env }) {
   const type = response.headers.get('content-type') || '';
   if (request.method !== 'GET' || !type.includes('text/html')) return response;
 
+  if (/^\/google[0-9a-f]+\.html$/.test(url.pathname)) return response; // Search Console verification file
+
   const path = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, '') : '/';
   const canonical = url.origin + (path === '/' ? '/' : path);
 

@@ -1,5 +1,5 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/assets/*", "/placeholders/*", "/discover/*", "/favicon.*", "/icon-*", "/apple-touch-icon.png", "/manifest.json", "/robots.txt", "/llms.txt"]
+  "exclude": ["/assets/*", "/placeholders/*", "/discover/*", "/favicon.*", "/icon-*", "/apple-touch-icon.png", "/manifest.json", "/robots.txt", "/llms.txt", "/google*.html"]
 }
