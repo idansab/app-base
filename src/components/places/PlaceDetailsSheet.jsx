@@ -91,7 +91,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
+        <div className="sticky top-0 z-20 bg-card border-b border-border p-4 flex items-center justify-between">
           <button
             onClick={onClose}
             className="p-2 hover:bg-secondary rounded-full transition-colors"
