@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { formatDistance } from '@/lib/geo';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { placeholderFor } from '@/lib/placeholders';
+import PlaceAmenities from '@/components/places/PlaceAmenities';
 
 const CATEGORY_MAP = {
   'coffee_food': 'עגלות קפה ואוכל',
@@ -109,6 +110,7 @@ export default function PlaceCard({
         <p className="text-xs text-muted-foreground text-right mb-auto line-clamp-2">
           {place.short_description || place.description}
         </p>
+        <PlaceAmenities place={place} compact className="mt-3" />
       </div>
     </motion.div>
   );

@@ -14,6 +14,8 @@ import { getPlaceImages } from '@/lib/placeImages';
 import { trackPlaceEvent } from '@/lib/trackPlace';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
+import PlaceAmenities from '@/components/places/PlaceAmenities';
+import { getPlaceAmenities } from '@/lib/amenities';
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
@@ -350,6 +352,12 @@ export default function PlaceDetail() {
         </motion.div>
 
         <PlaceLinks place={place} className="mb-8" />
+
+        {getPlaceAmenities(place).length > 0 && (
+          <div className="mb-8 p-6 bg-card rounded-3xl border border-border/50">
+            <PlaceAmenities place={place} />
+          </div>
+        )}
 
         {(place.kosher === 'kosher' || place.kosher === 'not_kosher') && (
           <div className="mb-8 p-6 bg-card rounded-3xl border border-border/50">

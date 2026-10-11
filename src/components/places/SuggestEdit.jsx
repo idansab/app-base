@@ -4,6 +4,7 @@ import { Camera, CheckCircle2, Flag, Loader2, Pencil, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { PRICE_LEVELS } from '@/components/admin/places/placeUtils';
+import AmenitiesField from '@/components/places/AmenitiesField';
 import { uploadPlaceImage, validateImageFile } from '@/lib/uploadPlaceImage';
 import {
   MAX_SUGGESTED_IMAGES,
@@ -269,6 +270,7 @@ export default function SuggestEdit({ place, className = '' }) {
                       <Field label="שעות פתיחה" error={fieldErrors.opening_hours}>
                         <input className={inputCls} maxLength={200} value={form.opening_hours} onChange={set('opening_hours')} placeholder="למשל: א׳-ה׳ 08:00-22:00" />
                       </Field>
+                      <AmenitiesField value={form.amenities} onChange={(amenities) => setForm((f) => ({ ...f, amenities }))} />
                       <Field label="תיאור קצר" error={fieldErrors.short_description}>
                         <input className={inputCls} maxLength={200} value={form.short_description} onChange={set('short_description')} />
                       </Field>

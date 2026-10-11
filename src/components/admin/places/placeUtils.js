@@ -2,6 +2,7 @@
 import { hasUsableSchedule, requiresHours, summarizeSchedule, validateSchedule } from '@/lib/openingHours';
 import { normalizeCategory } from '@/lib/categories';
 import { MAX_PLACE_IMAGES, getPlaceImages } from '@/lib/placeImages';
+import { cleanAmenities } from '@/lib/amenities';
 
 export const STATUS_LABELS = {
   pending: 'ממתין',
@@ -76,6 +77,7 @@ export const EMPTY_FORM = {
   schedule: null,
   kosher: '',
   kosher_note: '',
+  amenities: [],
   phone: '',
   website: '',
   instagram: '',
@@ -100,6 +102,7 @@ export const placeToForm = (place) => ({
   schedule: place.opening_schedule ?? null,
   kosher: place.kosher ?? '',
   kosher_note: place.kosher_note ?? '',
+  amenities: cleanAmenities(place.amenities),
   phone: place.phone ?? '',
   website: place.website ?? '',
   instagram: place.instagram ?? '',
@@ -165,6 +168,7 @@ export function formToPayload(form) {
       opening_schedule: cleanSchedule ? JSON.parse(JSON.stringify(cleanSchedule)) : null,
       kosher: form.kosher || null,
       kosher_note: form.kosher === 'kosher' ? orNull(form.kosher_note) : null,
+      amenities: cleanAmenities(form.amenities),
       phone: orNull(form.phone),
       website: orNull(form.website),
       instagram: orNull(form.instagram),
@@ -204,6 +208,7 @@ const CSV_COLUMNS = [
   ['tags', 'תגיות'],
   ['images', 'תמונות'],
   ['kosher', 'כשרות'],
+  ['amenities', 'מאפיינים'],
   ['short_description', 'תיאור קצר'],
   ['description', 'תיאור'],
 ];

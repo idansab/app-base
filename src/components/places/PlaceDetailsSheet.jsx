@@ -11,6 +11,7 @@ import { trackPlaceEvent } from '@/lib/trackPlace';
 import PlaceLinks from '@/components/places/PlaceLinks';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
+import PlaceAmenities from '@/components/places/PlaceAmenities';
 import { supabase } from '@/api/base44Client';
 
 export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, userLocation, isFavorite, onFavoriteToggle }) {
@@ -114,6 +115,8 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
               <KosherBadge place={place} />
             </div>
           )}
+
+          <PlaceAmenities place={place} className="rounded-2xl bg-background p-4" />
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-4">

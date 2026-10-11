@@ -36,6 +36,24 @@ describe('buildSuggestionChanges', () => {
   });
 });
 
+describe('amenities in suggestions', () => {
+  it('sends the whole list when the visitor changed it', () => {
+    const form = { ...placeToSuggestionForm(place), amenities: ['parking', 'wheelchair'] };
+    expect(buildSuggestionChanges(place, form).changes).toEqual({ amenities: ['wheelchair', 'parking'] });
+  });
+
+  it('lets a visitor remove a wrong amenity', () => {
+    const withAmenity = { ...place, amenities: ['parking'] };
+    const form = { ...placeToSuggestionForm(withAmenity), amenities: [] };
+    expect(buildSuggestionChanges(withAmenity, form).changes).toEqual({ amenities: [] });
+  });
+
+  it('sends nothing when the list is unchanged', () => {
+    const withAmenity = { ...place, amenities: ['car_access'] };
+    expect(buildSuggestionChanges(withAmenity, placeToSuggestionForm(withAmenity)).changes).toEqual({});
+  });
+});
+
 describe('buildReportNote', () => {
   it('needs a reason', () => {
     expect(buildReportNote('', 'x').error).toBeTruthy();

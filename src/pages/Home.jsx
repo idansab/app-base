@@ -12,6 +12,7 @@ import useUserLocation from '@/hooks/useUserLocation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/api/base44Client';
 import { normalizeCategory } from '@/lib/categories';
+import { AMENITIES, hasAllAmenities, parseFeatureParam } from '@/lib/amenities';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
@@ -39,6 +40,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'distance');
   const [openNowOnly, setOpenNowOnly] = useState(searchParams.get('open') === '1');
   const [kosherOnly, setKosherOnly] = useState(searchParams.get('kosher') === '1');
+  const [features, setFeatures] = useState(() => parseFeatureParam(searchParams.get('features')));
   // "Now" is re-read every minute so open/closed badges and the filter never go stale
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -111,9 +113,10 @@ export default function Home() {
     if (sortBy !== 'distance') params.set('sort', sortBy);
     if (openNowOnly) params.set('open', '1');
     if (kosherOnly) params.set('kosher', '1');
+    if (features.length > 0) params.set('features', features.join(','));
 
     setSearchParams(params, { replace: true });
-  }, [searchQuery, selectedCategory, maxDistance, sortBy, openNowOnly, kosherOnly, setSearchParams]);
+  }, [searchQuery, selectedCategory, maxDistance, sortBy, openNowOnly, kosherOnly, features, setSearchParams]);
 
   // Keyboard navigation for categories
   useEffect(() => {
@@ -200,11 +203,15 @@ export default function Home() {
   // counts for the quick-filter chips reflect the other active filters
   const openCount = baseFiltered.filter(p => isOpenNow(p, now) === true).length;
   const kosherCount = baseFiltered.filter(p => p.kosher === 'kosher').length;
+  // an amenity chip counts the places that have it on top of the other active filters
+  const toggleFeature = (key) => setFeatures((list) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]));
+  const featureCount = (key) => baseFiltered.filter(p => hasAllAmenities(p, [...features.filter(k => k !== key), key])).length;
   const unknownHoursCount = baseFiltered.filter(p => isOpenNow(p, now) === null).length;
 
   const filteredPlaces = baseFiltered
     .filter(p => !openNowOnly || isOpenNow(p, now) === true)
     .filter(p => !kosherOnly || p.kosher === 'kosher')
+    .filter(p => hasAllAmenities(p, features))
     .sort((a, b) => {
       if (sortBy === 'distance' && userLocation) {
         const distA = haversineKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
@@ -315,8 +322,19 @@ export default function Home() {
           { key: 'open', label: 'פתוח עכשיו', active: openNowOnly, toggle: () => setOpenNowOnly(v => !v), count: openCount },
           { key: 'kosher', label: 'כשר', active: kosherOnly, toggle: () => setKosherOnly(v => !v), count: kosherCount },
         ]
+          .concat(
+            AMENITIES.map(a => ({
+              key: a.key,
+              label: a.filterLabel,
+              icon: a.icon,
+              active: features.includes(a.key),
+              toggle: () => toggleFeature(a.key),
+              count: featureCount(a.key),
+              hasData: places.some(p => hasAllAmenities(p, [a.key])),
+            }))
+          )
           // a filter that can only ever return nothing is just noise
-          .filter(chip => chip.key !== 'kosher' || chip.active || places.some(p => p.kosher === 'kosher'))
+          .filter(chip => (chip.key !== 'kosher' || chip.active || places.some(p => p.kosher === 'kosher')) && (chip.hasData === undefined || chip.active || chip.hasData))
           .map(chip => (
           <button
             key={chip.key}
@@ -328,6 +346,7 @@ export default function Home() {
                 : 'bg-card text-foreground border-border hover:bg-secondary'
             }`}
           >
+            {chip.icon && <chip.icon size={14} className="inline ml-1 -mt-0.5" aria-hidden="true" />}
             {chip.label} <span className="tabular-nums opacity-70">({chip.count})</span>
           </button>
         ))}

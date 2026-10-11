@@ -84,6 +84,13 @@
         "type": "string"
       }
     },
+    "amenities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["wheelchair", "car_access", "parking"]
+      }
+    },
     "status": {
       "type": "string",
       "enum": [
