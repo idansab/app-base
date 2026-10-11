@@ -226,7 +226,7 @@ export default function Home() {
       count: featureCount(a.key),
       show: places.some(p => hasAllAmenities(p, [a.key])),
     })),
-    { key: 'kosher', group: 'כשרות', label: 'כשר', active: kosherOnly, toggle: () => setKosherOnly(v => !v), count: kosherCount, show: places.some(p => p.kosher === 'kosher') },
+    { key: 'kosher', group: 'כשרות', label: 'כשר', active: kosherOnly, toggle: () => setKosherOnly(v => !v), count: kosherCount, show: true, hint: places.some(p => p.kosher === 'kosher') ? undefined : 'עדיין לא סומנו מקומות כשרים' },
   ].filter(f => f.active || f.show);
   const activeFilters = filterDefs.filter(f => f.active);
   const clearFilters = () => {
