@@ -5,7 +5,7 @@ import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-export default function CommunityChat() {
+export default function CommunityChat({ embedded = false }) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -100,7 +100,7 @@ export default function CommunityChat() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className={`${embedded ? 'py-12' : 'min-h-screen'} bg-background flex items-center justify-center p-4`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -119,7 +119,7 @@ export default function CommunityChat() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 flex flex-col">
+    <div className={`${embedded ? 'h-[60vh] rounded-2xl border border-border overflow-hidden' : 'min-h-screen pb-20'} bg-background flex flex-col`}>
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 max-w-4xl mx-auto w-full py-4">
         {loading ? (

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, Clock, Eye, Loader2, MapPin, Plus, Users } from 'lucide-react';
+import { Bookmark, Clock, Eye, Loader2, MapPin, MessageCircle, Plus, Users } from 'lucide-react';
+import CommunityChat from '@/pages/CommunityChat';
 import { supabase } from '@/api/base44Client';
 import TripBuilder from '@/components/trips/TripBuilder';
 import useFavorites from '@/hooks/useFavorites';
@@ -10,9 +11,10 @@ import { loadCommunityTrips, loadMyTrips, loadSavedTrips } from '@/lib/tripsApi'
 import { estimateHours, routeKm, stopsOf } from '@/lib/tripUtils';
 
 const TABS = [
-  ['mine', 'המסלולים שלי', Eye],
+  ['mine', 'שלי', Eye],
   ['community', 'מהקהילה', Users],
   ['saved', 'שמורים', Bookmark],
+  ['chat', 'צ׳אט', MessageCircle],
 ];
 
 function TripCard({ trip, placesById, showAuthor }) {
@@ -58,7 +60,7 @@ export default function Trips() {
   const { location: userLocation, request: requestLocation } = useUserLocation();
 
   const [places, setPlaces] = useState([]);
-  const [tab, setTab] = useState('community');
+  const [tab, setTab] = useState(location.state?.tab === 'chat' ? 'chat' : 'community');
   const [mine, setMine] = useState([]);
   const [community, setCommunity] = useState([]);
   const [saved, setSaved] = useState([]);
@@ -169,18 +171,20 @@ export default function Trips() {
               role="tab"
               aria-selected={tab === key}
               onClick={() => setTab(key)}
-              className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`inline-flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-xl px-2 py-2.5 text-[13px] font-medium transition-colors sm:gap-1.5 sm:px-3 sm:text-sm ${
                 tab === key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-accent'
               }`}
             >
-              <Icon size={16} aria-hidden="true" />
+              <Icon size={16} aria-hidden="true" className="hidden shrink-0 sm:block" />
               {label}
-              {key !== 'community' && lists[key].length > 0 && <span className="tabular-nums opacity-80">({lists[key].length})</span>}
+              {lists[key] && key !== 'community' && lists[key].length > 0 && <span className="tabular-nums opacity-80">({lists[key].length})</span>}
             </button>
           ))}
         </div>
 
-        {loading ? (
+        {tab === 'chat' ? (
+          <CommunityChat embedded />
+        ) : loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="animate-spin text-primary" />
           </div>
