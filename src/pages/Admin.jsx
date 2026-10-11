@@ -73,6 +73,9 @@ export default function Admin() {
     []
   );
 
+  // the dashboard reports four counts; the feedback count must survive it
+  const updateCounts = useCallback((counts) => setPendingCounts((prev) => ({ ...prev, ...counts })), []);
+
   const setPendingFeedback = useCallback(
     (feedback) => setPendingCounts((counts) => (counts.feedback === feedback ? counts : { ...counts, feedback })),
     []
@@ -149,7 +152,7 @@ export default function Admin() {
       )}
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} onCounts={setPendingCounts} />}
+        {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} onCounts={updateCounts} />}
 
         {activeTab === 'approval' && (
           <PlacesManager
