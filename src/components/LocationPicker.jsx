@@ -108,7 +108,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
 
       {/* Centered Glassmorphic Modal */}
       <motion.div
-        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-[calc(100%-32px)] max-h-[85vh] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8"
+        className="fixed top-1/2 left-1/2 z-50 max-w-2xl w-[calc(100%-32px)] max-h-[85vh] overflow-y-auto bg-card/95 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -121,7 +121,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
           <h2 className="text-2xl font-bold text-right flex-1">בחר מיקום ומרחק</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+            className="p-2 hover:bg-secondary rounded-full transition-colors flex-shrink-0"
           >
             <X size={24} />
           </button>
@@ -148,7 +148,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
 
         {/* Manual Address Search */}
         <div className="mb-8 relative">
-          <label className="block text-sm font-medium text-gray-700 mb-3">או חפש כתובת/עיר</label>
+          <label className="block text-sm font-medium text-foreground mb-3">או חפש כתובת/עיר</label>
           <div className="flex gap-2">
             <div className="flex-1 relative">
               <input
@@ -161,7 +161,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 onFocus={() => searchQuery && setShowSuggestions(true)}
                 placeholder="כגון: תל אביב, עפולה, באר שבע"
-                className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                className="w-full px-4 py-3 border border-border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
               />
 
               {/* Search Suggestions Dropdown */}
@@ -171,7 +171,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 max-h-48 overflow-y-auto"
+                    className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-lg z-50 max-h-48 overflow-y-auto"
                   >
                     {suggestions.map((city, idx) => (
                       <motion.button
@@ -180,7 +180,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.02 }}
                         onClick={() => handleSelectSuggestion(city)}
-                        className="w-full px-4 py-3 text-right hover:bg-green-50 transition-colors border-b border-gray-100 last:border-b-0 text-sm text-gray-700"
+                        className="w-full px-4 py-3 text-right hover:bg-green-50 transition-colors border-b border-border last:border-b-0 text-sm text-foreground dark:hover:bg-green-950/40"
                       >
                         {city}
                       </motion.button>
@@ -207,9 +207,9 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mb-6 p-4 bg-blue-50 rounded-2xl text-right border border-blue-200"
+            className="mb-6 p-4 bg-blue-50 rounded-2xl text-right border border-blue-200 dark:bg-blue-950/40 dark:border-blue-800"
           >
-            <p className="text-sm font-medium text-blue-900">
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
               ✓ {selectedLocationName}
               {isCurrentLocation && ' (מיקום נוכחי)'}
             </p>
@@ -219,7 +219,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
         {/* Distance Slider */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-700">מרחק חיפוש</span>
+            <span className="text-sm font-medium text-foreground">מרחק חיפוש</span>
             <span className="text-xl font-bold text-green-600">{distance} ק״מ</span>
           </div>
 
@@ -229,7 +229,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
             max="100"
             value={distance}
             onChange={(e) => setDistance(Number(e.target.value))}
-            className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-green-600"
+            className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-green-600"
           />
         </div>
 

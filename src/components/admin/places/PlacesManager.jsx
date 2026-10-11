@@ -444,7 +444,7 @@ export default function PlacesManager({
                   : issue === key
                     ? 'bg-amber-500 text-white border-amber-500'
                     : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-700'
-              }`}
+              } dark:hover:bg-amber-950/40`}
             >
               {!def.info && <AlertTriangle size={12} />}
               {def.label} <span className="tabular-nums">{issueCounts[key]}</span>
@@ -478,7 +478,7 @@ export default function PlacesManager({
           <button
             disabled={busy}
             onClick={() => setConfirm({ ids: [...selected], label: `${selected.size} מקומות` })}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-red-300 text-red-600 text-sm hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-red-300 text-red-600 text-sm hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50 dark:border-red-800"
           >
             <Trash2 size={14} /> מחק
           </button>

@@ -20,8 +20,8 @@ export default function ImageCarousel({ images, title, credits, placeholder }) {
 
   if (!images || images.length === 0) {
     return (
-      <div className="w-full h-48 bg-gradient-to-br from-slate-200 to-slate-300 rounded-2xl flex items-center justify-center">
-        <span className="text-slate-600 text-sm">אין תמונות זמינות</span>
+      <div className="w-full h-48 bg-gradient-to-br from-muted to-muted rounded-2xl flex items-center justify-center">
+        <span className="text-muted-foreground text-sm">אין תמונות זמינות</span>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default function ImageCarousel({ images, title, credits, placeholder }) {
   };
 
   return (
-    <div className="relative w-full bg-gradient-to-br from-slate-200 to-slate-300 rounded-2xl overflow-hidden group">
+    <div className="relative w-full bg-gradient-to-br from-muted to-muted rounded-2xl overflow-hidden group">
       {/* Main Image */}
       <div className="relative h-64 overflow-hidden bg-black/5">
         <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -79,14 +79,14 @@ export default function ImageCarousel({ images, title, credits, placeholder }) {
           <>
             <button
               onClick={() => paginate(-1)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 text-slate-900 rounded-full hover:bg-white transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-card/80 text-foreground rounded-full hover:bg-card transition-all opacity-0 group-hover:opacity-100 shadow-lg"
               aria-label="תמונה הקודמת"
             >
               <ChevronRight size={20} />
             </button>
             <button
               onClick={() => paginate(1)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 text-slate-900 rounded-full hover:bg-white transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-card/80 text-foreground rounded-full hover:bg-card transition-all opacity-0 group-hover:opacity-100 shadow-lg"
               aria-label="תמונה הבאה"
             >
               <ChevronLeft size={20} />
@@ -115,7 +115,7 @@ export default function ImageCarousel({ images, title, credits, placeholder }) {
       </div>
 
       {credit && (
-        <p className="px-3 py-1.5 text-[11px] text-muted-foreground bg-slate-50/50" dir="ltr">
+        <p className="px-3 py-1.5 text-[11px] text-muted-foreground bg-muted/50" dir="ltr">
           Photo:{' '}
           {fileUrl ? <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">{credit.author}</a> : credit.author}
           {' · '}
@@ -126,7 +126,7 @@ export default function ImageCarousel({ images, title, credits, placeholder }) {
 
       {/* Thumbnail Strip */}
       {images.length > 1 && (
-        <div className="px-2 py-3 flex gap-2 overflow-x-auto bg-slate-50/50 backdrop-blur-sm">
+        <div className="px-2 py-3 flex gap-2 overflow-x-auto bg-muted/50 backdrop-blur-sm">
           {images.map((img, i) => (
             <motion.button
               key={i}

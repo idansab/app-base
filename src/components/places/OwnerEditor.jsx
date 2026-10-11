@@ -123,7 +123,7 @@ export default function OwnerEditor({ place, onClose, onSaved }) {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              <div className="flex items-start gap-2 rounded-xl bg-green-50 border border-green-200 p-3 text-sm text-green-900">
+              <div className="flex items-start gap-2 rounded-xl bg-green-50 border border-green-200 p-3 text-sm text-green-900 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300">
                 <Info size={16} className="shrink-0 mt-0.5" />
                 {entitlements === null ? (
                   <span>בודק הרשאות…</span>

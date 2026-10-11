@@ -60,8 +60,8 @@ export default function PlaceCard({
           className={cn(
             "absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition active:scale-95",
             isFavorite
-              ? "border-rose-200 bg-rose-50 text-rose-600"
-              : "border-white/70 bg-white/85 text-slate-500 hover:text-rose-500"
+              ? "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-800 dark:bg-rose-950/40"
+              : "border-white/70 bg-white/85 text-muted-foreground hover:text-rose-500"
           )}
         >
           <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />

@@ -34,11 +34,11 @@ export default function TripsGrid({ trips = [], onTripClick }) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-20 bg-gradient-to-b from-slate-50 to-white rounded-3xl border border-slate-200"
+        className="text-center py-20 bg-gradient-to-b from-background to-background rounded-3xl border border-border"
       >
-        <MapPin size={48} className="mx-auto text-gray-300 mb-4" />
-        <p className="text-xl font-medium text-gray-600 mb-2">אין עדיין מסלולים</p>
-        <p className="text-gray-500">בואו נתחיל עם טיול ראשון!</p>
+        <MapPin size={48} className="mx-auto text-muted-foreground mb-4" />
+        <p className="text-xl font-medium text-muted-foreground mb-2">אין עדיין מסלולים</p>
+        <p className="text-muted-foreground">בואו נתחיל עם טיול ראשון!</p>
       </motion.div>
     );
   }
@@ -60,7 +60,7 @@ export default function TripsGrid({ trips = [], onTripClick }) {
               }}
               whileHover={{ y: -8 }}
               onClick={() => onTripClick?.(trip)}
-              className="group relative h-64 md:h-80 rounded-3xl overflow-hidden cursor-pointer bg-white border border-slate-200/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)] transition-shadow"
+              className="group relative h-64 md:h-80 rounded-3xl overflow-hidden cursor-pointer bg-card border border-border/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)] transition-shadow"
             >
               {/* Image Container */}
               <div className="relative w-full h-full overflow-hidden">

@@ -110,7 +110,7 @@ export default function GalleryEditor({ images, onChange, onError, onSuccess, al
                 type="button"
                 onClick={() => move(index, index + 1)}
                 disabled={index === images.length - 1}
-                className="rounded-full bg-white/90 p-1 text-slate-900 disabled:opacity-30"
+                className="rounded-full bg-card/90 p-1 text-foreground disabled:opacity-30"
                 aria-label="הזז אחורה"
               >
                 <ArrowLeft size={12} />
@@ -119,7 +119,7 @@ export default function GalleryEditor({ images, onChange, onError, onSuccess, al
                 <button
                   type="button"
                   onClick={() => move(index, 0)}
-                  className="rounded-full bg-white/90 px-1.5 text-[10px] font-medium text-slate-900"
+                  className="rounded-full bg-card/90 px-1.5 text-[10px] font-medium text-foreground"
                   aria-label="קבע כתמונה ראשית"
                 >
                   ראשית
@@ -129,7 +129,7 @@ export default function GalleryEditor({ images, onChange, onError, onSuccess, al
                 type="button"
                 onClick={() => move(index, index - 1)}
                 disabled={index === 0}
-                className="rounded-full bg-white/90 p-1 text-slate-900 disabled:opacity-30"
+                className="rounded-full bg-card/90 p-1 text-foreground disabled:opacity-30"
                 aria-label="הזז קדימה"
               >
                 <ArrowRight size={12} />

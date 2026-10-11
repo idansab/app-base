@@ -204,7 +204,7 @@ export default function PlaceDrawer({
         </div>
 
         {confirmDiscard && (
-          <div role="alert" className="px-4 py-3 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-300 text-sm flex items-center justify-between gap-3">
+          <div role="alert" className="px-4 py-3 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-300 text-sm flex items-center justify-between gap-3 dark:border-amber-800">
             <span className="text-amber-800 dark:text-amber-200">יש שינויים שלא נשמרו.</span>
             <span className="flex gap-2">
               <button

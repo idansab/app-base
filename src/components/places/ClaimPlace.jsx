@@ -14,7 +14,7 @@ const RELATIONS = [
 ];
 
 const inputCls =
-  'w-full px-3 py-2 border border-gray-300 rounded-xl bg-white text-gray-900 text-right focus:outline-none focus:ring-2 focus:ring-green-600';
+  'w-full px-3 py-2 border border-border rounded-xl bg-card text-foreground text-right focus:outline-none focus:ring-2 focus:ring-green-600';
 
 /**
  * "Are you the owner?" entry point on a place. Claims are reviewed by an admin; nothing changes
@@ -144,11 +144,11 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
   if (claim?.status === 'approved') {
     return (
       <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center justify-end gap-2 text-sm text-green-700">
+        <div className="flex items-center justify-end gap-2 text-sm text-green-700 dark:text-green-300">
           אתה רשום כבעלים של המקום <BadgeCheck size={18} />
         </div>
         {pendingRequest && (
-          <p className="text-xs text-gray-600 text-right flex items-center justify-end gap-1">
+          <p className="text-xs text-muted-foreground text-right flex items-center justify-end gap-1">
             יש לך בקשת עדכון שממתינה לאישור <Clock size={12} />
           </p>
         )}
@@ -163,7 +163,7 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
         <button
           type="button"
           onClick={() => setShowStats(true)}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-green-600 text-green-700 font-medium hover:bg-green-50 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-green-600 text-green-700 font-medium hover:bg-green-50 transition-colors dark:text-green-300 dark:hover:bg-green-950/40"
         >
           <BarChart3 size={18} />
           סטטיסטיקות
@@ -184,15 +184,15 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
   }
   if (claim?.status === 'pending') {
     return (
-      <div className={`flex items-center justify-end gap-3 text-sm text-gray-600 ${className}`}>
-        <button onClick={cancel} className="text-xs underline hover:text-gray-900">בטל בקשה</button>
+      <div className={`flex items-center justify-end gap-3 text-sm text-muted-foreground ${className}`}>
+        <button onClick={cancel} className="text-xs underline hover:text-foreground">בטל בקשה</button>
         הבקשה שלך נבדקת <Clock size={16} />
       </div>
     );
   }
   if (claim?.status === 'rejected' || claim?.status === 'revoked') {
     return (
-      <p className={`text-sm text-gray-600 text-right ${className}`}>
+      <p className={`text-sm text-muted-foreground text-right ${className}`}>
         הבקשה לבעלות על המקום לא אושרה{claim.review_note ? `: ${claim.review_note}` : '.'}
       </p>
     );
@@ -203,7 +203,7 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
       <button
         type="button"
         onClick={start}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-green-600 text-green-700 font-medium hover:bg-green-50 transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-green-600 text-green-700 font-medium hover:bg-green-50 transition-colors dark:text-green-300 dark:hover:bg-green-950/40"
       >
         <Store size={18} />
         בעל העסק? בקש שליטה על העמוד
@@ -211,21 +211,21 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
 
       {open && (
         <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" role="dialog" aria-modal="true" aria-label="בקשת בעלות על מקום">
-          <form onSubmit={submit} className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 space-y-4 text-right max-h-[90dvh] overflow-y-auto" dir="rtl">
+          <form onSubmit={submit} className="w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl p-6 space-y-4 text-right max-h-[90dvh] overflow-y-auto" dir="rtl">
             <div className="flex items-center justify-between">
-              <button type="button" onClick={() => setOpen(false)} className="p-2 rounded-full hover:bg-gray-100" aria-label="סגור">
+              <button type="button" onClick={() => setOpen(false)} className="p-2 rounded-full hover:bg-secondary" aria-label="סגור">
                 <X size={20} />
               </button>
-              <h2 className="text-lg font-bold text-gray-900">בעלות על {place.name}</h2>
+              <h2 className="text-lg font-bold text-foreground">בעלות על {place.name}</h2>
             </div>
 
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               נבדוק את הבקשה ונחזור אליך בטלפון. אחרי האישור תוכל לעדכן את פרטי העסק
               {beta?.active ? ` בחינם עד ${formatBetaDate(beta.ends_at)}` : ''}.
             </p>
 
             <label className="block">
-              <span className="block text-sm font-medium text-gray-700 mb-1">הקשר שלך לעסק</span>
+              <span className="block text-sm font-medium text-foreground mb-1">הקשר שלך לעסק</span>
               <select className={inputCls} value={form.relation} onChange={(e) => setForm({ ...form, relation: e.target.value })}>
                 {RELATIONS.map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -233,11 +233,11 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
               </select>
             </label>
             <label className="block">
-              <span className="block text-sm font-medium text-gray-700 mb-1">שם</span>
+              <span className="block text-sm font-medium text-foreground mb-1">שם</span>
               <input className={inputCls} maxLength={100} value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} />
             </label>
             <label className="block">
-              <span className="block text-sm font-medium text-gray-700 mb-1">טלפון ליצירת קשר *</span>
+              <span className="block text-sm font-medium text-foreground mb-1">טלפון ליצירת קשר *</span>
               <input
                 className={inputCls}
                 dir="ltr"
@@ -250,7 +250,7 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
               />
             </label>
             <label className="block">
-              <span className="block text-sm font-medium text-gray-700 mb-1">עוד פרטים שיעזרו לנו לאמת (אופציונלי)</span>
+              <span className="block text-sm font-medium text-foreground mb-1">עוד פרטים שיעזרו לנו לאמת (אופציונלי)</span>
               <textarea className={`${inputCls} resize-none`} rows={3} maxLength={500} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
             </label>
 

@@ -227,10 +227,10 @@ export default function Trips() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center pb-24">
+      <div className="min-h-screen bg-background flex items-center justify-center pb-24">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin mx-auto text-green-600 mb-4" />
-          <p className="text-gray-700">טוען מסלולים...</p>
+          <p className="text-foreground">טוען מסלולים...</p>
         </div>
       </div>
     );
@@ -278,7 +278,7 @@ export default function Trips() {
 
               {/* Error Message */}
               {saveError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-right text-sm text-red-700">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-right text-sm text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300">
                   {saveError}
                 </div>
               )}
@@ -357,7 +357,7 @@ export default function Trips() {
                         >
                           <button
                             onClick={() => handleRemoveFromTrip(placeId)}
-                            className="p-1 hover:bg-red-100 rounded text-red-600"
+                            className="p-1 hover:bg-red-100 rounded text-red-600 dark:hover:bg-red-950/40"
                           >
                             <X size={16} />
                           </button>
@@ -411,7 +411,7 @@ export default function Trips() {
                           e.stopPropagation();
                           handleDeleteTrip(trip.id);
                         }}
-                        className="p-1 hover:bg-red-100 rounded text-red-600"
+                        className="p-1 hover:bg-red-100 rounded text-red-600 dark:hover:bg-red-950/40"
                         title="מחק מסלול"
                       >
                         <Trash2 size={18} />
@@ -424,7 +424,7 @@ export default function Trips() {
                           navigator.clipboard.writeText(text);
                           alert('הועתק ללוח!');
                         }}
-                        className="p-1 hover:bg-blue-100 rounded text-blue-600"
+                        className="p-1 hover:bg-blue-100 rounded text-blue-600 dark:hover:bg-blue-950/40"
                         title="שתף מסלול"
                       >
                         📋
@@ -439,7 +439,7 @@ export default function Trips() {
                           const wazeUrl = `https://waze.com/route?to=${placesText}`;
                           window.open(wazeUrl, '_blank');
                         }}
-                        className="p-1 hover:bg-yellow-100 rounded text-yellow-600"
+                        className="p-1 hover:bg-yellow-100 rounded text-yellow-600 dark:hover:bg-yellow-950/40"
                         title="ניווט בWaze"
                       >
                         🗺️
@@ -510,7 +510,7 @@ export default function Trips() {
                 <h3 className="font-bold text-lg mb-4 text-right">🗺️ מפת המסלול</h3>
                 <div
                   ref={mapRef}
-                  className="w-full rounded-xl bg-gray-200 border border-border"
+                  className="w-full rounded-xl bg-muted border border-border"
                   style={{ minHeight: '400px' }}
                 />
                 <div className="mt-4 space-y-2">

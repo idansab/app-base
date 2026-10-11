@@ -119,7 +119,7 @@ export default function Settings() {
               whileTap={{ scale: 0.95 }}
             >
               <motion.div
-                className={`w-5 h-5 bg-white rounded-full ${
+                className={`w-5 h-5 bg-card rounded-full ${
                   isDark ? 'translate-x-6' : 'translate-x-1'
                 }`}
                 layout

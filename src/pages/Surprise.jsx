@@ -91,10 +91,10 @@ export default function Surprise() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center pb-24">
+      <div className="min-h-screen bg-background flex items-center justify-center pb-24">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin mx-auto text-green-600 mb-4" />
-          <p className="text-gray-700">מחפש הפתעה...</p>
+          <p className="text-foreground">מחפש הפתעה...</p>
         </div>
       </div>
     );
@@ -102,19 +102,19 @@ export default function Surprise() {
 
   if (!place) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center pb-24">
+      <div className="min-h-screen bg-background flex items-center justify-center pb-24">
         <div className="text-center">
-          <Sparkles size={48} className="mx-auto text-gray-300 mb-4" />
-          <h2 className="text-xl font-bold text-gray-800">אין מקומות</h2>
+          <Sparkles size={48} className="mx-auto text-muted-foreground mb-4" />
+          <h2 className="text-xl font-bold text-foreground">אין מקומות</h2>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-20 py-4">
+      <div className="sticky top-0 bg-card border-b border-border z-20 py-4">
         <div className="px-4 max-w-6xl mx-auto flex items-center justify-between">
           <h1 className="text-right font-bold text-2xl text-green-600 flex items-center gap-2">
             <Sparkles size={28} />
@@ -133,10 +133,10 @@ export default function Surprise() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
               transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-              className="bg-white rounded-3xl overflow-hidden shadow-md"
+              className="bg-card rounded-3xl overflow-hidden shadow-md"
             >
           {/* Image */}
-          <div className="relative h-80 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
+          <div className="relative h-80 bg-gradient-to-br from-muted to-muted overflow-hidden">
             {place.image_url && (
               <img
                 src={place.image_url}
@@ -149,11 +149,11 @@ export default function Surprise() {
             {/* Favorite Button */}
             <button
               onClick={handleFavoriteToggle}
-              className="absolute top-6 right-6 p-3 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+              className="absolute top-6 right-6 p-3 bg-card rounded-full hover:bg-secondary transition-colors shadow-lg"
             >
               <Heart
                 size={28}
-                className={isFavorite ? 'fill-red-600 text-red-600' : 'text-gray-600'}
+                className={isFavorite ? 'fill-red-600 text-red-600' : 'text-muted-foreground'}
               />
             </button>
           </div>
@@ -162,36 +162,36 @@ export default function Surprise() {
           <div className="p-8">
             <h1 className="text-4xl font-bold text-right mb-4">{place.name}</h1>
 
-            <p className="text-lg text-gray-600 text-right mb-6 leading-relaxed">
+            <p className="text-lg text-muted-foreground text-right mb-6 leading-relaxed">
               {place.description || place.short_description}
             </p>
 
             {/* Info Grid */}
             <div className="grid grid-cols-2 gap-4 mb-8 text-right">
               {place.rating && (
-                <div className="bg-slate-50 p-4 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">דירוג</p>
+                <div className="bg-background p-4 rounded-2xl">
+                  <p className="text-sm text-muted-foreground mb-1">דירוג</p>
                   <p className="text-2xl font-bold text-yellow-500">⭐ {place.rating.toFixed(1)}</p>
                 </div>
               )}
 
               {distance != null && (
-                <div className="bg-slate-50 p-4 rounded-2xl">
-                  <p className="text-sm text-gray-600 mb-1">מרחק</p>
+                <div className="bg-background p-4 rounded-2xl">
+                  <p className="text-sm text-muted-foreground mb-1">מרחק</p>
                   <p className="text-2xl font-bold text-green-600">{formatDistance(distance)}</p>
                 </div>
               )}
 
               {place.opening_hours && (
-                <div className="bg-slate-50 p-4 rounded-2xl col-span-2">
-                  <p className="text-sm text-gray-600 mb-1">שעות פתיחה</p>
+                <div className="bg-background p-4 rounded-2xl col-span-2">
+                  <p className="text-sm text-muted-foreground mb-1">שעות פתיחה</p>
                   <p className="font-semibold">{place.opening_hours}</p>
                 </div>
               )}
 
               {place.phone && (
-                <div className="bg-slate-50 p-4 rounded-2xl col-span-2">
-                  <p className="text-sm text-gray-600 mb-1">טלפון</p>
+                <div className="bg-background p-4 rounded-2xl col-span-2">
+                  <p className="text-sm text-muted-foreground mb-1">טלפון</p>
                   <a href={`tel:${place.phone}`} className="font-semibold text-green-600 hover:underline">
                     {place.phone}
                   </a>
@@ -214,7 +214,7 @@ export default function Surprise() {
                   href={`https://waze.com/ul?ll=${place.lat},${place.lng}&navigate=yes`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 bg-slate-100 text-gray-700 rounded-2xl hover:bg-slate-200 transition-colors font-medium flex items-center gap-2"
+                  className="px-6 py-3 bg-secondary text-foreground rounded-2xl hover:bg-accent transition-colors font-medium flex items-center gap-2"
                 >
                   <MapPin size={20} />
                   ניווט ב־Waze

@@ -18,7 +18,7 @@ const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
     animate={{ opacity: [0.5, 1, 0.5] }}
     transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-    className={`bg-slate-200 rounded-lg ${width} ${height}`}
+    className={`bg-muted rounded-lg ${width} ${height}`}
   />
 );
 
@@ -201,7 +201,7 @@ export default function PlaceDetail() {
   // Loading skeleton
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-white flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-card flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
@@ -215,15 +215,15 @@ export default function PlaceDetail() {
   // Error state
   if (error || !place) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-to-b from-red-50 to-white flex items-center justify-center px-6">
+      <div className="min-h-[100dvh] bg-gradient-to-b from-red-50 to-background flex items-center justify-center px-6 dark:from-red-950/40">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
           <AlertCircle size={56} className="mx-auto text-red-600 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">משהו השתבש</h1>
-          <p className="text-gray-600 mb-6">לא הצלחנו לטעון את הפרטים. בואו נחזור.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">משהו השתבש</h1>
+          <p className="text-muted-foreground mb-6">לא הצלחנו לטעון את הפרטים. בואו נחזור.</p>
           <button
             onClick={() => navigate(-1)}
             className="px-6 py-3 bg-green-600 text-white rounded-2xl font-medium hover:bg-green-700 transition-colors"
@@ -240,12 +240,12 @@ export default function PlaceDetail() {
     : null;
 
   return (
-    <div className="min-h-[100dvh] bg-white">
+    <div className="min-h-[100dvh] bg-card">
       {/* ASYMMETRIC HERO SECTION */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="relative min-h-[100dvh] md:min-h-96 bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden"
+        className="relative min-h-[100dvh] md:min-h-96 bg-gradient-to-br from-slate-100 to-muted overflow-hidden"
       >
         {/* Background Image */}
         {getPlaceImages(place)[0] && (
@@ -268,7 +268,7 @@ export default function PlaceDetail() {
         {/* Close Button */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-6 right-6 p-2 bg-white/90 rounded-full hover:bg-white transition-colors z-20"
+          className="absolute top-6 right-6 p-2 bg-card/90 rounded-full hover:bg-card transition-colors z-20"
         >
           <X size={24} />
         </button>
@@ -328,7 +328,7 @@ export default function PlaceDetail() {
         >
           {(place.opening_schedule || place.opening_hours) && (
             <BreathingPulse delay={0}>
-              <div className="p-6 bg-white rounded-3xl border border-slate-200/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]">
+              <div className="p-6 bg-card rounded-3xl border border-border/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]">
                 <PlaceHours place={place} />
               </div>
             </BreathingPulse>
@@ -339,9 +339,9 @@ export default function PlaceDetail() {
               <a
                 href={`tel:${place.phone}`}
                 onClick={() => trackPlaceEvent(place.id, 'call')}
-                className="p-6 bg-white rounded-3xl border border-green-200 shadow-[0_20px_40px_-15px_rgba(22,163,74,0.08)] text-right hover:shadow-[0_20px_40px_-15px_rgba(22,163,74,0.15)] transition-shadow"
+                className="p-6 bg-card rounded-3xl border border-green-200 shadow-[0_20px_40px_-15px_rgba(22,163,74,0.08)] text-right hover:shadow-[0_20px_40px_-15px_rgba(22,163,74,0.15)] transition-shadow dark:border-green-800"
               >
-                <p className="text-xs font-medium text-gray-600 mb-2 tracking-tight">טלפון</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2 tracking-tight">טלפון</p>
                 <p className="text-xl font-bold text-green-600">{place.phone}</p>
               </a>
             </BreathingPulse>
@@ -351,7 +351,7 @@ export default function PlaceDetail() {
         <PlaceLinks place={place} className="mb-8" />
 
         {(place.kosher === 'kosher' || place.kosher === 'not_kosher') && (
-          <div className="mb-8 p-6 bg-white rounded-3xl border border-slate-200/50">
+          <div className="mb-8 p-6 bg-card rounded-3xl border border-border/50">
             <PlaceKosher place={place} />
           </div>
         )}
@@ -390,7 +390,7 @@ export default function PlaceDetail() {
             className={`p-4 flex items-center justify-center gap-2 ${
               isFavorite
                 ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                : 'bg-slate-100 text-foreground hover:bg-slate-200'
             }`}
           >
             <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
@@ -402,7 +402,7 @@ export default function PlaceDetail() {
               trackPlaceEvent(place.id, 'share');
               navigator.share?.({ title: place.name, text: place.description });
             }}
-            className="p-4 bg-slate-100 text-gray-700 flex items-center justify-center gap-2"
+            className="p-4 bg-secondary text-foreground flex items-center justify-center gap-2"
           >
             <Share2 size={20} />
             שתף
@@ -416,9 +416,9 @@ export default function PlaceDetail() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15 }}
-            className="mb-16 p-8 bg-gradient-to-br from-slate-50 to-white rounded-3xl border border-slate-200/50 text-right"
+            className="mb-16 p-8 bg-gradient-to-br from-background to-background rounded-3xl border border-border/50 text-right"
           >
-            <p className="text-lg text-gray-700 leading-relaxed max-w-[65ch]">{place.description}</p>
+            <p className="text-lg text-foreground leading-relaxed max-w-[65ch]">{place.description}</p>
           </motion.div>
         )}
 
@@ -428,29 +428,29 @@ export default function PlaceDetail() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="border-t border-slate-200 pt-12"
+          className="border-t border-border pt-12"
         >
           <h2 className="text-4xl font-bold text-right mb-2 tracking-tighter">טיפים מהקהילה</h2>
-          <p className="text-gray-600 text-right mb-8 max-w-[65ch]">שתפו ניסיונות וטיפים עם הקהילה</p>
+          <p className="text-muted-foreground text-right mb-8 max-w-[65ch]">שתפו ניסיונות וטיפים עם הקהילה</p>
 
           {/* Add Tip Form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-12 p-8 bg-gradient-to-br from-green-50 to-white rounded-3xl border-2 border-green-200 text-right"
+            className="mb-12 p-8 bg-gradient-to-br from-green-50 to-background rounded-3xl border-2 border-green-200 text-right dark:from-green-950/40 dark:border-green-800"
           >
-            <label className="block text-sm font-semibold text-gray-700 mb-3">כתוב טיפ</label>
+            <label className="block text-sm font-semibold text-foreground mb-3">כתוב טיפ</label>
             <textarea
               value={newTipText}
               onChange={(e) => setNewTipText(e.target.value)}
               placeholder="שתף משהו שידוע לך על המקום..."
-              className="w-full p-4 border border-green-300 rounded-2xl text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent mb-4 bg-white"
+              className="w-full p-4 border border-green-300 rounded-2xl text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent mb-4 bg-card dark:border-green-800"
               rows={4}
               maxLength={2000}
             />
             {tipNotice && (
-              <p role="status" className="text-sm text-green-700 mb-4">{tipNotice}</p>
+              <p role="status" className="text-sm text-green-700 mb-4 dark:text-green-300">{tipNotice}</p>
             )}
             <DirectionalButton
               onClick={handleAddTip}
@@ -486,10 +486,10 @@ export default function PlaceDetail() {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.1 }}
-                      className="p-6 bg-white rounded-2xl border border-slate-200/50 text-right hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-shadow"
+                      className="p-6 bg-card rounded-2xl border border-border/50 text-right hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-shadow"
                     >
-                      <p className="text-base text-gray-700 mb-3 leading-relaxed">{tip.content}</p>
-                      <p className="text-xs font-medium text-gray-500">עכשיו</p>
+                      <p className="text-base text-foreground mb-3 leading-relaxed">{tip.content}</p>
+                      <p className="text-xs font-medium text-muted-foreground">עכשיו</p>
                     </motion.div>
                   </SpotlightBorder>
                 ))}
@@ -498,11 +498,11 @@ export default function PlaceDetail() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16 bg-gradient-to-b from-slate-50 to-white rounded-3xl border border-slate-200/50"
+                className="text-center py-16 bg-gradient-to-b from-background to-background rounded-3xl border border-border/50"
               >
-                <Sparkles size={40} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-lg text-gray-600 font-medium mb-2">עדיין אין טיפים</p>
-                <p className="text-gray-500">היה הראשון לשתף משהו עם הקהילה!</p>
+                <Sparkles size={40} className="mx-auto text-muted-foreground mb-4" />
+                <p className="text-lg text-muted-foreground font-medium mb-2">עדיין אין טיפים</p>
+                <p className="text-muted-foreground">היה הראשון לשתף משהו עם הקהילה!</p>
               </motion.div>
             )}
           </AnimatePresence>

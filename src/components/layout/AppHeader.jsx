@@ -35,7 +35,7 @@ export default function AppHeader() {
 
         <div className="flex items-center gap-3">
           {isAuthenticated && (
-            <span className="text-xs text-gray-600 hidden sm:inline">
+            <span className="text-xs text-muted-foreground hidden sm:inline">
               {user?.email}
             </span>
           )}

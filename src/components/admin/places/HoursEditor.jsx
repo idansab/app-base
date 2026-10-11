@@ -79,7 +79,7 @@ export default function HoursEditor({ value, onChange, legacyText, textValue, on
       </div>
 
       {suggestion && (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-green-300 bg-green-50 dark:bg-green-950/40 p-3 text-sm">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-green-300 bg-green-50 dark:bg-green-950/40 p-3 text-sm dark:border-green-800">
           <button
             type="button"
             onClick={() => onChange(suggestion)}
