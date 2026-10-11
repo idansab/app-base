@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Upload, CheckCircle, AlertCircle, Crosshair, Loader2 } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import AmenitiesField from '@/components/places/AmenitiesField';
+import HoursEditor from '@/components/admin/places/HoursEditor';
+import useUserLocation from '@/hooks/useUserLocation';
+import { geocodeAddress, reverseGeocode } from '@/lib/geo';
+import { uploadPlaceImage, validateImageFile } from '@/lib/uploadPlaceImage';
+import { contributionProblem, hoursFields, insideIsrael } from '@/lib/contributeForm';
 
 const CATEGORIES = [
   { id: 'food', label: 'עגלות קפה ואוכל', icon: '🍽️' },
@@ -19,15 +24,16 @@ export default function Contribute() {
     category: 'nature',
     city: '',
     address: '',
-    lat: '',
-    lng: '',
     description: '',
-    image_url: '',
     phone: '',
-    opening_hours: '24/7',
     amenities: [],
   });
 
+  const { request: requestLocation } = useUserLocation();
+  const [schedule, setSchedule] = useState(null); // structured opening hours (null = unknown)
+  const [position, setPosition] = useState(null); // { lat, lng } taken from the phone
+  const [locating, setLocating] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null); // 'success' | 'error' | null
@@ -36,18 +42,41 @@ export default function Contribute() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'address') setPosition(null);
+  };
+
+  // free the preview URL when it is replaced or the page closes
+  useEffect(() => () => previewUrl && URL.revokeObjectURL(previewUrl), [previewUrl]);
+
+  const useMyPosition = async () => {
+    setLocating(true);
+    setErrorMessage('');
+    setStatus(null);
+    const coords = await requestLocation();
+    if (!coords || !insideIsrael(coords.lat, coords.lng)) {
+      setLocating(false);
+      setErrorMessage(coords ? 'המיקום שלך נמצא מחוץ לישראל.' : 'לא הצלחנו לקבל את המיקום. אשר גישה למיקום בדפדפן, או כתוב כתובת.');
+      setStatus('error');
+      return;
+    }
+    setPosition(coords);
+    const city = await reverseGeocode(coords.lat, coords.lng);
+    setFormData(prev => ({ ...prev, city: prev.city || city || '' }));
+    setLocating(false);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setFormData(prev => ({ ...prev, image_url: event.target?.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    const problem = validateImageFile(file);
+    if (problem) {
+      setErrorMessage(problem);
+      setStatus('error');
+      return;
     }
+    setStatus(null);
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
@@ -57,22 +86,52 @@ export default function Contribute() {
     setErrorMessage('');
 
     try {
-      if (!formData.name || !formData.address || !formData.category) {
-        setErrorMessage('נא למלא את השדות החובה: שם, כתובת וקטגוריה');
+      const problem = contributionProblem({
+        name: formData.name,
+        category: formData.category,
+        address: formData.address,
+        hasPosition: Boolean(position),
+        schedule,
+      });
+      if (problem) {
+        setErrorMessage(problem);
         setStatus('error');
         setLoading(false);
         return;
       }
 
+      // the position: from the phone, or looked up on the map from the address
+      let coords = position;
+      if (!coords) {
+        const found = await geocodeAddress(`${formData.address.trim()}, ${formData.city.trim()}, ישראל`.replace(/,\s*,/g, ','));
+        if (!found || !insideIsrael(found.lat, found.lng)) {
+          setErrorMessage('לא הצלחנו לאתר את הכתובת במפה. נסה לכתוב אותה במלואה (רחוב ומספר, עיר), או לחץ על "המקום נמצא איפה שאני עכשיו".');
+          setStatus('error');
+          setLoading(false);
+          return;
+        }
+        coords = { lat: found.lat, lng: found.lng };
+      }
+
+      // the photo goes to our own storage; the place only keeps its address
+      const images = imageFile ? [await uploadPlaceImage(imageFile)] : [];
+
       const { data: { user } } = await supabase.auth.getUser();
 
       const payload = {
-        ...formData,
-        lat: parseFloat(formData.lat) || 31.7683,
-        lng: parseFloat(formData.lng) || 35.2137,
+        name: formData.name.trim(),
+        category: formData.category,
+        city: formData.city.trim() || null,
+        address: formData.address.trim() || formData.city.trim() || 'מיקום שסומן בטלפון',
+        lat: coords.lat,
+        lng: coords.lng,
+        description: formData.description.trim() || null,
+        phone: formData.phone.trim() || null,
+        amenities: formData.amenities,
+        images,
+        ...hoursFields(schedule),
         status: 'pending',
         created_by_id: user?.id,
-        category: formData.category,
       };
 
       const { data, error } = await supabase
@@ -87,13 +146,13 @@ export default function Contribute() {
           category: 'nature',
           city: '',
           address: '',
-          lat: '',
-          lng: '',
           description: '',
-          image_url: '',
           phone: '',
-          opening_hours: '24/7',
+          amenities: [],
         });
+        setSchedule(null);
+        setPosition(null);
+        setPreviewUrl('');
         setImageFile(null);
 
         setTimeout(() => {
@@ -221,6 +280,20 @@ export default function Contribute() {
               placeholder="שם הרחוב ומספר"
               className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
+            <p className="mt-1.5 text-xs text-muted-foreground">אנחנו מאתרים את המקום במפה לפי הכתובת והעיר.</p>
+            <button
+              type="button"
+              onClick={useMyPosition}
+              disabled={locating}
+              className={`mt-3 inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${
+                position
+                  ? 'border-green-600 bg-green-50 text-green-900 dark:bg-green-950/40 dark:text-green-200'
+                  : 'border-border bg-card text-foreground hover:bg-secondary'
+              }`}
+            >
+              {locating ? <Loader2 size={16} className="animate-spin" /> : <Crosshair size={16} />}
+              {position ? 'המיקום שלך נקלט' : 'המקום נמצא איפה שאני עכשיו'}
+            </button>
           </div>
 
           {/* City */}
@@ -236,38 +309,6 @@ export default function Contribute() {
               placeholder="למשל: תל אביב"
               className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
-          </div>
-
-          {/* Coordinates */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-foreground mb-2">
-                קו רוחב (Lat)
-              </label>
-              <input
-                type="number"
-                name="lat"
-                value={formData.lat}
-                onChange={handleInputChange}
-                placeholder="31.7683"
-                step="0.0001"
-                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-foreground mb-2">
-                קו אורך (Lng)
-              </label>
-              <input
-                type="number"
-                name="lng"
-                value={formData.lng}
-                onChange={handleInputChange}
-                placeholder="35.2137"
-                step="0.0001"
-                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-              />
-            </div>
           </div>
 
           {/* Description */}
@@ -312,7 +353,7 @@ export default function Contribute() {
               {imageFile && (
                 <div className="mt-4 w-full h-48 rounded-xl overflow-hidden">
                   <img
-                    src={formData.image_url}
+                    src={previewUrl}
                     alt="Preview"
                     className="w-full h-full object-cover"
                   />
@@ -321,34 +362,24 @@ export default function Contribute() {
             </div>
           </div>
 
-          {/* Phone & Hours */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-foreground mb-2">
-                טלפון
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                placeholder="0XX-XXXXXXX"
-                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-foreground mb-2">
-                שעות פתיחה
-              </label>
-              <input
-                type="text"
-                name="opening_hours"
-                value={formData.opening_hours}
-                onChange={handleInputChange}
-                placeholder="24/7"
-                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-              />
-            </div>
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-semibold text-foreground mb-2">
+              טלפון
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              placeholder="0XX-XXXXXXX"
+              className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+            />
+          </div>
+
+          {/* Opening hours: the same editor the admin uses */}
+          <div className="rounded-xl border border-border p-4">
+            <HoursEditor value={schedule} onChange={setSchedule} />
           </div>
 
           <AmenitiesField
