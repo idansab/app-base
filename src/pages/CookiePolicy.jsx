@@ -37,66 +37,61 @@ export default function CookiePolicy() {
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-lg font-semibold">2. סוגי העוגיות שאנו משתמשים בהם</h3>
+          <h3 className="text-lg font-semibold">2. מה אנו שומרים בדפדפן שלך</h3>
           <p className="text-foreground leading-relaxed">
-            אנו משתמשים בעוגיות הבאות:
+            האתר שומר מעט מאוד מידע על המכשיר שלך, והוא נחוץ לתפעול האתר:
           </p>
           <ul className="list-disc list-inside space-y-2 text-foreground">
-            <li><strong>עוגיות חיוניות:</strong> נדרשות לפעולת האתר</li>
-            <li><strong>עוגיות ביצועים:</strong> עוזרות לנו להבין כיצד משתמשים בו האתר</li>
-            <li><strong>עוגיות פונקציונליות:</strong> שומרות על העדפות שלך</li>
-            <li><strong>עוגיות מיושהבות:</strong> משמשות למיוחס מודעות וחיזוי</li>
+            <li><strong>התחברות:</strong> אם נרשמת, פרטי ההתחברות נשמרים באחסון המקומי של הדפדפן כדי שלא תצטרך להתחבר מחדש בכל ביקור</li>
+            <li><strong>העדפות תצוגה:</strong> מצב יום או לילה והגדרות הנגישות שבחרת</li>
+          </ul>
+          <p className="text-foreground leading-relaxed">
+            איננו משתמשים בעוגיות פרסום, בעוגיות מעקב או במידע שמזהה אותך מעבר לביקור באתר.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold">3. ניתוח תנועה באתר</h3>
+          <p className="text-foreground leading-relaxed">
+            כדי להבין כמה אנשים מבקרים באתר ואילו עמודים פופולריים, אנו משתמשים ב-Cloudflare Web Analytics. השירות מציג נתונים מצטברים בלבד, כמו מספר מבקרים וצפיות בעמודים, מקורות הגעה, סוגי מכשירים ומדינות.
+          </p>
+          <ul className="list-disc list-inside space-y-2 text-foreground">
+            <li>השירות אינו משתמש בעוגיות</li>
+            <li>הוא אינו עוקב אחריך בין אתרים ואינו יוצר פרופיל אישי</li>
+            <li>איננו משתמשים ב-Google Analytics, ב-Facebook Pixel או בשירותי פרסום</li>
           </ul>
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-lg font-semibold">3. עוגיות מיוחדות</h3>
+          <h3 className="text-lg font-semibold">4. בקרת המידע שנשמר</h3>
           <p className="text-foreground leading-relaxed">
-            אנו משתמשים בשירותי ניתוח ומיוחס הבאים (כשיקבלו הסכמה):
+            אתה יכול לשלוט במידע שנשמר בדפדפן בדרכים הבאות:
           </p>
           <ul className="list-disc list-inside space-y-2 text-foreground">
-            <li>Google Analytics - לניתוח תנועת המשתמשים</li>
-            <li>Facebook Pixel - למדידת המרות וקהל חוזר</li>
-            <li>שירותי מיוחס נוספים</li>
+            <li>למחוק את נתוני האתר בהגדרות הדפדפן שלך</li>
+            <li>להתנתק מהחשבון, וכך להסיר את פרטי ההתחברות מהמכשיר</li>
+            <li>לשנות את מצב התצוגה ואת הגדרות הנגישות בדף ההגדרות</li>
           </ul>
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-lg font-semibold">4. בקרת עוגיות</h3>
+          <h3 className="text-lg font-semibold">5. השפעה של מחיקת המידע</h3>
           <p className="text-foreground leading-relaxed">
-            אתה יכול לשלוט בעוגיות בדרכים הבאות:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-foreground">
-            <li>השתמש בשלט הנגישות שלנו על האתר</li>
-            <li>הגדר את העדפות העוגיות בדפדפן שלך</li>
-            <li>השבת קבלת עוגיות בהגדרות הדפדפן שלך</li>
-            <li>השתמש בנתיבים להסרת עוגיות</li>
-          </ul>
-        </section>
-
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold">5. השפעה של חסימת עוגיות</h3>
-          <p className="text-foreground leading-relaxed">
-            אם תחסום עוגיות, חלק מתכונות האתר עלולות שלא לעבוד בכראוי. עוגיות חיוניות נדרשות לתפקוד.
+            אם תמחק את נתוני האתר, תתנתק מהחשבון והעדפות התצוגה שלך יחזרו לברירת המחדל. המידע שנשמר רק בדפדפן אינו נשמר אצלנו.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-lg font-semibold">6. תקשורת עוגיות</h3>
+          <h3 className="text-lg font-semibold">6. הסכמה</h3>
           <p className="text-foreground leading-relaxed">
-            בביקור הראשון שלך באתר, נציג בפניך שלט עוגיות. אתה יכול:
+            מכיוון שהאתר משתמש רק באחסון הנחוץ לפעולתו ובניתוח תנועה ללא עוגיות, אנו לא מציגים שלט עוגיות. אם נוסיף בעתיד כלים שדורשים הסכמה, נעדכן מדיניות זו ונבקש את הסכמתך לפני השימוש בהם.
           </p>
-          <ul className="list-disc list-inside space-y-2 text-foreground">
-            <li>קבל את כל העוגיות</li>
-            <li>דחה עוגיות שאינן חיוניות</li>
-            <li>התאם את העדפות העוגיות שלך</li>
-          </ul>
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-lg font-semibold">7. עוגיות של צדדים שלישיים</h3>
+          <h3 className="text-lg font-semibold">7. צדדים שלישיים</h3>
           <p className="text-foreground leading-relaxed">
-            ספקים חיצוניים כמו Google ו-Facebook עשויים להשתמש בעוגיות משלהם. בקרא את מדיניות העוגיות שלהם.
+            האתר מתארח ב-Cloudflare, המשמשת גם לניתוח התנועה, ומסד הנתונים וההתחברות מופעלים באמצעות Supabase. אנו ממליצים לקרוא את מדיניות הפרטיות של שני הספקים.
           </p>
         </section>
 
@@ -116,7 +111,7 @@ export default function CookiePolicy() {
 
         <div className="bg-secondary p-6 rounded-lg mt-8">
           <p className="text-sm text-muted-foreground">
-            אנו משתמשים בעוגיות כדי לשפר את חוויית המשתמש שלך. לק לנו שלוט במידע שלך.
+            אנו שומרים על מינימום מידע ואיננו משתמשים בעוגיות פרסום או מעקב.
           </p>
         </div>
       </div>
