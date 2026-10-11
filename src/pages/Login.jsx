@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { authErrorMessage } from '@/lib/passwordRules';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -27,13 +28,7 @@ export default function Login() {
       navigate(from?.pathname ? `${from.pathname}${from.search || ''}` : '/');
     } catch (err) {
       // Better error messages
-      let errorMsg = err.message;
-      if (err.message?.includes('Invalid login credentials')) {
-        errorMsg = 'אימייל או סיסמה לא נכונים. אנא בדוק ונסה שוב.';
-      } else if (err.message?.includes('Email not confirmed')) {
-        errorMsg = 'אנא אשר את הדוא"ל שלך לפני התחברות.';
-      }
-      setError(errorMsg);
+      setError(authErrorMessage(err));
     } finally {
       setCaptchaReset((n) => n + 1);
       setLoading(false);

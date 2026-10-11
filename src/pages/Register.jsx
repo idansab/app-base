@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import Turnstile, { TURNSTILE_SITE_KEY } from '@/components/common/Turnstile';
+import PasswordRules from '@/components/common/PasswordRules';
+import { authErrorMessage, passwordProblem } from '@/lib/passwordRules';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -20,13 +22,14 @@ export default function Register() {
     e.preventDefault();
     setError('');
 
-    if (password !== confirmPassword) {
-      setError('הסיסמאות לא תואמות');
+    const problem = passwordProblem(password);
+    if (problem) {
+      setError(problem);
       return;
     }
 
-    if (password.length < 8) {
-      setError('הסיסמה חייבת להיות לפחות 8 תווים');
+    if (password !== confirmPassword) {
+      setError('הסיסמאות שהוזנו אינן תואמות.');
       return;
     }
 
@@ -41,14 +44,7 @@ export default function Register() {
         setNeedsConfirmation(true);
       }
     } catch (err) {
-      // Better error messages
-      let errorMsg = err.message;
-      if (err.message?.includes('already registered')) {
-        errorMsg = 'חשבון זה כבר קיים. אנא התחבר במקום זאת.';
-      } else if (err.message?.includes('invalid email')) {
-        errorMsg = 'כתובת דוא"ל לא תקינה';
-      }
-      setError(errorMsg);
+      setError(authErrorMessage(err));
     } finally {
       setCaptchaReset((n) => n + 1);
       setLoading(false);
@@ -105,6 +101,7 @@ export default function Register() {
               required
               autoComplete="new-password"
             />
+            <PasswordRules password={password} className="mt-2" />
           </div>
 
           <div>
