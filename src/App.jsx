@@ -15,6 +15,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import Home from '@/pages/Home';
 const Favorites = lazy(() => import('@/pages/Favorites'));
 const Trips = lazy(() => import('@/pages/Trips'));
+const TripPage = lazy(() => import('@/pages/TripPage'));
 const Surprise = lazy(() => import('@/pages/Surprise'));
 const Contribute = lazy(() => import('@/pages/Contribute'));
 const MyBusiness = lazy(() => import('@/pages/MyBusiness'));
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Home />} />
         <Route path="/place/:id" element={<PlaceDetail />} />
         <Route path="/trips" element={<Trips />} />
+        <Route path="/trips/:id" element={<TripPage />} />
         <Route path="/surprise" element={<Surprise />} />
         <Route path="/about" element={<About />} />
         <Route path="/for-business" element={<ForBusiness />} />

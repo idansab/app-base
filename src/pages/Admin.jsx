@@ -11,6 +11,7 @@ import OwnershipRequests from '@/components/admin/OwnershipRequests';
 import BetaSettings from '@/components/admin/BetaSettings';
 import UpdateRequests from '@/components/admin/UpdateRequests';
 import FeedbackInbox from '@/components/admin/FeedbackInbox';
+import TripsModeration from '@/components/admin/TripsModeration';
 
 const TABS = [
   ['dashboard', 'לוח בקרה'],
@@ -19,6 +20,7 @@ const TABS = [
   ['moderation', 'טיפים ודיווחים'],
   ['updates', 'בקשות עדכון'],
   ['feedback', 'משוב'],
+  ['trips', 'מסלולים'],
   ['owners', 'בעלות על מקומות'],
   ['users', 'משתמשים'],
   ['audit', 'יומן פעולות'],
@@ -180,6 +182,8 @@ export default function Admin() {
         {activeTab === 'updates' && (
           <UpdateRequests onPendingChange={setPendingUpdates} onError={showError} onSuccess={showSuccess} />
         )}
+
+        {activeTab === 'trips' && <TripsModeration onError={showError} onSuccess={showSuccess} />}
 
         {activeTab === 'feedback' && (
           <FeedbackInbox onPendingChange={setPendingFeedback} onError={showError} onSuccess={showSuccess} />
