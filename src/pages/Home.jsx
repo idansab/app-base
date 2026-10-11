@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Loader2, X } from 'lucide-react';
+import { Search, MapPin, Loader2, X, SlidersHorizontal } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
@@ -13,6 +13,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/api/base44Client';
 import { normalizeCategory } from '@/lib/categories';
 import { AMENITIES, hasAllAmenities, parseFeatureParam } from '@/lib/amenities';
+import FilterSheet from '@/components/places/FilterSheet';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
@@ -41,6 +42,8 @@ export default function Home() {
   const [openNowOnly, setOpenNowOnly] = useState(searchParams.get('open') === '1');
   const [kosherOnly, setKosherOnly] = useState(searchParams.get('kosher') === '1');
   const [features, setFeatures] = useState(() => parseFeatureParam(searchParams.get('features')));
+  const [freeOnly, setFreeOnly] = useState(searchParams.get('free') === '1');
+  const [filterOpen, setFilterOpen] = useState(false);
   // "Now" is re-read every minute so open/closed badges and the filter never go stale
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -114,9 +117,10 @@ export default function Home() {
     if (openNowOnly) params.set('open', '1');
     if (kosherOnly) params.set('kosher', '1');
     if (features.length > 0) params.set('features', features.join(','));
+    if (freeOnly) params.set('free', '1');
 
     setSearchParams(params, { replace: true });
-  }, [searchQuery, selectedCategory, maxDistance, sortBy, openNowOnly, kosherOnly, features, setSearchParams]);
+  }, [searchQuery, selectedCategory, maxDistance, sortBy, openNowOnly, kosherOnly, features, freeOnly, setSearchParams]);
 
   // Keyboard navigation for categories
   useEffect(() => {
@@ -207,11 +211,36 @@ export default function Home() {
   const toggleFeature = (key) => setFeatures((list) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]));
   const featureCount = (key) => baseFiltered.filter(p => hasAllAmenities(p, [...features.filter(k => k !== key), key])).length;
   const unknownHoursCount = baseFiltered.filter(p => isOpenNow(p, now) === null).length;
+  const freeCount = baseFiltered.filter(p => p.price_level === 'free').length;
+
+  // Everything the filter sheet offers. An option that no place can match is not shown (unless it is on).
+  const filterDefs = [
+    { key: 'open', group: 'זמינות', label: 'פתוח עכשיו', active: openNowOnly, toggle: () => setOpenNowOnly(v => !v), count: openCount, show: places.some(p => isOpenNow(p, now) !== null) },
+    { key: 'free', group: 'מחיר', label: 'חינם', active: freeOnly, toggle: () => setFreeOnly(v => !v), count: freeCount, show: places.some(p => p.price_level === 'free') },
+    ...AMENITIES.map(a => ({
+      key: a.key,
+      group: 'נגישות וחניה',
+      label: a.filterLabel,
+      active: features.includes(a.key),
+      toggle: () => toggleFeature(a.key),
+      count: featureCount(a.key),
+      show: places.some(p => hasAllAmenities(p, [a.key])),
+    })),
+    { key: 'kosher', group: 'כשרות', label: 'כשר', active: kosherOnly, toggle: () => setKosherOnly(v => !v), count: kosherCount, show: places.some(p => p.kosher === 'kosher') },
+  ].filter(f => f.active || f.show);
+  const activeFilters = filterDefs.filter(f => f.active);
+  const clearFilters = () => {
+    setOpenNowOnly(false);
+    setKosherOnly(false);
+    setFreeOnly(false);
+    setFeatures([]);
+  };
 
   const filteredPlaces = baseFiltered
     .filter(p => !openNowOnly || isOpenNow(p, now) === true)
     .filter(p => !kosherOnly || p.kosher === 'kosher')
     .filter(p => hasAllAmenities(p, features))
+    .filter(p => !freeOnly || p.price_level === 'free')
     .sort((a, b) => {
       if (sortBy === 'distance' && userLocation) {
         const distA = haversineKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
@@ -316,38 +345,31 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Quick filters */}
-      <div className="px-4 max-w-6xl mx-auto pt-1 flex flex-wrap gap-2 items-center" role="group" aria-label="סינון מהיר">
-        {[
-          { key: 'open', label: 'פתוח עכשיו', active: openNowOnly, toggle: () => setOpenNowOnly(v => !v), count: openCount },
-          { key: 'kosher', label: 'כשר', active: kosherOnly, toggle: () => setKosherOnly(v => !v), count: kosherCount },
-        ]
-          .concat(
-            AMENITIES.map(a => ({
-              key: a.key,
-              label: a.filterLabel,
-              icon: a.icon,
-              active: features.includes(a.key),
-              toggle: () => toggleFeature(a.key),
-              count: featureCount(a.key),
-              hasData: places.some(p => hasAllAmenities(p, [a.key])),
-            }))
-          )
-          // a filter that can only ever return nothing is just noise
-          .filter(chip => (chip.key !== 'kosher' || chip.active || places.some(p => p.kosher === 'kosher')) && (chip.hasData === undefined || chip.active || chip.hasData))
-          .map(chip => (
+      {/* Filters: one button, the options live in the sheet */}
+      <div className="px-4 max-w-6xl mx-auto pt-1 flex flex-wrap gap-2 items-center" role="group" aria-label="סינון">
+        <button
+          type="button"
+          onClick={() => setFilterOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+        >
+          <SlidersHorizontal size={16} aria-hidden="true" />
+          סינון
+          {activeFilters.length > 0 && (
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+              {activeFilters.length}
+            </span>
+          )}
+        </button>
+        {activeFilters.map(f => (
           <button
-            key={chip.key}
-            onClick={chip.toggle}
-            aria-pressed={chip.active}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-              chip.active
-                ? 'bg-primary text-white border-primary shadow-md'
-                : 'bg-card text-foreground border-border hover:bg-secondary'
-            }`}
+            key={f.key}
+            type="button"
+            onClick={f.toggle}
+            aria-label={`הסר סינון ${f.label}`}
+            className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-2 text-sm text-secondary-foreground hover:bg-accent transition-colors"
           >
-            {chip.icon && <chip.icon size={14} className="inline ml-1 -mt-0.5" aria-hidden="true" />}
-            {chip.label} <span className="tabular-nums opacity-70">({chip.count})</span>
+            {f.label}
+            <X size={14} aria-hidden="true" />
           </button>
         ))}
         {openNowOnly && unknownHoursCount > 0 && (
@@ -356,6 +378,15 @@ export default function Home() {
           </span>
         )}
       </div>
+
+      {filterOpen && (
+        <FilterSheet
+          filters={filterDefs}
+          resultCount={filteredPlaces.length}
+          onClear={clearFilters}
+          onClose={() => setFilterOpen(false)}
+        />
+      )}
 
       {/* Sort Controls */}
       <div className="px-4 max-w-6xl mx-auto py-4 flex gap-2 items-center justify-end">
