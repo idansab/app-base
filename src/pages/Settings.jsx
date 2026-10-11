@@ -114,7 +114,7 @@ export default function Settings() {
             <motion.button
               onClick={toggleTheme}
               className={`w-12 h-6 rounded-full transition-colors ${
-                isDark ? 'bg-primary' : 'bg-gray-300'
+                isDark ? 'bg-primary' : 'bg-muted-foreground/40'
               }`}
               whileTap={{ scale: 0.95 }}
             >

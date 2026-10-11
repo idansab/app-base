@@ -195,8 +195,8 @@ export default function Contribute() {
                   onClick={() => setFormData(prev => ({ ...prev, category: cat.id }))}
                   className={`p-3 rounded-xl border-2 transition-all text-right ${
                     formData.category === cat.id
-                      ? 'border-green-600 bg-green-50'
-                      : 'border-slate-200 hover:border-slate-300'
+                      ? 'border-green-600 bg-green-50 dark:bg-green-950/40'
+                      : 'border-border hover:border-muted-foreground'
                   }`}
                 >
                   <div className="text-2xl mb-1">{cat.icon}</div>

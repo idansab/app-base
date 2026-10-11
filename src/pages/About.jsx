@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Users, MapPin, Zap, Mail, MessageSquare } from 'lucide-react';
+import FeedbackDialog from '@/components/FeedbackDialog';
+
+const CONTACT_EMAIL = 'idansbah21@gmail.com';
 
 export default function About() {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const faqs = [
     {
       q: 'מה זו אפליקציית מה יש פה?',
@@ -26,7 +30,7 @@ export default function About() {
     },
     {
       q: 'איך מוחקים מקום שגוי?',
-      a: 'לחץ על מקום, גלול למטה ולחץ דיווח בעיה. המשקיפים שלנו יבדקו ויתקנו.',
+      a: 'לחץ על המקום, גלול למטה ולחץ "דיווח על בעיה / הצעת עריכה". אפשר לדווח שהמקום סגור או שגוי, להציע תיקון לפרטים (שם, כתובת, טלפון, שעות, תיאור) או להוסיף תמונות. צריך להיות מחובר. ההצעה מגיעה למנהל, שבודק אותה ויכול לאשר את הכול או רק חלק, למשל רק את התמונות. רק אחרי האישור השינוי עולה לאתר.',
     },
   ];
 
@@ -131,23 +135,32 @@ export default function About() {
           <p className="text-foreground mb-6">יש לך הערה? שאלה? בואו לדבר!</p>
 
           <div className="space-y-3">
-            <button className="w-full flex items-center justify-between gap-3 p-4 bg-card rounded-lg hover:bg-accent transition-colors">
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="w-full flex items-center justify-between gap-3 p-4 bg-card rounded-lg hover:bg-accent transition-colors"
+            >
               <Mail size={20} className="text-green-600 ml-auto" />
               <div className="flex-1 text-right">
                 <p className="font-medium">דוא"ל</p>
-                <p className="text-sm text-muted-foreground">hello@mayhishpo.com</p>
+                <p className="text-sm text-muted-foreground" dir="ltr">{CONTACT_EMAIL}</p>
               </div>
-            </button>
+            </a>
 
-            <button className="w-full flex items-center justify-between gap-3 p-4 bg-card rounded-lg hover:bg-accent transition-colors">
+            <button
+              type="button"
+              onClick={() => setFeedbackOpen(true)}
+              className="w-full flex items-center justify-between gap-3 p-4 bg-card rounded-lg hover:bg-accent transition-colors"
+            >
               <MessageSquare size={20} className="text-green-600 ml-auto" />
               <div className="flex-1 text-right">
-                <p className="font-medium">Feedback</p>
-                <p className="text-sm text-muted-foreground">שתף דעה או תוכיח</p>
+                <p className="font-medium">משוב</p>
+                <p className="text-sm text-muted-foreground">שתף דעה או הצע שיפור</p>
               </div>
             </button>
           </div>
         </motion.section>
+
+        {feedbackOpen && <FeedbackDialog onClose={() => setFeedbackOpen(false)} />}
 
         {/* Version */}
         <div className="text-center text-xs text-muted-foreground py-4">

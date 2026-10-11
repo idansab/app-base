@@ -57,8 +57,8 @@ const FormInput = ({ label, helper, error, ...props }) => (
       {...props}
       className={`w-full px-4 py-3 border rounded-2xl text-right focus:outline-none focus:ring-2 transition-all ${
         error
-          ? 'border-red-300 focus:ring-red-600 bg-red-50'
-          : 'border-gray-300 focus:ring-green-600'
+          ? 'border-red-300 focus:ring-red-600 bg-red-50 dark:border-red-800 dark:bg-red-950/40'
+          : 'border-border focus:ring-green-600'
       }`}
     />
     {error && <p className="text-xs text-red-600 mt-2">{error}</p>}

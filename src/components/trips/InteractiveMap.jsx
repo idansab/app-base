@@ -161,8 +161,8 @@ export default function InteractiveMap({ places = [], onPlaceClick, isLoading = 
             onClick={() => setSelectedPlace(place)}
             className={`relative rounded-2xl border-2 cursor-pointer transition-all text-right overflow-hidden ${
               selectedPlace?.id === place.id
-                ? 'bg-green-50 border-green-600'
-                : 'bg-white border-border hover:border-green-600'
+                ? 'bg-green-50 border-green-600 dark:bg-green-950/40'
+                : 'bg-card border-border hover:border-green-600'
             }`}
           >
             {/* Background fill animation on hover */}

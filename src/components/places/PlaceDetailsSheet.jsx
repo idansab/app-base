@@ -10,6 +10,7 @@ import { getPlaceImages } from '@/lib/placeImages';
 import { trackPlaceEvent } from '@/lib/trackPlace';
 import PlaceLinks from '@/components/places/PlaceLinks';
 import ClaimPlace from '@/components/places/ClaimPlace';
+import SuggestEdit from '@/components/places/SuggestEdit';
 import { supabase } from '@/api/base44Client';
 
 export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, userLocation, isFavorite, onFavoriteToggle }) {
@@ -191,6 +192,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
           )}
 
           <ClaimPlace place={place} onPlaceUpdated={setUpdatedPlace} />
+          <SuggestEdit place={place} />
 
           {/* Action Buttons */}
           <motion.div
@@ -206,8 +208,8 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
               }}
               className={`flex-1 p-3 rounded-2xl font-medium transition-all ${
                 isFavorite
-                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                  : 'bg-slate-100 text-foreground hover:bg-slate-200'
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-950'
+                  : 'bg-secondary text-foreground hover:bg-accent'
               }`}
             >
               <Heart size={20} className={isFavorite ? 'fill-current' : ''} />

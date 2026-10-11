@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Check, Inbox, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, Flag, Inbox, Loader2, Trash2, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { changedGroups, describeGroup, fieldsOfGroups, isImageGroup } from '@/lib/ownerChanges';
 
@@ -94,6 +94,32 @@ export default function UpdateRequests({ onError, onSuccess, onPendingChange }) 
     }
   };
 
+  // a report has nothing to apply: the admin closes it, or deletes the wrong place
+  const closeReport = async (request, { deletePlace = false } = {}) => {
+    if (deletePlace && !window.confirm(`למחוק את "${request.place_name}" לצמיתות?`)) return;
+    setBusyId(request.id);
+    try {
+      if (deletePlace) {
+        const { error: delError } = await supabase.from('places').delete().eq('id', request.place_id);
+        if (delError) throw delError;
+        onSuccess?.('המקום נמחק');
+      } else {
+        const { error } = await supabase
+          .from('place_update_requests')
+          .update({ status: 'approved', review_note: 'טופל' })
+          .eq('id', request.id);
+        if (error) throw error;
+        onSuccess?.('הדיווח נסגר');
+      }
+      await load();
+    } catch (e) {
+      console.error('Closing report failed:', e);
+      onError?.('הפעולה נכשלה');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const reject = async (request, reason) => {
     setBusyId(request.id);
     try {
@@ -116,8 +142,8 @@ export default function UpdateRequests({ onError, onSuccess, onPendingChange }) 
   return (
     <div className="space-y-4">
       <div className="text-right">
-        <h1 className="text-2xl font-bold text-foreground">בקשות עדכון</h1>
-        <p className="text-sm text-muted-foreground">עדכונים שבעלי עסקים ביקשו. אפשר לאשר רק חלק מהשדות.</p>
+        <h1 className="text-2xl font-bold text-foreground">בקשות עדכון והצעות</h1>
+        <p className="text-sm text-muted-foreground">עדכונים של בעלי עסקים והצעות של גולשים: תיקונים, תמונות ודיווחים על מקומות שגויים. אפשר לאשר רק חלק מהשדות, למשל רק את התמונות.</p>
       </div>
 
       <div className="flex gap-2 justify-end" role="tablist">
@@ -153,12 +179,21 @@ export default function UpdateRequests({ onError, onSuccess, onPendingChange }) 
             const groups = changedGroups(request.changes);
             const off = unchecked[request.id] || new Set();
             const isPending = request.status === 'pending';
+            const isReport = request.kind === 'report';
             return (
               <li key={request.id} className="rounded-2xl border border-border bg-card p-4 text-right space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusTone}`}>{statusLabel}</span>
                   <div className="min-w-0">
-                    <p className="font-bold text-foreground">{request.place_name}</p>
+                    <p className="font-bold text-foreground flex items-center gap-2 justify-end">
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        {request.source === 'community' ? (isReport ? 'דיווח גולש' : 'הצעת גולש') : 'בעל עסק'}
+                      </span>
+                      {request.place_name}
+                      <a href={`/place/${request.place_id}`} target="_blank" rel="noopener noreferrer" aria-label="פתח את המקום" className="text-muted-foreground hover:text-foreground">
+                        <ExternalLink size={14} />
+                      </a>
+                    </p>
                     <p className="text-sm text-muted-foreground" dir="ltr">{request.email || 'משתמש לא ידוע'}</p>
                     <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleString('he-IL')}</p>
                   </div>
@@ -172,7 +207,7 @@ export default function UpdateRequests({ onError, onSuccess, onPendingChange }) 
                   {groups.map((group) => {
                     const accepted = isPending ? !off.has(group.key) : (request.applied_fields || []).some((f) => group.fields.includes(f));
                     return (
-                      <li key={group.key} className={`rounded-xl border p-3 ${accepted ? 'border-green-300' : 'border-border opacity-60'}`}>
+                      <li key={group.key} className={`rounded-xl border p-3 ${accepted ? 'border-green-300 dark:border-green-700' : 'border-border opacity-60'}`}>
                         <label className="flex items-center justify-end gap-2 mb-2 cursor-pointer">
                           <span className="font-medium text-foreground">{group.label}</span>
                           {isPending ? (
@@ -191,7 +226,10 @@ export default function UpdateRequests({ onError, onSuccess, onPendingChange }) 
                         {isImageGroup(group) ? (
                           <div className="grid gap-3">
                             <ImageStrip label="עכשיו" urls={request.current_place?.images || []} />
-                            <ImageStrip label="מבוקש" urls={request.changes.images || []} />
+                            <ImageStrip
+                              label={request.changes.add_images ? 'יתווספו' : 'מבוקש'}
+                              urls={request.changes.images || request.changes.add_images || []}
+                            />
                           </div>
                         ) : (
                           <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-start text-sm">
@@ -204,11 +242,38 @@ export default function UpdateRequests({ onError, onSuccess, onPendingChange }) 
                     );
                   })}
                 </ul>
-                {isPending && <p className="text-xs text-muted-foreground">מימין: הערך הנוכחי. משמאל: המבוקש.</p>}
+                {isPending && !isReport && <p className="text-xs text-muted-foreground">מימין: הערך הנוכחי. משמאל: המבוקש.</p>}
 
                 {request.review_note && <p className="text-xs text-muted-foreground">הערת סקירה: {request.review_note}</p>}
 
-                {isPending &&
+                {isPending && isReport && (
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    <button
+                      onClick={() => closeReport(request, { deletePlace: true })}
+                      disabled={busyId === request.id}
+                      className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50"
+                    >
+                      <Trash2 size={16} /> מחק את המקום
+                    </button>
+                    <button
+                      onClick={() => reject(request, 'לא נמצאה בעיה')}
+                      disabled={busyId === request.id}
+                      className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm hover:bg-secondary disabled:opacity-50"
+                    >
+                      <X size={16} /> אין בעיה
+                    </button>
+                    <button
+                      onClick={() => closeReport(request)}
+                      disabled={busyId === request.id}
+                      className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {busyId === request.id ? <Loader2 size={16} className="animate-spin" /> : <Flag size={16} />}
+                      טופל
+                    </button>
+                  </div>
+                )}
+
+                {isPending && !isReport &&
                   (rejecting?.id === request.id ? (
                     <div className="flex gap-2">
                       <button
