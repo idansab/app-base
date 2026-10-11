@@ -36,5 +36,5 @@ export default function RouteMap({ stops, className = '' }) {
     return () => map.remove();
   }, [stops]);
 
-  return <div ref={containerRef} className={`w-full rounded-xl border border-border bg-muted ${className}`} style={{ minHeight: 320 }} />;
+  return <div ref={containerRef} className={`relative z-0 isolate w-full overflow-hidden rounded-xl border border-border bg-muted ${className}`} style={{ minHeight: 320 }} />;
 }
