@@ -125,7 +125,10 @@ if (args.apply) {
     console.error('--apply needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the environment.');
     process.exit(1);
   }
-  const payload = picked.map(({ _confidence, ...row }) => row);
+  // PostgREST bulk insert needs the same keys in every object (opening hours exist for only some places)
+  const rowsToInsert = picked.map(({ _confidence, ...row }) => row);
+  const allKeys = [...new Set(rowsToInsert.flatMap((row) => Object.keys(row)))];
+  const payload = rowsToInsert.map((row) => Object.fromEntries(allKeys.map((key) => [key, row[key] ?? null])));
   const res = await rest('places?on_conflict=source,source_ref', { method: 'POST', headers: { Prefer: 'resolution=ignore-duplicates,return=representation' }, body: JSON.stringify(payload) });
   if (!res.ok) {
     console.error(`Insert failed: ${res.status} ${await res.text()}`);
