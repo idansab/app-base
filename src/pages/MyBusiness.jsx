@@ -5,6 +5,7 @@ import { supabase } from '@/api/base44Client';
 import useOwnerOverview from '@/hooks/useOwnerOverview';
 import OwnerEditor from '@/components/places/OwnerEditor';
 import PlaceStats from '@/components/places/PlaceStats';
+import OwnerVideos from '@/components/places/OwnerVideos';
 import { formatBetaDate, useBetaInfo } from '@/lib/beta';
 import { getSeenAt, isNewDecision, markSeen } from '@/lib/ownerOverview';
 
@@ -153,6 +154,8 @@ export default function MyBusiness() {
                 ))}
               </ul>
             )}
+
+            {approved.length > 0 && <OwnerVideos places={approved.map((i) => i.place)} />}
 
             {others.length > 0 && (
               <section className="space-y-3">

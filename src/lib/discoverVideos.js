@@ -1,5 +1,5 @@
 // Videos shown in the "Discover" feed. Files live in public/discover/.
-// Later this list moves to the database (sponsored videos per business).
+// Fallback only: the feed normally comes from the discover_videos table (see discoverApi.js).
 export const DISCOVER_VIDEOS = [
   {
     id: 'weekend',
