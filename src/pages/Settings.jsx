@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import PasswordRules from '@/components/common/PasswordRules';
+import { authErrorMessage, passwordProblem } from '@/lib/passwordRules';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Moon, Sun, Lock, HelpCircle, Trash2, LogOut, LogIn, X, Store, ChevronLeft } from 'lucide-react';
@@ -28,12 +30,13 @@ export default function Settings() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setPwError('');
-    if (pwForm.next.length < 8) {
-      setPwError('הסיסמה החדשה חייבת להיות לפחות 8 תווים');
+    const problem = passwordProblem(pwForm.next);
+    if (problem) {
+      setPwError(problem);
       return;
     }
     if (pwForm.next !== pwForm.confirm) {
-      setPwError('הסיסמאות החדשות לא תואמות');
+      setPwError('הסיסמאות החדשות שהוזנו אינן תואמות.');
       return;
     }
     setPwLoading(true);
@@ -42,7 +45,7 @@ export default function Settings() {
       setPwSuccess(true);
       setTimeout(closePasswordModal, 1500);
     } catch (err) {
-      setPwError(err.message || 'שגיאה בשינוי הסיסמה');
+      setPwError(authErrorMessage(err, 'לא ניתן היה לשנות את הסיסמה. יש לנסות שוב.'));
     } finally {
       setPwLoading(false);
     }
@@ -383,6 +386,7 @@ export default function Settings() {
                       required
                       className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     />
+                    {key === 'next' && <PasswordRules password={pwForm.next} className="mt-2" />}
                   </div>
                 ))}
 

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import PasswordRules from '@/components/common/PasswordRules';
+import { authErrorMessage, passwordProblem } from '@/lib/passwordRules';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
@@ -30,12 +32,13 @@ export default function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (password.length < 8) {
-      setError('הסיסמה חייבת להיות לפחות 8 תווים');
+    const problem = passwordProblem(password);
+    if (problem) {
+      setError(problem);
       return;
     }
     if (password !== confirm) {
-      setError('הסיסמאות לא תואמות');
+      setError('הסיסמאות שהוזנו אינן תואמות.');
       return;
     }
     setLoading(true);
@@ -44,7 +47,7 @@ export default function ResetPassword() {
       setDone(true);
       setTimeout(() => navigate('/'), 1500);
     } catch (err) {
-      setError(err.message || 'שגיאה בעדכון הסיסמה');
+      setError(authErrorMessage(err, 'לא ניתן היה לעדכן את הסיסמה. יש לנסות שוב.'));
     } finally {
       setLoading(false);
     }
@@ -84,6 +87,7 @@ export default function ResetPassword() {
                 required
                 autoComplete="new-password"
               />
+              <PasswordRules password={password} className="mt-2" />
             </div>
             <div>
               <label htmlFor="confirm" className="block text-sm font-medium text-foreground mb-1">אימות סיסמה</label>
