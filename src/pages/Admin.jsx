@@ -12,6 +12,7 @@ import BetaSettings from '@/components/admin/BetaSettings';
 import UpdateRequests from '@/components/admin/UpdateRequests';
 import FeedbackInbox from '@/components/admin/FeedbackInbox';
 import TripsModeration from '@/components/admin/TripsModeration';
+import DiscoverVideosManager from '@/components/admin/DiscoverVideosManager';
 
 const TABS = [
   ['dashboard', 'לוח בקרה'],
@@ -21,6 +22,7 @@ const TABS = [
   ['updates', 'בקשות עדכון'],
   ['feedback', 'משוב'],
   ['trips', 'מסלולים'],
+  ['discover', 'סרטוני גלו'],
   ['owners', 'בעלות על מקומות'],
   ['users', 'משתמשים'],
   ['audit', 'יומן פעולות'],
@@ -184,6 +186,8 @@ export default function Admin() {
         )}
 
         {activeTab === 'trips' && <TripsModeration onError={showError} onSuccess={showSuccess} />}
+
+        {activeTab === 'discover' && <DiscoverVideosManager onError={showError} onSuccess={showSuccess} />}
 
         {activeTab === 'feedback' && (
           <FeedbackInbox onPendingChange={setPendingFeedback} onError={showError} onSuccess={showSuccess} />

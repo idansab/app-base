@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
-import { DISCOVER_VIDEOS } from '@/lib/discoverVideos';
+import { Loader2, MapPin, Volume2, VolumeX } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { loadFeed } from '@/lib/discoverApi';
 
 function VideoSlide({ video, muted, onToggleMute }) {
   const ref = useRef(null);
@@ -30,8 +31,8 @@ function VideoSlide({ video, muted, onToggleMute }) {
     <section ref={slideRef} className="relative h-full w-full snap-start snap-always bg-black">
       <video
         ref={ref}
-        src={video.src}
-        poster={video.poster}
+        src={video.video_url}
+        poster={video.poster_url || undefined}
         className="h-full w-full object-contain"
         loop
         muted
@@ -42,7 +43,15 @@ function VideoSlide({ video, muted, onToggleMute }) {
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pb-5 text-right text-white">
         <h2 className="text-lg font-bold">{video.title}</h2>
-        <p className="mt-1 text-sm text-white/85">{video.description}</p>
+        {video.description && <p className="mt-1 text-sm text-white/85">{video.description}</p>}
+        {video.places && (
+          <Link
+            to={`/place/${video.places.id}`}
+            className="pointer-events-auto mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-black"
+          >
+            <MapPin size={16} /> {video.places.name}
+          </Link>
+        )}
       </div>
       <button
         type="button"
@@ -59,10 +68,24 @@ function VideoSlide({ video, muted, onToggleMute }) {
 /** "Discover": vertical, swipeable video feed. */
 export default function Discover() {
   const [muted, setMuted] = useState(true);
+  const [videos, setVideos] = useState(null);
+
+  useEffect(() => {
+    loadFeed().then(setVideos);
+  }, []);
+
+  if (videos === null) {
+    return (
+      <div className="flex h-[calc(100dvh-9rem)] min-h-[420px] items-center justify-center bg-black">
+        <Loader2 className="animate-spin text-white" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100dvh-9rem)] min-h-[420px] w-full snap-y snap-mandatory overflow-y-scroll bg-black">
-      {DISCOVER_VIDEOS.map((video) => (
+      {videos.length === 0 && <p className="p-8 text-center text-white/80">עוד אין סרטונים כאן. תחזרו בקרוב.</p>}
+      {videos.map((video) => (
         <VideoSlide key={video.id} video={video} muted={muted} onToggleMute={() => setMuted((m) => !m)} />
       ))}
     </div>
