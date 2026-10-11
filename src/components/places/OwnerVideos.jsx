@@ -6,7 +6,7 @@ import { VIDEO_SPEC, checkVideoMeta, formatBytes, validateVideoFile, validateVid
 
 const STATUS = {
   pending: ['ממתין לאישור', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'],
-  approved: ['מוצג ב"גלו"', 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'],
+  approved: ['מוצג ב"גלה"', 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'],
   hidden: ['מוסתר', 'bg-muted text-foreground dark:bg-slate-800 dark:text-slate-200'],
   rejected: ['נדחה', 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'],
 };
@@ -87,7 +87,7 @@ function UploadDialog({ places, onClose, onUploaded }) {
       <div className="max-h-[92dvh] w-full max-w-lg space-y-3 overflow-y-auto rounded-t-3xl bg-card p-5 text-right sm:rounded-3xl">
         <div className="flex items-center justify-between">
           <button onClick={onClose} aria-label="סגור" className="rounded-full p-1.5 hover:bg-secondary"><X size={20} /></button>
-          <h2 className="text-lg font-bold text-foreground">סרטון חדש ל"גלו"</h2>
+          <h2 className="text-lg font-bold text-foreground">סרטון חדש ל"גלה"</h2>
         </div>
 
         <SpecBox />
@@ -180,9 +180,9 @@ export default function OwnerVideos({ places }) {
         <button onClick={() => setOpen(true)} className="flex items-center gap-1.5 rounded-2xl bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
           <Upload size={16} /> העלאת סרטון
         </button>
-        <h2 className="flex items-center gap-2 font-bold text-foreground"><Film size={18} /> הסרטונים שלי ב"גלו"</h2>
+        <h2 className="flex items-center gap-2 font-bold text-foreground"><Film size={18} /> הסרטונים שלי ב"גלה"</h2>
       </div>
-      <p className="text-right text-xs text-muted-foreground">סרטון אנכי קצר שמופיע בלשונית "גלו" עם קישור לעמוד שלך. כל סרטון נבדק לפני שהוא עולה.</p>
+      <p className="text-right text-xs text-muted-foreground">סרטון אנכי קצר שמופיע בלשונית "גלה" עם קישור לעמוד שלך. כל סרטון נבדק לפני שהוא עולה.</p>
 
       {loading ? (
         <div className="flex justify-center py-4"><Loader2 className="animate-spin text-primary" /></div>

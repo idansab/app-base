@@ -132,9 +132,9 @@ export default function DiscoverVideosManager({ onError, onSuccess }) {
   return (
     <div className="space-y-4">
       <div className="text-right">
-        <h1 className="text-2xl font-bold text-foreground">סרטוני גלו</h1>
+        <h1 className="text-2xl font-bold text-foreground">סרטוני גלה</h1>
         <p className="text-sm text-muted-foreground">
-          הסרטונים שמופיעים בלשונית "גלו". סרטונים שבעלי עסקים מעלים ממתינים כאן לאישור ולא מופיעים עד שתאשר.
+          הסרטונים שמופיעים בלשונית "גלה". סרטונים שבעלי עסקים מעלים ממתינים כאן לאישור ולא מופיעים עד שתאשר.
         </p>
       </div>
 
@@ -187,7 +187,7 @@ export default function DiscoverVideosManager({ onError, onSuccess }) {
 
                   <div className="flex flex-wrap justify-end gap-1.5">
                     {video.status !== 'approved' && (
-                      <button disabled={busy} onClick={() => patch(video, { status: 'approved', review_note: null }, 'הסרטון מוצג עכשיו ב"גלו"')} className="flex items-center gap-1 rounded-xl bg-green-600 px-2.5 py-1.5 text-xs font-medium text-white disabled:opacity-50">
+                      <button disabled={busy} onClick={() => patch(video, { status: 'approved', review_note: null }, 'הסרטון מוצג עכשיו ב"גלה"')} className="flex items-center gap-1 rounded-xl bg-green-600 px-2.5 py-1.5 text-xs font-medium text-white disabled:opacity-50">
                         <Check size={14} /> {video.status === 'pending' ? 'אשר' : 'הצג'}
                       </button>
                     )}
