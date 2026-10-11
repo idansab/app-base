@@ -4,6 +4,8 @@ import { BadgeCheck, BarChart3, Clock, ExternalLink, Loader2, Pencil, Store } fr
 import { supabase } from '@/api/base44Client';
 import useOwnerOverview from '@/hooks/useOwnerOverview';
 import OwnerEditor from '@/components/places/OwnerEditor';
+import OwnerBetaWelcome from '@/components/places/OwnerBetaWelcome';
+import { useAuth } from '@/lib/AuthContext';
 import PlaceStats from '@/components/places/PlaceStats';
 import { formatBetaDate, useBetaInfo } from '@/lib/beta';
 import { getSeenAt, isNewDecision, markSeen } from '@/lib/ownerOverview';
@@ -95,6 +97,16 @@ function BusinessCard({ item, requests, seenAt, onEdit, onStats }) {
 export default function MyBusiness() {
   const { loading, items, requests, reload } = useOwnerOverview();
   const beta = useBetaInfo();
+  const { user } = useAuth();
+  // one-time welcome per user; kept in the browser (UX notice, not a legal record)
+  const ackKey = `owner_beta_ack:${user?.id}`;
+  const [acked, setAcked] = useState(() => {
+    try { return localStorage.getItem(ackKey) === '1'; } catch { return false; }
+  });
+  const acceptWelcome = () => {
+    try { localStorage.setItem(ackKey, '1'); } catch { /* shown again next visit */ }
+    setAcked(true);
+  };
   const [seenAtOpen] = useState(() => getSeenAt()); // highlight what is new during this visit
   const [editing, setEditing] = useState(null);
   const [statsFor, setStatsFor] = useState(null);
@@ -110,6 +122,7 @@ export default function MyBusiness() {
 
   return (
     <div className="min-h-screen bg-background pb-28">
+      {!loading && approved.length > 0 && !acked && <OwnerBetaWelcome beta={beta} onAccept={acceptWelcome} />}
       <div className="px-4 max-w-2xl mx-auto py-8 space-y-6">
         <div className="text-right">
           <h1 className="text-2xl font-bold text-foreground">העסקים שלי</h1>
