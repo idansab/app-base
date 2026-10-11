@@ -39,16 +39,17 @@ describe('wazeUrl', () => {
 });
 
 describe('formatPlaceName', () => {
-  it('gives neighbourhood and city, nothing more precise', () => {
-    expect(formatPlaceName({ suburb: 'נווה צדק', city: 'תל אביב - יפו', road: 'שבזי', house_number: '5' })).toBe('נווה צדק, תל אביב - יפו');
+  it('gives the city only, nothing more precise', () => {
+    expect(formatPlaceName({ suburb: 'נווה צדק', city: 'תל אביב - יפו', road: 'שבזי', house_number: '5' })).toBe('תל אביב - יפו');
   });
 
-  it('falls back to town or village and never repeats a name', () => {
+  it('falls back to town, village or municipality', () => {
+    expect(formatPlaceName({ town: 'נתיבות' })).toBe('נתיבות');
     expect(formatPlaceName({ village: 'אבן יהודה' })).toBe('אבן יהודה');
-    expect(formatPlaceName({ neighbourhood: 'חיפה', city: 'חיפה' })).toBe('חיפה');
   });
 
-  it('is empty when there is nothing to show', () => {
+  it('is empty when there is no city to show', () => {
+    expect(formatPlaceName({ suburb: 'הדר' })).toBe('');
     expect(formatPlaceName({})).toBe('');
     expect(formatPlaceName(undefined)).toBe('');
   });
@@ -57,11 +58,11 @@ describe('formatPlaceName', () => {
 describe('reverseGeocode', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it('asks OpenStreetMap at neighbourhood level and returns the name', async () => {
+  it('asks OpenStreetMap at city level and returns the city', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ address: { suburb: 'הדר', city: 'חיפה' } }) });
     vi.stubGlobal('fetch', fetchMock);
-    expect(await reverseGeocode(32.8001, 34.9901)).toBe('הדר, חיפה');
-    expect(fetchMock.mock.calls[0][0]).toContain('zoom=14');
+    expect(await reverseGeocode(32.8001, 34.9901)).toBe('חיפה');
+    expect(fetchMock.mock.calls[0][0]).toContain('zoom=10');
     expect(fetchMock.mock.calls[0][0]).toContain('accept-language=he');
   });
 

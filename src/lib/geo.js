@@ -42,28 +42,26 @@ export async function geocodeAddress(query) {
 }
 
 /**
- * A short Hebrew place name from a Nominatim `address` object: "neighbourhood, city".
- * Neighbourhood level only: no street or house number is shown or kept.
+ * The city (or town / village) from a Nominatim `address` object. City level only:
+ * no street, house number or neighbourhood is shown or kept.
  */
 export function formatPlaceName(address) {
   if (!address) return "";
-  const area = address.neighbourhood || address.suburb || address.quarter || address.city_district || "";
-  const city = address.city || address.town || address.village || address.municipality || address.county || "";
-  return [area, city].filter((part, index, all) => part && all.indexOf(part) === index).join(", ");
+  return address.city || address.town || address.village || address.municipality || address.county || "";
 }
 
 const reverseCache = new Map();
 
 /**
- * Where are these coordinates? Uses OpenStreetMap Nominatim at neighbourhood level (zoom 14).
- * Returns a name such as "נווה צדק, תל אביב - יפו", or null when it cannot be resolved.
+ * Which city are these coordinates in? Uses OpenStreetMap Nominatim at city level (zoom 10).
+ * Returns a name such as "תל אביב - יפו", or null when it cannot be resolved.
  * Results are cached per ~100 m so moving the map does not repeat the request.
  */
 export async function reverseGeocode(lat, lng, { signal } = {}) {
   const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
   if (reverseCache.has(key)) return reverseCache.get(key);
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&addressdetails=1&accept-language=he&lat=${lat}&lon=${lng}`;
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&accept-language=he&lat=${lat}&lon=${lng}`;
     const response = await fetch(url, { headers: { Accept: "application/json" }, signal });
     if (!response.ok) return null;
     const data = await response.json();
