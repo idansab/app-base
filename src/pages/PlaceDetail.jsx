@@ -14,6 +14,7 @@ import { getPlaceImages } from '@/lib/placeImages';
 import { trackPlaceEvent } from '@/lib/trackPlace';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
+import PlaceLegalNote from '@/components/common/PlaceLegalNote';
 import PlaceAmenities from '@/components/places/PlaceAmenities';
 import { getPlaceAmenities } from '@/lib/amenities';
 
@@ -520,6 +521,7 @@ export default function PlaceDetail() {
         <div className="mt-12 max-w-md mx-auto">
           <ClaimPlace place={place} onPlaceUpdated={setPlace} />
           <SuggestEdit place={place} className="mt-3" />
+          <PlaceLegalNote place={place} className="mt-4" />
         </div>
       </div>
     </div>

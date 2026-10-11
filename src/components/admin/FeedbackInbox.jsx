@@ -3,12 +3,13 @@ import { Check, Inbox, Loader2, Mail, Trash2 } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 
 const FILTERS = [['new', 'חדשים'], ['all', 'הכול']];
-const KIND_LABELS = { idea: 'רעיון', bug: 'תקלה', praise: 'מילה טובה', other: 'אחר' };
+const KIND_LABELS = { idea: 'רעיון', bug: 'תקלה', praise: 'מילה טובה', other: 'אחר', report: 'דיווח על תוכן' };
 const KIND_TONES = {
   idea: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
   bug: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
   praise: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
   other: 'bg-secondary text-foreground',
+  report: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
 };
 
 /** Messages visitors send from the About page. */

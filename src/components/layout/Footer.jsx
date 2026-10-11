@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import FeedbackDialog from '@/components/FeedbackDialog';
 import { motion } from 'motion/react';
 import { Heart, Github } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [reportOpen, setReportOpen] = useState(false);
 
   return (
     <footer className="bg-gradient-to-t from-slate-900 to-slate-800 text-white">
@@ -52,6 +54,11 @@ export default function Footer() {
               <li><a href="/terms" className="hover:text-green-400 transition-colors">תנאי שימוש</a></li>
               <li><a href="/cookies" className="hover:text-green-400 transition-colors">מדיניות Cookie</a></li>
               <li><a href="/accessibility" className="hover:text-green-400 transition-colors">הצהרת נגישות</a></li>
+              <li>
+                <button type="button" onClick={() => setReportOpen(true)} className="hover:text-green-400 transition-colors">
+                  דיווח על תוכן
+                </button>
+              </li>
             </ul>
           </motion.div>
 
@@ -132,6 +139,7 @@ export default function Footer() {
           </div>
         </motion.div>
       </div>
+      {reportOpen && <FeedbackDialog initialKind="report" onClose={() => setReportOpen(false)} />}
     </footer>
   );
 }

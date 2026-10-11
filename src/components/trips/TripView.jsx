@@ -98,6 +98,11 @@ export default function TripView({ trip, stops, onChanged, onDeleted, onEdit, on
 
   return (
     <div className="space-y-5">
+      {!trip.owned && (
+        <p className="rounded-xl bg-secondary px-4 py-3 text-right text-xs leading-relaxed text-muted-foreground">
+          מסלול זה פורסם על ידי משתמש ולא נבדק או אושר מראש על ידי האתר. יש לבדוק התאמה, בטיחות, מזג אוויר, שעות פתיחה והגבלות לפני היציאה. הטיול על אחריות המטייל.
+        </p>
+      )}
       <div className="rounded-2xl border border-border bg-card p-5 text-right">
         <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">
           {trip.owned && (

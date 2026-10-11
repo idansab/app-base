@@ -9,16 +9,17 @@ const KINDS = [
   ['bug', 'משהו לא עובד'],
   ['praise', 'מילה טובה'],
   ['other', 'אחר'],
+  ['report', 'דיווח על תוכן (לשון הרע, זכויות יוצרים, פרטיות)'],
 ];
 
 const inputCls =
   'w-full px-3 py-2 border border-border rounded-xl bg-background text-foreground text-right focus:outline-none focus:ring-2 focus:ring-green-600';
 
 /** "Send us feedback". Goes straight to the admin inbox; works without signing in. */
-export default function FeedbackDialog({ onClose }) {
+export default function FeedbackDialog({ onClose, initialKind = 'idea', subject = '' }) {
   useBodyScrollLock();
   const location = useLocation();
-  const [kind, setKind] = useState('idea');
+  const [kind, setKind] = useState(initialKind);
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const [saving, setSaving] = useState(false);
@@ -40,7 +41,7 @@ export default function FeedbackDialog({ onClose }) {
     setSaving(true);
     setError('');
     const { error: rpcError } = await supabase.rpc('submit_feedback', {
-      p_message: message.trim(),
+      p_message: (subject ? `[${subject}] ` : '') + message.trim(),
       p_kind: kind,
       p_contact: contact.trim() || null,
       p_page: location.pathname,
@@ -71,7 +72,7 @@ export default function FeedbackDialog({ onClose }) {
           <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-secondary" aria-label="סגור">
             <X size={20} />
           </button>
-          <h2 className="text-lg font-bold">שתף דעה או הצע שיפור</h2>
+          <h2 className="text-lg font-bold">{initialKind === 'report' ? 'דיווח על תוכן' : 'שתף דעה או הצע שיפור'}</h2>
         </div>
 
         {sent ? (
