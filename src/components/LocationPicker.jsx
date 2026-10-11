@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MapPin, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import useUserLocation from '@/hooks/useUserLocation';
-import { geocodeAddress } from '@/lib/geo';
+import { geocodeAddress, reverseGeocode } from '@/lib/geo';
 
 const ISRAELI_CITIES = [
   'תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'רמת גן', 'אשדוד', 'פתח תקווה',
@@ -23,6 +23,7 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
   const [searchError, setSearchError] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [whereAmI, setWhereAmI] = useState(null); // 'loading' | place name | '' (could not tell)
 
   useEffect(() => {
     if (location) {
@@ -31,6 +32,20 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
       setSelectedLocationName('המיקום הנוכחי שלי');
     }
   }, [location]);
+
+  // say where "my current location" actually is
+  useEffect(() => {
+    if (!isCurrentLocation || !selectedLocation) {
+      setWhereAmI(null);
+      return undefined;
+    }
+    const controller = new AbortController();
+    setWhereAmI('loading');
+    reverseGeocode(selectedLocation.lat, selectedLocation.lng, { signal: controller.signal }).then((name) => {
+      if (!controller.signal.aborted) setWhereAmI(name || '');
+    });
+    return () => controller.abort();
+  }, [isCurrentLocation, selectedLocation]);
 
   const handleSearchQuery = (query) => {
     setSearchQuery(query);
@@ -211,7 +226,8 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
           >
             <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
               ✓ {selectedLocationName}
-              {isCurrentLocation && ' (מיקום נוכחי)'}
+              {isCurrentLocation && whereAmI && whereAmI !== 'loading' && `: ${whereAmI}`}
+              {isCurrentLocation && whereAmI === 'loading' && ' · מאתר איפה אתה נמצא…'}
             </p>
           </motion.div>
         )}

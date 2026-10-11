@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { haversineKm, formatDistance, wazeUrl } from './geo';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { haversineKm, formatDistance, wazeUrl, formatPlaceName, reverseGeocode } from './geo';
 
 describe('haversineKm', () => {
   it('is zero for identical points', () => {
@@ -35,5 +35,49 @@ describe('formatDistance', () => {
 describe('wazeUrl', () => {
   it('builds a navigation link', () => {
     expect(wazeUrl(32.1, 34.8)).toBe('https://waze.com/ul?ll=32.1%2C34.8&navigate=yes');
+  });
+});
+
+describe('formatPlaceName', () => {
+  it('gives the city only, nothing more precise', () => {
+    expect(formatPlaceName({ suburb: 'נווה צדק', city: 'תל אביב - יפו', road: 'שבזי', house_number: '5' })).toBe('תל אביב - יפו');
+  });
+
+  it('falls back to town, village or municipality', () => {
+    expect(formatPlaceName({ town: 'נתיבות' })).toBe('נתיבות');
+    expect(formatPlaceName({ village: 'אבן יהודה' })).toBe('אבן יהודה');
+  });
+
+  it('is empty when there is no city to show', () => {
+    expect(formatPlaceName({ suburb: 'הדר' })).toBe('');
+    expect(formatPlaceName({})).toBe('');
+    expect(formatPlaceName(undefined)).toBe('');
+  });
+});
+
+describe('reverseGeocode', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('asks OpenStreetMap at city level and returns the city', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ address: { suburb: 'הדר', city: 'חיפה' } }) });
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await reverseGeocode(32.8001, 34.9901)).toBe('חיפה');
+    expect(fetchMock.mock.calls[0][0]).toContain('zoom=10');
+    expect(fetchMock.mock.calls[0][0]).toContain('accept-language=he');
+  });
+
+  it('answers from memory for the same spot', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ address: { city: 'אילת' } }) });
+    vi.stubGlobal('fetch', fetchMock);
+    await reverseGeocode(29.5571, 34.9511);
+    await reverseGeocode(29.5572, 34.9512);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns null instead of throwing when the service fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    expect(await reverseGeocode(31.0, 35.0)).toBeNull();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+    expect(await reverseGeocode(31.1, 35.1)).toBeNull();
   });
 });
