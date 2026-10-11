@@ -8,6 +8,7 @@ import { AuthProvider } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import { AccessibilityProvider } from '@/lib/AccessibilityContext';
 import AccessibilityMenu from '@/components/AccessibilityMenu';
+import CookieConsent from '@/components/CookieConsent';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
@@ -102,6 +103,7 @@ function App() {
               <ScrollToTop />
               <AuthenticatedApp />
               <AccessibilityMenu />
+              <CookieConsent />
             </Router>
             <Toaster />
           </QueryClientProvider>

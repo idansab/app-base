@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import Turnstile, { TURNSTILE_SITE_KEY } from '@/components/common/Turnstile';
 import PasswordRules from '@/components/common/PasswordRules';
 import { authErrorMessage, passwordProblem } from '@/lib/passwordRules';
+import { trackEvent } from '@/lib/analytics';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -42,6 +43,7 @@ export default function Register() {
     setLoading(true);
     try {
       const result = await signUp(email, password, captcha);
+      trackEvent('sign_up', { method: 'email' });
       setError('');
       if (result?.session) {
         // Email confirmation disabled: already signed in

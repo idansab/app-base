@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { trackPlaceEvent } from '@/lib/trackPlace';
 
 /**
  * Keeps a place_id -> favorite record id map for the signed-in user so the
@@ -63,6 +64,7 @@ export default function useFavorites() {
           .single();
         if (error) throw error;
         setFavorites((prev) => ({ ...prev, [placeId]: data.id }));
+        trackPlaceEvent(placeId, 'favorite');
       }
       return true;
     },

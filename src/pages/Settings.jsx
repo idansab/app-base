@@ -3,8 +3,9 @@ import PasswordRules from '@/components/common/PasswordRules';
 import { authErrorMessage, passwordProblem } from '@/lib/passwordRules';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Moon, Sun, Lock, HelpCircle, Trash2, LogOut, LogIn, X, Store, ChevronLeft } from 'lucide-react';
+import { Moon, Sun, Lock, HelpCircle, Trash2, LogOut, LogIn, X, Store, ChevronLeft, ShieldCheck } from 'lucide-react';
 import useOwnerOverview from '@/hooks/useOwnerOverview';
+import useIsAdmin from '@/hooks/useIsAdmin';
 import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -15,6 +16,7 @@ export default function Settings() {
   const { isAuthenticated, signOut, changePassword, deleteAccount } = useAuth();
   // the entry only exists for users who are approved owners of a business
   const { hasApproved, unseen } = useOwnerOverview();
+  const isAdmin = useIsAdmin();
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
@@ -164,7 +166,20 @@ export default function Settings() {
             <span className="font-medium">מדיניות פרטיות</span>
           </motion.button>
 
-          {isAuthenticated && (
+          {isAuthenticated && isAdmin && (
+            <motion.button
+              onClick={() => navigate('/admin')}
+              className="w-full p-4 mt-3 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-between text-right"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <ShieldCheck size={20} />
+              <span className="font-medium">כניסה לניהול</span>
+            </motion.button>
+          )}
+
+          {/* admins never see account deletion (they manage the site, and the last admin can't be removed) */}
+          {isAuthenticated && !isAdmin && (
             <motion.button
               onClick={() => { setDeleteError(''); setDeleteOpen(true); }}
               className="w-full p-4 mt-3 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-colors flex items-center justify-between text-right"
