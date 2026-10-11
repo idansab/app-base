@@ -41,7 +41,7 @@ export function AuthProvider({ children }) {
           emailRedirectTo: window.location.origin,
           captchaToken,
           // proof of consent: when, and to which version of the terms
-          data: { terms_accepted_at: new Date().toISOString(), terms_version: '2026-10', age_18_confirmed: true }
+          data: { terms_accepted_at: new Date().toISOString(), terms_version: '2026-10' }
         }
       });
 

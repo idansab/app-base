@@ -24,7 +24,7 @@ export default function Register() {
     setError('');
 
     if (!agreed) {
-      setError('יש לאשר את התקנון ומדיניות הפרטיות ואת הגיל (18 ומעלה) כדי להירשם.');
+      setError('יש לאשר את התקנון ומדיניות הפרטיות כדי להירשם.');
       return;
     }
 
@@ -134,7 +134,7 @@ export default function Register() {
               required
             />
             <span>
-              אני בן/בת 18 ומעלה, קראתי ואני מסכים/ה ל
+              קראתי ואני מסכים/ה ל
               <Link to="/terms" target="_blank" className="text-primary underline">תקנון השימוש</Link>
               {' '}ול
               <Link to="/privacy" target="_blank" className="text-primary underline">מדיניות הפרטיות</Link>.
