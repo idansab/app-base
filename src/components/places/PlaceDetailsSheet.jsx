@@ -11,6 +11,7 @@ import { trackPlaceEvent } from '@/lib/trackPlace';
 import PlaceLinks from '@/components/places/PlaceLinks';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
+import PlaceLegalNote from '@/components/common/PlaceLegalNote';
 import PlaceAmenities from '@/components/places/PlaceAmenities';
 import { supabase } from '@/api/base44Client';
 
@@ -196,6 +197,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
 
           <ClaimPlace place={place} onPlaceUpdated={setUpdatedPlace} />
           <SuggestEdit place={place} />
+          <PlaceLegalNote place={place} />
 
           {/* Action Buttons */}
           <motion.div

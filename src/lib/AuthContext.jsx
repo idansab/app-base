@@ -39,7 +39,9 @@ export function AuthProvider({ children }) {
         password,
         options: {
           emailRedirectTo: window.location.origin,
-          captchaToken
+          captchaToken,
+          // proof of consent: when, and to which version of the terms
+          data: { terms_accepted_at: new Date().toISOString(), terms_version: '2026-10', age_18_confirmed: true }
         }
       });
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import Turnstile, { TURNSTILE_SITE_KEY } from '@/components/common/Turnstile';
@@ -12,6 +12,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [captcha, setCaptcha] = useState(null);
   const [captchaReset, setCaptchaReset] = useState(0);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
@@ -21,6 +22,11 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!agreed) {
+      setError('יש לאשר את התקנון ומדיניות הפרטיות ואת הגיל (18 ומעלה) כדי להירשם.');
+      return;
+    }
 
     const problem = passwordProblem(password);
     if (problem) {
@@ -119,11 +125,27 @@ export default function Register() {
             />
           </div>
 
+          <label className="flex items-start gap-2 text-right text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 accent-green-600"
+              required
+            />
+            <span>
+              אני בן/בת 18 ומעלה, קראתי ואני מסכים/ה ל
+              <Link to="/terms" target="_blank" className="text-primary underline">תקנון השימוש</Link>
+              {' '}ול
+              <Link to="/privacy" target="_blank" className="text-primary underline">מדיניות הפרטיות</Link>.
+            </span>
+          </label>
+
           <Turnstile onToken={setCaptcha} resetKey={captchaReset} />
 
           <button
             type="submit"
-            disabled={loading || (TURNSTILE_SITE_KEY && !captcha)}
+            disabled={loading || !agreed || (TURNSTILE_SITE_KEY && !captcha)}
             className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading && <Loader2 size={18} className="animate-spin" />}

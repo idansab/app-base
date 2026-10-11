@@ -25,7 +25,7 @@ export default function CookiePolicy() {
         <section>
           <h2 className="text-2xl font-bold mb-4">מדיניות העוגיות של אתר מה יש פה?</h2>
           <p className="text-muted-foreground mb-4">
-            עדכון אחרון: אוקטובר 2026
+            עדכון אחרון: 11 באוקטובר 2026
           </p>
         </section>
 
@@ -91,7 +91,7 @@ export default function CookiePolicy() {
         <section className="space-y-4">
           <h3 className="text-lg font-semibold">7. צדדים שלישיים</h3>
           <p className="text-foreground leading-relaxed">
-            האתר מתארח ב-Cloudflare, המשמשת גם לניתוח התנועה, ומסד הנתונים וההתחברות מופעלים באמצעות Supabase. אנו ממליצים לקרוא את מדיניות הפרטיות של שני הספקים.
+            האתר מתארח ב-Cloudflare, המשמשת גם לניתוח התנועה, ומסד הנתונים וההתחברות מופעלים באמצעות Supabase. בעמודי ההרשמה וההתחברות משמש אימות האבטחה Cloudflare Turnstile, המבדיל בין אדם לבוט. אנו ממליצים לקרוא את מדיניות הפרטיות של הספקים.
           </p>
         </section>
 
