@@ -1,4 +1,8 @@
 import { supabase } from '@/api/base44Client';
+import { trackEvent } from '@/lib/analytics';
+
+// place event -> GA4 event name
+const GA_EVENTS = { call: 'place_call', navigate: 'place_navigate', share: 'place_share', favorite: 'place_favorite' };
 
 const SESSION_KEY = 'place_session_id';
 const WINDOW_MS = 30 * 60 * 1000; // mirrors the 30-minute de-duplication window in the database
@@ -30,6 +34,7 @@ export function trackPlaceEvent(placeId, event) {
   try {
     if (!placeId || typeof window === 'undefined') return;
     if (navigator.doNotTrack === '1' || window.doNotTrack === '1') return;
+    if (GA_EVENTS[event]) trackEvent(GA_EVENTS[event], { place_id: String(placeId) });
     const store = window.sessionStorage;
     if (!shouldSend(store, `pt:${placeId}:${event}`, Date.now())) return;
     supabase

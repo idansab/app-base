@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
+import { trackPlaceEvent } from '@/lib/trackPlace';
 
 export default function Surprise() {
   const [place, setPlace] = useState(null);
@@ -212,6 +213,7 @@ export default function Surprise() {
               {place.lat && place.lng && (
                 <a
                   href={`https://waze.com/ul?ll=${place.lat},${place.lng}&navigate=yes`}
+                  onClick={() => trackPlaceEvent(place.id, 'navigate')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-6 py-3 bg-secondary text-foreground rounded-2xl hover:bg-accent transition-colors font-medium flex items-center gap-2"

@@ -58,8 +58,11 @@ export default function CookiePolicy() {
           <ul className="list-disc list-inside space-y-2 text-foreground">
             <li>השירות אינו משתמש בעוגיות</li>
             <li>הוא אינו עוקב אחריך בין אתרים ואינו יוצר פרופיל אישי</li>
-            <li>איננו משתמשים ב-Google Analytics, ב-Facebook Pixel או בשירותי פרסום</li>
+            <li>איננו משתמשים ב-Facebook Pixel או בשירותי פרסום</li>
           </ul>
+          <p className="text-foreground leading-relaxed">
+            בנוסף, ובאישורך בלבד, אנו משתמשים ב-Google Analytics (GA4) כדי להבין כיצד משתמשים באתר. הכלי עשוי לשמור עוגיות במכשיר שלך ולאסוף נתוני שימוש, כגון עמודים שנצפו, סוג מכשיר ומיקום כללי, עם הסתרת חלק מכתובת ה-IP. הכלי אינו נטען כלל אם לא אישרת, ואפשר לבטל את ההסכמה בכל עת על ידי מחיקת נתוני האתר בדפדפן, ואז תתבקש לבחור מחדש.
+          </p>
         </section>
 
         <section className="space-y-4">
@@ -84,7 +87,7 @@ export default function CookiePolicy() {
         <section className="space-y-4">
           <h3 className="text-lg font-semibold">6. הסכמה</h3>
           <p className="text-foreground leading-relaxed">
-            מכיוון שהאתר משתמש רק באחסון הנחוץ לפעולתו ובניתוח תנועה ללא עוגיות, אנו לא מציגים שלט עוגיות. אם נוסיף בעתיד כלים שדורשים הסכמה, נעדכן מדיניות זו ונבקש את הסכמתך לפני השימוש בהם.
+            האחסון הנחוץ לפעולת האתר ו-Cloudflare Web Analytics אינם דורשים הסכמה. Google Analytics נטען רק לאחר שאישרת זאת בשלט שמוצג בביקור הראשון, ובחירתך נשמרת בדפדפן.
           </p>
         </section>
 
