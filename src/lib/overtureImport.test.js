@@ -62,3 +62,17 @@ describe('spreadByCity', () => {
     expect(spreadByCity(rows, 3)).toHaveLength(3);
   });
 });
+
+describe('attractions profile', () => {
+  it('maps adventure taxonomy to the attractions category with a Hebrew label', () => {
+    expect(toPlaceRow(rec({ name: 'קארטינג הגליל', taxonomy: 'go_kart_club' }), 'attractions')).toMatchObject({
+      category: 'attractions', tags: ['קארטינג'], short_description: 'קארטינג · Tel Aviv',
+    });
+    expect(toPlaceRow(rec({ name: 'קיאקים בירדן', taxonomy: 'canoe_and_kayak_hire_service' }), 'attractions')).toMatchObject({ category: 'attractions' });
+  });
+
+  it('skips taxonomy that is not an attraction', () => {
+    expect(toPlaceRow(rec({ name: 'בר הנמל', taxonomy: 'bar' }), 'attractions')).toBeNull();
+    expect(toPlaceRow(rec({ name: 'חוות אורן', taxonomy: 'farm' }), 'attractions')).toBeNull();
+  });
+});

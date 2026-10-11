@@ -3,7 +3,7 @@
 import { normalizeCategory } from './categories.js';
 import { getPlaceImages } from './placeImages.js';
 
-export const PLACEHOLDER_KINDS = ['spring', 'viewpoint', 'beach', 'nature', 'bar', 'cafe', 'cart', 'market', 'museum', 'heritage'];
+export const PLACEHOLDER_KINDS = ['spring', 'viewpoint', 'beach', 'nature', 'bar', 'cafe', 'cart', 'market', 'museum', 'heritage', 'amusement', 'water', 'games', 'extreme'];
 
 // How many pictures exist per kind: public/placeholders/<kind>.jpg, <kind>-2.jpg, <kind>-3.jpg ...
 // Raise a number here after adding files; a place always gets the same variant (chosen by its id).
@@ -13,6 +13,10 @@ export const PLACEHOLDER_VARIANTS = { ...Object.fromEntries(PLACEHOLDER_KINDS.ma
 const RULES = [
   ['cart', /עגלת|דוכן|פודטראק|משאית אוכל|food truck/i],
   ['cafe', /קפה|cafe|café|coffee|בית תה/i],
+  ['amusement', /פארק שעשועים|פארק מים|גן חיות|חוות חיות|אקווריום|פלנטריום|מצפה כוכבים|amusement|water park|zoo|aquarium/i],
+  ['games', /חדר בריחה|חדרי בריחה|באולינג|לייזר|ארקייד|escape room|bowling|laser tag|arcade/i],
+  ['water', /קיאק|צלילה|גלישה|שייט|אופנועי ים|סירות|השכרת סירות|kayak|diving|surf|boat tour|jet ski/i],
+  ['extreme', /קארטינג|טרקטורון|טיפוס|סנפלינג|צניחה|רכיבה על סוסים|פיינטבול|סקייטפארק|כדור פורח|רכבל|אתר סקי|karting|atv|paintball|climbing|skydiv|horseback/i],
   ['bar', /(?<![א-ת])בר(?![א-ת])|פאב|מועדון|קוקטייל|נרגילה|\bpub\b|\bbar\b|lounge|לאונג/i],
   ['spring', /מעיין|מעין|(?<![א-ת])עין(?![א-ת])|נחל|מפל|אגם|בריכה|spring|waterfall/i],
   ['viewpoint', /תצפית|מצפה|מצפור|viewpoint|lookout/i],
@@ -22,7 +26,7 @@ const RULES = [
   ['heritage', /אתר ארכאולוגי|ארכיאולוגי|חורבת|תל |עתיק|קיסריה|בית כנסת|אתר היסטורי|אתר מבקרים|מבצר|מצד /i],
 ];
 
-const BY_CATEGORY = { food: 'cart', nature: 'nature', nightlife: 'bar', shopping: 'market', culture: 'heritage' };
+const BY_CATEGORY = { food: 'cart', nature: 'nature', nightlife: 'bar', shopping: 'market', culture: 'heritage', attractions: 'amusement' };
 
 /** Which illustration fits a place, by kind label / name first and category as the fallback. */
 export function placeholderKind(place) {

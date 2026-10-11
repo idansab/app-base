@@ -20,6 +20,7 @@ const CATEGORIES = [
   { id: 'nightlife', label: 'חיי לילה', emoji: '🌙' },
   { id: 'shopping', label: 'קניות ושווקים', emoji: '🛍️' },
   { id: 'culture', label: 'תרבות', emoji: '🎨' },
+  { id: 'attractions', label: 'אטרקציות', emoji: '🎢' },
 ];
 
 export default function Home() {

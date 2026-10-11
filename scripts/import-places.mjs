@@ -6,7 +6,7 @@
  *   node scripts/import-places.mjs --category nightlife --area all --count 100 --apply     (inserts)
  *
  * Options
- *   --category    nightlife | food (cafes) | carts (food trucks, stalls, carts)                                 (see CATEGORY_SOURCES)
+ *   --category    nightlife | food (cafes) | carts (food trucks, stalls, carts) | attractions (amusement parks, karting, kayaks, climbing...) (see CATEGORY_SOURCES)
  *   --area        north | haifa | center | jerusalem | south | deadsea | eilat | all
  *   --count       how many new places to add (default 30)
  *   --min-confidence   Overture confidence 0..1 (default 0.6)

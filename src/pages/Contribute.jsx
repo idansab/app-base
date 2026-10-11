@@ -9,6 +9,7 @@ const CATEGORIES = [
   { id: 'nightlife', label: 'חיי לילה', icon: '🌙' },
   { id: 'shopping', label: 'קניות ושווקים', icon: '🛍️' },
   { id: 'culture', label: 'תרבות ואמנות', icon: '🎨' },
+  { id: 'attractions', label: 'אטרקציות', icon: '🎢' },
 ];
 
 export default function Contribute() {

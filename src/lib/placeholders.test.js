@@ -12,6 +12,13 @@ describe('placeholderKind', () => {
     expect(placeholderKind({ name: 'חוף אביב', category: 'nature' })).toBe('beach');
     expect(placeholderKind({ name: 'שוק הכרמל', category: 'shopping' })).toBe('market');
     expect(placeholderKind({ name: 'מוזיאון הטבע', category: 'culture' })).toBe('museum');
+    expect(placeholderKind({ name: 'Dan Karting', tags: ['קארטינג'], category: 'attractions' })).toBe('extreme');
+    expect(placeholderKind({ name: 'Quest Room', tags: ['חדר בריחה'], category: 'attractions' })).toBe('games');
+    expect(placeholderKind({ name: 'באולינג קריון', category: 'attractions' })).toBe('games');
+    expect(placeholderKind({ name: 'קיאקים בנחל הירדן', category: 'attractions' })).toBe('water');
+    expect(placeholderKind({ name: 'מועדון צלילה', tags: ['צלילה'], category: 'attractions' })).toBe('water');
+    expect(placeholderKind({ name: 'ספארי', tags: ['גן חיות'], category: 'attractions' })).toBe('amusement');
+    expect(placeholderKind({ name: 'x', category: 'attractions' })).toBe('amusement');
   });
 
   it('falls back to the category, also for legacy category names', () => {

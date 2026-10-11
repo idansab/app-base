@@ -113,6 +113,15 @@ export function AuthProvider({ children }) {
   };
 
   const deleteAccount = async () => {
+    // best effort: remove the images this user uploaded (storage rows cannot be deleted from SQL)
+    try {
+      const folder = `places/${user.id}`;
+      const { data: files } = await supabase.storage.from('place-images').list(folder, { limit: 1000 });
+      if (files?.length) {
+        await supabase.storage.from('place-images').remove(files.map((f) => `${folder}/${f.name}`));
+      }
+    } catch { /* ignore: account deletion must not depend on it */ }
+
     const { error } = await supabase.rpc('delete_my_account');
     if (error) {
       if (error.message?.includes('last admin')) throw new Error('אי אפשר למחוק את חשבון המנהל האחרון');
