@@ -24,7 +24,7 @@ const ForBusiness = lazy(() => import('@/pages/ForBusiness'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const Studio = lazy(() => import('@/pages/Studio'));
-const CommunityChat = lazy(() => import('@/pages/CommunityChat'));
+const Discover = lazy(() => import('@/pages/Discover'));
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
@@ -53,10 +53,12 @@ const AuthenticatedApp = () => {
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/community-chat" element={<Navigate to="/trips" replace state={{ tab: 'chat' }} />} />
 
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/place/:id" element={<PlaceDetail />} />
+        <Route path="/discover" element={<Discover />} />
         <Route path="/trips" element={<Trips />} />
         <Route path="/trips/:id" element={<TripPage />} />
         <Route path="/surprise" element={<Surprise />} />
@@ -74,7 +76,6 @@ const AuthenticatedApp = () => {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/contribute" element={<Contribute />} />
           <Route path="/my-business" element={<MyBusiness />} />
-          <Route path="/community-chat" element={<CommunityChat />} />
           <Route path="/studio" element={<Studio />} />
         </Route>
       </Route>

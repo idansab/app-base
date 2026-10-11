@@ -3,7 +3,8 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { BadgeCheck, BarChart3, Clock, Loader2, Pencil, Store, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { formatBetaDate, useBetaInfo } from '@/lib/beta';
+import { useBetaInfo } from '@/lib/beta';
+import BetaExplainer from '@/components/places/BetaExplainer';
 import OwnerEditor from '@/components/places/OwnerEditor';
 import PlaceStats from '@/components/places/PlaceStats';
 
@@ -220,9 +221,10 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
             </div>
 
             <p className="text-sm text-muted-foreground">
-              נבדוק את הבקשה ונחזור אליך בטלפון. אחרי האישור תוכל לעדכן את פרטי העסק
-              {beta?.active ? ` בחינם עד ${formatBetaDate(beta.ends_at)}` : ''}.
+              נבדוק את הבקשה ונחזור אליך בטלפון. אחרי האישור תוכל לעדכן את פרטי העסק.
             </p>
+
+            <BetaExplainer beta={beta} />
 
             <label className="block">
               <span className="block text-sm font-medium text-foreground mb-1">הקשר שלך לעסק</span>
@@ -252,6 +254,11 @@ export default function ClaimPlace({ place, className = '', onPlaceUpdated }) {
             <label className="block">
               <span className="block text-sm font-medium text-foreground mb-1">עוד פרטים שיעזרו לנו לאמת (אופציונלי)</span>
               <textarea className={`${inputCls} resize-none`} rows={3} maxLength={500} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+            </label>
+
+            <label className="flex items-start justify-end gap-3 text-sm text-foreground cursor-pointer">
+              <span>קראתי והבנתי שאחרי תקופת הבטא חלק מהיכולות יהיו בתשלום</span>
+              <input type="checkbox" required className="mt-1 h-4 w-4 accent-green-600" />
             </label>
 
             {error && <p role="alert" className="text-sm text-red-600">{error}</p>}

@@ -1,37 +1,24 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Compass, Heart, Map, Sparkles, PenTool } from "lucide-react";
+import { Clapperboard, Compass, Heart, Map, Sparkles } from "lucide-react";
 import useFavorites from "@/hooks/useFavorites";
-import { useAuth } from "@/lib/AuthContext";
 import { cn } from "@/lib/utils";
 
-const BASE_ITEMS = [
+const ITEMS = [
   { to: "/", label: "בית", icon: Compass },
+  { to: "/discover", label: "גלה", icon: Clapperboard },
   { to: "/favorites", label: "מועדפים", icon: Heart },
   { to: "/trips", label: "מסלולים", icon: Map },
   { to: "/surprise", label: "הפתעה", icon: Sparkles },
 ];
 
-const AUTH_ITEM = { to: "/community-chat", label: "קהילה", icon: PenTool };
-
 export default function BottomNav() {
-  const { isAuthenticated, user } = useAuth();
   const { favorites } = useFavorites();
   const favoritesCount = Object.keys(favorites).length;
 
-  const ITEMS = isAuthenticated ? [
-    { to: "/", label: "בית", icon: Compass },
-    AUTH_ITEM,
-    { to: "/favorites", label: "מועדפים", icon: Heart },
-    { to: "/trips", label: "מסלולים", icon: Map },
-    { to: "/surprise", label: "הפתעה", icon: Sparkles },
-  ] : BASE_ITEMS;
-
-  const gridColsClass = isAuthenticated ? 'grid-cols-5' : 'grid-cols-4';
-
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-md">
-      <div className={`mx-auto grid w-full max-w-4xl ${gridColsClass} items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2`}>
+      <div className={`mx-auto grid w-full max-w-4xl grid-cols-5 items-center px-2 pb-[env(safe-area-inset-bottom)] pt-2`}>
         {ITEMS.map((item, index) => (
           <NavItem
             key={item.to}
