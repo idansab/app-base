@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
+import AmenitiesField from '@/components/places/AmenitiesField';
 
 const CATEGORIES = [
   { id: 'food', label: 'עגלות קפה ואוכל', icon: '🍽️' },
@@ -24,6 +25,7 @@ export default function Contribute() {
     image_url: '',
     phone: '',
     opening_hours: '24/7',
+    amenities: [],
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -348,6 +350,12 @@ export default function Contribute() {
               />
             </div>
           </div>
+
+          <AmenitiesField
+            value={formData.amenities}
+            onChange={(amenities) => setFormData((f) => ({ ...f, amenities }))}
+            label="מאפיינים (סמן רק מה שידוע לך בוודאות)"
+          />
 
           {/* Submit Button */}
           <button

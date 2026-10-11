@@ -3,7 +3,7 @@ import { AMENITY_KEYS, cleanAmenities, getPlaceAmenities, hasAllAmenities, parse
 
 describe('cleanAmenities', () => {
   it('keeps known keys once, in display order', () => {
-    expect(cleanAmenities(['parking', 'wheelchair', 'parking'])).toEqual(['wheelchair', 'parking']);
+    expect(cleanAmenities(['dog_friendly', 'parking', 'wheelchair', 'parking'])).toEqual(['wheelchair', 'parking', 'dog_friendly']);
   });
 
   it('drops unknown keys and bad input', () => {
@@ -41,7 +41,7 @@ describe('parseFeatureParam', () => {
     expect(parseFeatureParam(null)).toEqual([]);
   });
 
-  it('knows three amenities', () => {
-    expect(AMENITY_KEYS).toEqual(['wheelchair', 'car_access', 'parking']);
+  it('knows five amenities', () => {
+    expect(AMENITY_KEYS).toEqual(['wheelchair', 'car_access', 'parking', 'outdoor_seating', 'dog_friendly']);
   });
 });

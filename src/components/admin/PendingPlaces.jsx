@@ -6,6 +6,7 @@ import PlaceForm from "@/components/places/PlaceForm";
 import EmptyState from "@/components/common/EmptyState";
 import { base44 } from "@/api/base44Client";
 import { getCategory } from "@/lib/categories";
+import PlaceAmenities from "@/components/places/PlaceAmenities";
 
 export default function PendingPlaces({ places, loading, onChanged }) {
   const [editing, setEditing] = useState(null);
@@ -81,6 +82,8 @@ export default function PendingPlaces({ places, loading, onChanged }) {
                   {place.short_description}
                 </p>
               ) : null}
+
+              <PlaceAmenities place={place} compact className="mt-3" />
 
               {!hasCoords ? (
                 <p className="mt-2 text-xs font-medium text-rose-600">

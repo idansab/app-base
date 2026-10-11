@@ -219,7 +219,7 @@ export default function Home() {
     { key: 'free', group: 'מחיר', label: 'חינם', active: freeOnly, toggle: () => setFreeOnly(v => !v), count: freeCount, show: places.some(p => p.price_level === 'free') },
     ...AMENITIES.map(a => ({
       key: a.key,
-      group: 'נגישות וחניה',
+      group: a.group,
       label: a.filterLabel,
       active: features.includes(a.key),
       toggle: () => toggleFeature(a.key),
