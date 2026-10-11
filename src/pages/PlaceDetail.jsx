@@ -13,6 +13,7 @@ import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
 import { trackPlaceEvent } from '@/lib/trackPlace';
 import ClaimPlace from '@/components/places/ClaimPlace';
+import SuggestEdit from '@/components/places/SuggestEdit';
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
@@ -389,8 +390,8 @@ export default function PlaceDetail() {
             onClick={handleFavoriteToggle}
             className={`p-4 flex items-center justify-center gap-2 ${
               isFavorite
-                ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                : 'bg-slate-100 text-foreground hover:bg-slate-200'
+                ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-950'
+                : 'bg-secondary text-foreground hover:bg-accent'
             }`}
           >
             <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
@@ -510,6 +511,7 @@ export default function PlaceDetail() {
 
         <div className="mt-12 max-w-md mx-auto">
           <ClaimPlace place={place} onPlaceUpdated={setPlace} />
+          <SuggestEdit place={place} className="mt-3" />
         </div>
       </div>
     </div>

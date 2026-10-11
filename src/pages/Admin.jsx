@@ -10,6 +10,7 @@ import AuditLog from '@/components/admin/AuditLog';
 import OwnershipRequests from '@/components/admin/OwnershipRequests';
 import BetaSettings from '@/components/admin/BetaSettings';
 import UpdateRequests from '@/components/admin/UpdateRequests';
+import FeedbackInbox from '@/components/admin/FeedbackInbox';
 
 const TABS = [
   ['dashboard', 'לוח בקרה'],
@@ -17,6 +18,7 @@ const TABS = [
   ['places', 'ניהול מקומות'],
   ['moderation', 'טיפים ודיווחים'],
   ['updates', 'בקשות עדכון'],
+  ['feedback', 'משוב'],
   ['owners', 'בעלות על מקומות'],
   ['users', 'משתמשים'],
   ['audit', 'יומן פעולות'],
@@ -26,9 +28,20 @@ const TABS = [
 export default function Admin() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0, owners: 0, updates: 0 });
+  const [pendingCounts, setPendingCounts] = useState({ places: 0, content: 0, owners: 0, updates: 0, feedback: 0 });
   const [currentUserId, setCurrentUserId] = useState(null);
   const [message, setMessage] = useState({ text: '', isError: false });
+
+  // badge for new feedback (the other badges come from the dashboard)
+  useEffect(() => {
+    supabase
+      .from('feedback')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'new')
+      .then(({ count, error }) => {
+        if (!error) setPendingCounts((counts) => ({ ...counts, feedback: count || 0 }));
+      });
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data?.user?.id ?? null));
@@ -60,6 +73,11 @@ export default function Admin() {
     []
   );
 
+  const setPendingFeedback = useCallback(
+    (feedback) => setPendingCounts((counts) => (counts.feedback === feedback ? counts : { ...counts, feedback })),
+    []
+  );
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/admin-login');
@@ -85,6 +103,7 @@ export default function Admin() {
                 : key === 'moderation' ? pendingCounts.content
                 : key === 'owners' ? pendingCounts.owners
                 : key === 'updates' ? pendingCounts.updates
+                : key === 'feedback' ? pendingCounts.feedback
                 : 0;
               return (
                 <button
@@ -157,6 +176,10 @@ export default function Admin() {
 
         {activeTab === 'updates' && (
           <UpdateRequests onPendingChange={setPendingUpdates} onError={showError} onSuccess={showSuccess} />
+        )}
+
+        {activeTab === 'feedback' && (
+          <FeedbackInbox onPendingChange={setPendingFeedback} onError={showError} onSuccess={showSuccess} />
         )}
 
         {activeTab === 'owners' && (

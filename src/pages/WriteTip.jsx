@@ -130,7 +130,7 @@ export default function WriteTip() {
                   className={`px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
                     tipType === type.id
                       ? 'bg-primary text-white shadow-md'
-                      : 'bg-secondary text-muted-foreground hover:bg-gray-200'
+                      : 'bg-secondary text-muted-foreground hover:bg-accent'
                   }`}
                 >
                   {type.emoji} {type.label.split(' ')[1]}
@@ -164,8 +164,8 @@ export default function WriteTip() {
                 exit={{ opacity: 0, y: -10 }}
                 className={`flex items-center gap-2 p-4 rounded-lg text-sm ${
                   message.type === 'success'
-                    ? 'bg-green-50 text-green-700'
-                    : 'bg-red-50 text-red-700'
+                    ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300'
+                    : 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300'
                 }`}
               >
                 {message.type === 'success' ? (

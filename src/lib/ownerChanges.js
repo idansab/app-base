@@ -17,6 +17,19 @@ export const OWNER_GROUPS = [
   { key: 'tags', label: 'תגיות', fields: ['tags'] },
 ];
 
+/**
+ * Extra fields that only visitor suggestions carry (sanitize_suggestion_changes() in migration 021).
+ * Owners cannot change these, so they are not part of OWNER_GROUPS.
+ */
+export const SUGGESTION_GROUPS = [
+  { key: 'name', label: 'שם', fields: ['name'] },
+  { key: 'address', label: 'כתובת', fields: ['address'] },
+  { key: 'add_images', label: 'תמונות שנוספו', fields: ['add_images'] },
+];
+
+// every group an admin may see in a request, in display order
+const ALL_GROUPS = [SUGGESTION_GROUPS[0], SUGGESTION_GROUPS[1], ...OWNER_GROUPS, SUGGESTION_GROUPS[2]];
+
 const PRICE_LABELS = { free: 'חינם', budget: 'זול', moderate: 'בינוני', expensive: 'יקר' };
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
@@ -41,12 +54,12 @@ export function buildOwnerChanges(place, form) {
 
 /** Groups present in a change set, in display order. */
 export function changedGroups(changes) {
-  return OWNER_GROUPS.filter((group) => group.fields.some((field) => field in (changes || {})));
+  return ALL_GROUPS.filter((group) => group.fields.some((field) => field in (changes || {})));
 }
 
 /** All column names of the given groups (what admin_apply_update_request expects). */
 export const fieldsOfGroups = (groupKeys) =>
-  OWNER_GROUPS.filter((g) => groupKeys.includes(g.key)).flatMap((g) => g.fields);
+  ALL_GROUPS.filter((g) => groupKeys.includes(g.key)).flatMap((g) => g.fields);
 
 /**
  * Text for the before/after view. Images are rendered separately (see `isImageGroup`).
@@ -67,9 +80,11 @@ export function describeGroup(group, source) {
       return (source.tags || []).join(', ') || '—';
     case 'images':
       return `${(source.images || []).length} תמונות`;
+    case 'add_images':
+      return `${(source.add_images || []).length} תמונות חדשות`;
     default:
       return source[group.key] || '—';
   }
 }
 
-export const isImageGroup = (group) => group.key === 'images';
+export const isImageGroup = (group) => group.key === 'images' || group.key === 'add_images';

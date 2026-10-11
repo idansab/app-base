@@ -56,7 +56,7 @@ export function PlaceHours({ place, className = '' }) {
               {rows.map((row) => (
                 <li
                   key={row.day}
-                  className={`flex justify-between px-3 py-2 ${row.day === today ? 'bg-green-50 font-semibold' : ''}`}
+                  className={`flex justify-between px-3 py-2 ${row.day === today ? 'bg-green-50 font-semibold dark:bg-green-950/40' : ''}`}
                 >
                   <span dir="ltr" className="tabular-nums text-foreground">{row.text}</span>
                   <span className="text-foreground">יום {row.name}</span>
@@ -85,7 +85,7 @@ export function PlaceKosher({ place, className = '' }) {
         {isKosher && place.kosher_note && <p className="text-sm text-muted-foreground">{place.kosher_note}</p>}
         <p className="text-xs text-muted-foreground">כשרות</p>
       </div>
-      <BadgeCheck size={20} className={`flex-shrink-0 ${isKosher ? 'text-sky-600' : 'text-gray-400'}`} />
+      <BadgeCheck size={20} className={`flex-shrink-0 ${isKosher ? 'text-sky-600' : 'text-muted-foreground'}`} />
     </div>
   );
 }

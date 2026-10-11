@@ -103,7 +103,7 @@ export default function Studio() {
             className={`py-3 px-4 font-medium border-b-2 transition-colors ${
               activeTab === 'quick'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-muted-foreground hover:text-gray-900'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             עדכון מהיר
@@ -113,7 +113,7 @@ export default function Studio() {
             className={`py-3 px-4 font-medium border-b-2 transition-colors ${
               activeTab === 'manage'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-muted-foreground hover:text-gray-900'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             ניהול מקומות
