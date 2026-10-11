@@ -77,6 +77,8 @@
   }
 
   .dark {
+    /* native scrollbars, selects and date pickers follow the theme instead of staying white */
+    color-scheme: dark;
     --background: 222 24% 8%;
     --foreground: 210 30% 96%;
     --card: 222 22% 11%;
