@@ -38,16 +38,16 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-b from-green-50 to-slate-50 pt-12 pb-8 px-4 text-center">
+      <div className="bg-gradient-to-b from-green-50 to-background pt-12 pb-8 px-4 text-center dark:from-green-950/40">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-4xl font-bold text-green-600 mb-2">מה יש פה?</h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-muted-foreground text-lg">
             פלטפורמה מקומית חכמה לגילוי מקומות בישראל
           </p>
         </motion.div>
@@ -59,13 +59,13 @@ export default function About() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl p-8 border border-gray-200 text-right"
+          className="bg-card rounded-2xl p-8 border border-border text-right"
         >
           <h2 className="text-2xl font-bold text-green-600 mb-4">הסיפור שלנו</h2>
-          <p className="text-gray-700 leading-relaxed mb-4">
+          <p className="text-foreground leading-relaxed mb-4">
             יצרנו את "מה יש פה?" כי חיפוש אחרי מקומות טובים בישראל היה קשה. בין Google Maps לרשתות חברתיות, לא היה מקום אחד כדי למצוא מקומות מסתתרים.
           </p>
-          <p className="text-gray-700 leading-relaxed">
+          <p className="text-foreground leading-relaxed">
             בנינו פלטפורמה שקהילה של מטיילים, גולשים וחוקרים יוצרים יחד. כל טיפ, כל דיווח, כל ביקורת היא מתנה לקהילה.
           </p>
         </motion.section>
@@ -86,11 +86,11 @@ export default function About() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + i * 0.05 }}
-                  className="bg-white p-6 rounded-2xl border border-gray-200 text-right"
+                  className="bg-card p-6 rounded-2xl border border-border text-right"
                 >
                   <Icon size={28} className="text-green-600 mb-3 ml-auto" />
                   <h3 className="font-bold text-lg mb-2">{feature.title}</h3>
-                  <p className="text-sm text-gray-600">{feature.desc}</p>
+                  <p className="text-sm text-muted-foreground">{feature.desc}</p>
                 </motion.div>
               );
             })}
@@ -111,10 +111,10 @@ export default function About() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.05 }}
-                className="bg-white p-6 rounded-2xl border border-gray-200 text-right"
+                className="bg-card p-6 rounded-2xl border border-border text-right"
               >
                 <h3 className="font-bold text-green-600 mb-2">{faq.q}</h3>
-                <p className="text-sm text-gray-700">{faq.a}</p>
+                <p className="text-sm text-foreground">{faq.a}</p>
               </motion.div>
             ))}
           </div>
@@ -125,32 +125,32 @@ export default function About() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 text-right border-2 border-green-200"
+          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 text-right border-2 border-green-200 dark:from-green-950/40 dark:to-emerald-950/40 dark:border-green-800"
         >
           <h2 className="text-2xl font-bold text-green-600 mb-4">צור איתנו קשר</h2>
-          <p className="text-gray-700 mb-6">יש לך הערה? שאלה? בואו לדבר!</p>
+          <p className="text-foreground mb-6">יש לך הערה? שאלה? בואו לדבר!</p>
 
           <div className="space-y-3">
-            <button className="w-full flex items-center justify-between gap-3 p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="w-full flex items-center justify-between gap-3 p-4 bg-card rounded-lg hover:bg-accent transition-colors">
               <Mail size={20} className="text-green-600 ml-auto" />
               <div className="flex-1 text-right">
                 <p className="font-medium">דוא"ל</p>
-                <p className="text-sm text-gray-600">hello@mayhishpo.com</p>
+                <p className="text-sm text-muted-foreground">hello@mayhishpo.com</p>
               </div>
             </button>
 
-            <button className="w-full flex items-center justify-between gap-3 p-4 bg-white rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="w-full flex items-center justify-between gap-3 p-4 bg-card rounded-lg hover:bg-accent transition-colors">
               <MessageSquare size={20} className="text-green-600 ml-auto" />
               <div className="flex-1 text-right">
                 <p className="font-medium">Feedback</p>
-                <p className="text-sm text-gray-600">שתף דעה או תוכיח</p>
+                <p className="text-sm text-muted-foreground">שתף דעה או תוכיח</p>
               </div>
             </button>
           </div>
         </motion.section>
 
         {/* Version */}
-        <div className="text-center text-xs text-gray-500 py-4">
+        <div className="text-center text-xs text-muted-foreground py-4">
           <p>מה יש פה? v1.0.0</p>
           <p>בנוי בשמחה עבור קהילת המטיילים בישראל 🇮🇱</p>
         </div>

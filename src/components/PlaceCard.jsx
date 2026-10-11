@@ -42,7 +42,7 @@ export default function PlaceCard({
       className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col"
     >
       {/* Image */}
-      <div className="relative h-48 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
+      <div className="relative h-48 bg-gradient-to-br from-muted to-muted overflow-hidden">
         {!imageFailed && (place.images?.[0] || place.image_url || placeholderFor(place)) && (
           <img
             src={place.images?.[0] || place.image_url || placeholderFor(place)}
@@ -71,7 +71,7 @@ export default function PlaceCard({
         >
           <Heart
             size={20}
-            className={isFavorite ? 'fill-red-600 text-red-600' : 'text-gray-600'}
+            className={isFavorite ? 'fill-red-600 text-red-600' : 'text-muted-foreground'}
           />
         </button>
 

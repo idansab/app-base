@@ -229,7 +229,7 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-24">
       {error && (
-        <div className="sticky top-16 bg-red-50 text-red-700 p-4 text-center z-40 flex items-center justify-between px-4">
+        <div className="sticky top-16 bg-red-50 text-red-700 p-4 text-center z-40 flex items-center justify-between px-4 dark:bg-red-950/40 dark:text-red-300">
           <button onClick={() => setError(null)} className="p-1">
             <X size={18} />
           </button>

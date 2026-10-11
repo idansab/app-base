@@ -15,21 +15,21 @@ const CATEGORIES = [
 const FormSection = ({ title, icon: Icon, isOpen, onToggle, children }) => (
   <motion.div
     layout
-    className="border border-slate-200 rounded-2xl overflow-hidden"
+    className="border border-border rounded-2xl overflow-hidden"
   >
     <button
       onClick={onToggle}
-      className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white hover:from-slate-100 hover:to-slate-50 transition-colors text-right"
+      className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-background to-background hover:from-slate-100 hover:to-slate-50 transition-colors text-right"
     >
       <div className="flex items-center gap-3">
         <Icon size={20} className="text-green-600" />
-        <span className="font-semibold text-gray-900">{title}</span>
+        <span className="font-semibold text-foreground">{title}</span>
       </div>
       <motion.div
         animate={{ rotate: isOpen ? 180 : 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 20 }}
       >
-        <ChevronDown size={20} className="text-gray-600" />
+        <ChevronDown size={20} className="text-muted-foreground" />
       </motion.div>
     </button>
 
@@ -40,7 +40,7 @@ const FormSection = ({ title, icon: Icon, isOpen, onToggle, children }) => (
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-          className="border-t border-slate-200 px-6 py-6 bg-white space-y-6"
+          className="border-t border-border px-6 py-6 bg-card space-y-6"
         >
           {children}
         </motion.div>
@@ -51,8 +51,8 @@ const FormSection = ({ title, icon: Icon, isOpen, onToggle, children }) => (
 
 const FormInput = ({ label, helper, error, ...props }) => (
   <div className="text-right">
-    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-    {helper && <p className="text-xs text-gray-500 mb-2">{helper}</p>}
+    <label className="block text-sm font-medium text-foreground mb-2">{label}</label>
+    {helper && <p className="text-xs text-muted-foreground mb-2">{helper}</p>}
     <input
       {...props}
       className={`w-full px-4 py-3 border rounded-2xl text-right focus:outline-none focus:ring-2 transition-all ${
@@ -181,9 +181,9 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
       className="space-y-4"
     >
       {/* Form Progress Bar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200">
-        <p className="text-xs font-semibold text-gray-600 mb-3">התקדמות</p>
-        <div className="w-full bg-slate-200 rounded-full h-2">
+      <div className="bg-card rounded-2xl p-4 border border-border">
+        <p className="text-xs font-semibold text-muted-foreground mb-3">התקדמות</p>
+        <div className="w-full bg-muted rounded-full h-2">
           <motion.div
             layoutId="progress"
             className="h-full bg-green-600 rounded-full"
@@ -211,12 +211,12 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">קטגוריה</label>
-          <p className="text-xs text-gray-500 mb-2">בחר את הסוג המתאים ביותר</p>
+          <label className="block text-sm font-medium text-foreground mb-2">קטגוריה</label>
+          <p className="text-xs text-muted-foreground mb-2">בחר את הסוג המתאים ביותר</p>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="w-full px-4 py-3 border border-border rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
           >
             {CATEGORIES.map(cat => (
               <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -225,14 +225,14 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">כתובת</label>
-          <p className="text-xs text-gray-500 mb-2">הכנס כתובת דויקת - לחץ "זיהוי" לקבלת קואורדינטות</p>
+          <label className="block text-sm font-medium text-foreground mb-2">כתובת</label>
+          <p className="text-xs text-muted-foreground mb-2">הכנס כתובת דויקת - לחץ "זיהוי" לקבלת קואורדינטות</p>
           <div className="flex gap-2">
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+              className="flex-1 px-4 py-3 border border-border rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
               placeholder="כתובת המקום"
             />
             <motion.button
@@ -240,7 +240,7 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
               disabled={geocoding}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-4 py-3 bg-green-100 text-green-600 rounded-2xl hover:bg-green-200 transition-colors disabled:opacity-50 font-medium"
+              className="px-4 py-3 bg-green-100 text-green-600 rounded-2xl hover:bg-green-200 transition-colors disabled:opacity-50 font-medium dark:bg-green-950/40 dark:hover:bg-green-950/40"
             >
               {geocoding ? <Loader2 size={20} className="animate-spin" /> : 'זיהוי'}
             </motion.button>
@@ -285,7 +285,7 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="rounded-2xl overflow-hidden border border-slate-200"
+            className="rounded-2xl overflow-hidden border border-border"
           >
             <img
               src={formData.image_url}
@@ -297,28 +297,28 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">תיאור קצר</label>
-          <p className="text-xs text-gray-500 mb-2">תיאור בשורה אחת (עד 150 תווים)</p>
+          <label className="block text-sm font-medium text-foreground mb-2">תיאור קצר</label>
+          <p className="text-xs text-muted-foreground mb-2">תיאור בשורה אחת (עד 150 תווים)</p>
           <input
             type="text"
             value={formData.short_description}
             onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="w-full px-4 py-3 border border-border rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600"
             maxLength="150"
             placeholder="תיאור בקצרה..."
           />
-          <p className="text-xs text-gray-500 mt-2 text-left">
+          <p className="text-xs text-muted-foreground mt-2 text-left">
             {formData.short_description.length}/150 תווים
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">תיאור מלא</label>
-          <p className="text-xs text-gray-500 mb-2">תיאור מפורט של המקום</p>
+          <label className="block text-sm font-medium text-foreground mb-2">תיאור מלא</label>
+          <p className="text-xs text-muted-foreground mb-2">תיאור מפורט של המקום</p>
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
+            className="w-full px-4 py-3 border border-border rounded-2xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
             rows={5}
             placeholder="תיאור מלא של המקום..."
           />
@@ -376,8 +376,8 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
           placeholder="09:00-17:00"
         />
 
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-right">
-          <p className="text-sm text-green-700">
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-right dark:bg-green-950/40 dark:border-green-800">
+          <p className="text-sm text-green-700 dark:text-green-300">
             <span className="font-semibold">טיפ:</span> אתה יכול להשתמש ב"זיהוי" בסעיף "מידע בסיסי" כדי לקבל את הקואורדינטות המדוייקות של המקום.
           </p>
         </div>
@@ -386,11 +386,11 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
       {/* Actions */}
       <motion.div
         layout
-        className="flex gap-3 pt-6 border-t border-gray-200"
+        className="flex gap-3 pt-6 border-t border-border"
       >
         <button
           onClick={onCancel}
-          className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-2xl font-medium hover:bg-gray-50 transition-colors"
+          className="flex-1 px-4 py-3 border-2 border-border text-foreground rounded-2xl font-medium hover:bg-accent transition-colors"
         >
           ביטול
         </button>
@@ -401,7 +401,7 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
             disabled={loading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex-1 px-4 py-3 bg-red-100 text-red-700 rounded-2xl font-medium hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-3 bg-red-100 text-red-700 rounded-2xl font-medium hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/40"
           >
             <Trash2 size={18} />
             מחיקה

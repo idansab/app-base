@@ -67,9 +67,9 @@ export default function QuickContentStudio() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-3xl p-6 border border-blue-200 text-center"
+        className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-3xl p-6 border border-blue-200 text-center dark:from-blue-950/40 dark:to-purple-950/40 dark:border-blue-800"
       >
-        <p className="text-gray-700 mb-3">התחבר כדי לשתף טיפים עם הקהילה 🎯</p>
+        <p className="text-foreground mb-3">התחבר כדי לשתף טיפים עם הקהילה 🎯</p>
         <button className="px-6 py-2 bg-primary text-white rounded-full font-medium hover:bg-primary/90">
           התחברות
         </button>
@@ -99,7 +99,7 @@ export default function QuickContentStudio() {
               className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 tipType === type.id
                   ? 'bg-primary text-white shadow-md'
-                  : 'bg-secondary text-gray-600 hover:bg-gray-200'
+                  : 'bg-secondary text-muted-foreground hover:bg-gray-200'
               }`}
             >
               {type.emoji} {type.label}

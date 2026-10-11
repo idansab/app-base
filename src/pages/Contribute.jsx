@@ -111,7 +111,7 @@ export default function Contribute() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-background py-12 px-4 dark:from-amber-950/40">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <motion.div
@@ -119,10 +119,10 @@ export default function Contribute() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
             שתף מקום אהוב
           </h1>
-          <p className="text-lg text-slate-600">
+          <p className="text-lg text-muted-foreground">
             עזור לקהילה לגלות מקומות חדשים ומרהיבים בישראל
           </p>
         </motion.div>
@@ -134,12 +134,12 @@ export default function Contribute() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center gap-3"
+              className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center gap-3 dark:bg-green-950/40 dark:border-green-800"
             >
               <CheckCircle className="text-green-600 flex-shrink-0" size={24} />
               <div>
-                <p className="font-semibold text-green-900">המקום נשלח בהצלחה!</p>
-                <p className="text-sm text-green-800">מנהל האתר יסקור אותו בקרוב</p>
+                <p className="font-semibold text-green-900 dark:text-green-300">המקום נשלח בהצלחה!</p>
+                <p className="text-sm text-green-800 dark:text-green-300">מנהל האתר יסקור אותו בקרוב</p>
               </div>
             </motion.div>
           )}
@@ -149,12 +149,12 @@ export default function Contribute() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3"
+              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 dark:bg-red-950/40 dark:border-red-800"
             >
               <AlertCircle className="text-red-600 flex-shrink-0" size={24} />
               <div>
-                <p className="font-semibold text-red-900">שגיאה</p>
-                <p className="text-sm text-red-800">{errorMessage}</p>
+                <p className="font-semibold text-red-900 dark:text-red-300">שגיאה</p>
+                <p className="text-sm text-red-800 dark:text-red-300">{errorMessage}</p>
               </div>
             </motion.div>
           )}
@@ -165,11 +165,11 @@ export default function Contribute() {
           onSubmit={handleSubmit}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-white rounded-3xl shadow-xl p-8 space-y-6"
+          className="bg-card rounded-3xl shadow-xl p-8 space-y-6"
         >
           {/* Name */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-foreground mb-2">
               שם המקום *
             </label>
             <input
@@ -178,13 +178,13 @@ export default function Contribute() {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="למשל: נחל הקישון"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-3">
+            <label className="block text-sm font-semibold text-foreground mb-3">
               קטגוריה *
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -208,7 +208,7 @@ export default function Contribute() {
 
           {/* Address */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-foreground mb-2">
               כתובת *
             </label>
             <input
@@ -217,13 +217,13 @@ export default function Contribute() {
               value={formData.address}
               onChange={handleInputChange}
               placeholder="שם הרחוב ומספר"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
           </div>
 
           {/* City */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-foreground mb-2">
               עיר
             </label>
             <input
@@ -232,14 +232,14 @@ export default function Contribute() {
               value={formData.city}
               onChange={handleInputChange}
               placeholder="למשל: תל אביב"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
           </div>
 
           {/* Coordinates */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 קו רוחב (Lat)
               </label>
               <input
@@ -249,11 +249,11 @@ export default function Contribute() {
                 onChange={handleInputChange}
                 placeholder="31.7683"
                 step="0.0001"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 קו אורך (Lng)
               </label>
               <input
@@ -263,14 +263,14 @@ export default function Contribute() {
                 onChange={handleInputChange}
                 placeholder="35.2137"
                 step="0.0001"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
+            <label className="block text-sm font-semibold text-foreground mb-2">
               תיאור
             </label>
             <textarea
@@ -279,13 +279,13 @@ export default function Contribute() {
               onChange={handleInputChange}
               placeholder="ספר לנו על המקום - מה מיוחד בו? מה אפשר לעשות שם?"
               rows={4}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              className="w-full px-4 py-3 border border-border rounded-xl text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
           </div>
 
           {/* Image Upload */}
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-3">
+            <label className="block text-sm font-semibold text-foreground mb-3">
               תמונה
             </label>
             <div className="relative">
@@ -298,11 +298,11 @@ export default function Contribute() {
               />
               <label
                 htmlFor="image-input"
-                className="flex items-center justify-center w-full p-8 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-green-600 transition-colors"
+                className="flex items-center justify-center w-full p-8 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-green-600 transition-colors"
               >
                 <div className="text-center">
-                  <Upload className="mx-auto mb-2 text-slate-400" size={32} />
-                  <p className="text-sm text-slate-600">
+                  <Upload className="mx-auto mb-2 text-muted-foreground" size={32} />
+                  <p className="text-sm text-muted-foreground">
                     {imageFile ? 'תמונה נבחרה' : 'גרור תמונה או לחץ כאן'}
                   </p>
                 </div>
@@ -322,7 +322,7 @@ export default function Contribute() {
           {/* Phone & Hours */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 טלפון
               </label>
               <input
@@ -331,11 +331,11 @@ export default function Contribute() {
                 value={formData.phone}
                 onChange={handleInputChange}
                 placeholder="0XX-XXXXXXX"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 שעות פתיחה
               </label>
               <input
@@ -344,7 +344,7 @@ export default function Contribute() {
                 value={formData.opening_hours}
                 onChange={handleInputChange}
                 placeholder="24/7"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
               />
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function Contribute() {
             )}
           </button>
 
-          <p className="text-sm text-slate-600 text-center">
+          <p className="text-sm text-muted-foreground text-center">
             המקום יישלח לאישור מנהל האתר לפני שיופיע בחיפוש
           </p>
         </motion.form>

@@ -71,7 +71,7 @@ export default function PendingPlaces({ places, loading, onChanged }) {
                     <p className="mt-1.5 text-sm text-muted-foreground">{place.address}</p>
                   ) : null}
                 </div>
-                <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
                   ממתין
                 </span>
               </div>

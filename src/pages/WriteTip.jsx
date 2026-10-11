@@ -130,7 +130,7 @@ export default function WriteTip() {
                   className={`px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
                     tipType === type.id
                       ? 'bg-primary text-white shadow-md'
-                      : 'bg-secondary text-gray-600 hover:bg-gray-200'
+                      : 'bg-secondary text-muted-foreground hover:bg-gray-200'
                   }`}
                 >
                   {type.emoji} {type.label.split(' ')[1]}

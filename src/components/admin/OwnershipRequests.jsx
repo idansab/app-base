@@ -7,7 +7,7 @@ const STATUS = {
   pending: ['ממתין', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'],
   approved: ['מאושר', 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'],
   rejected: ['נדחה', 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'],
-  revoked: ['בוטל', 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200'],
+  revoked: ['בוטל', 'bg-muted text-foreground dark:bg-slate-800 dark:text-slate-200'],
 };
 
 // Things worth a second look before approving

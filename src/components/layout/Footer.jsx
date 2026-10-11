@@ -18,7 +18,7 @@ export default function Footer() {
             className="md:col-span-1 text-right md:text-left"
           >
             <h2 className="text-2xl font-bold text-green-400 mb-2">מה יש פה?</h2>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               פלטפורמה מקומית לגילוי מקומות בישראל
             </p>
           </motion.div>
@@ -31,7 +31,7 @@ export default function Footer() {
             transition={{ delay: 0.1 }}
           >
             <h3 className="font-bold mb-4 text-right md:text-left">ניווט</h3>
-            <ul className="space-y-2 text-sm text-gray-400 text-right md:text-left">
+            <ul className="space-y-2 text-sm text-muted-foreground text-right md:text-left">
               <li><a href="/" className="hover:text-green-400 transition-colors">בית</a></li>
               <li><a href="/trips" className="hover:text-green-400 transition-colors">מסלולים</a></li>
               <li><a href="/surprise" className="hover:text-green-400 transition-colors">הפתעה</a></li>
@@ -47,7 +47,7 @@ export default function Footer() {
             transition={{ delay: 0.2 }}
           >
             <h3 className="font-bold mb-4 text-right md:text-left">משפטי</h3>
-            <ul className="space-y-2 text-sm text-gray-400 text-right md:text-left">
+            <ul className="space-y-2 text-sm text-muted-foreground text-right md:text-left">
               <li><a href="/privacy" className="hover:text-green-400 transition-colors">מדיניות פרטיות</a></li>
               <li><a href="/terms" className="hover:text-green-400 transition-colors">תנאי שימוש</a></li>
               <li><a href="/cookies" className="hover:text-green-400 transition-colors">מדיניות Cookie</a></li>
@@ -100,7 +100,7 @@ export default function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="flex flex-col md:flex-row items-center justify-between text-sm text-gray-400"
+          className="flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground"
         >
           <div className="flex items-center gap-2 order-2 md:order-1 mt-4 md:mt-0">
             <span>בנוי בשמחה עם</span>

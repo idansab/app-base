@@ -12,7 +12,7 @@ const CLAIM_STATUS = {
   pending: ['נבדקת', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'],
   approved: ['מאושרת', 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'],
   rejected: ['לא אושרה', 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'],
-  revoked: ['בוטלה', 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200'],
+  revoked: ['בוטלה', 'bg-muted text-foreground dark:bg-slate-800 dark:text-slate-200'],
 };
 
 function NewBadge() {
@@ -117,7 +117,7 @@ export default function MyBusiness() {
         </div>
 
         {beta?.active && approved.length > 0 && (
-          <p className="rounded-2xl border border-green-300 bg-green-50 dark:bg-green-950/40 p-3 text-sm text-green-900 dark:text-green-200 text-right">
+          <p className="rounded-2xl border border-green-300 bg-green-50 dark:bg-green-950/40 p-3 text-sm text-green-900 dark:text-green-200 text-right dark:border-green-800">
             בתקופת הבטא (עד {formatBetaDate(beta.ends_at)}) שינויים שתעשה מתפרסמים מיד, בחינם.
           </p>
         )}

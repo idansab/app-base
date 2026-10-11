@@ -121,9 +121,9 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-2xl text-right"
+                className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-2xl text-right dark:from-yellow-950/40 dark:to-amber-950/40"
               >
-                <p className="text-xs text-gray-600 mb-1">דירוג</p>
+                <p className="text-xs text-muted-foreground mb-1">דירוג</p>
                 <p className="text-2xl font-bold text-yellow-600">⭐ {place.rating.toFixed(1)}</p>
               </motion.div>
             )}
@@ -133,9 +133,9 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl text-right"
+                className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl text-right dark:from-green-950/40 dark:to-emerald-950/40"
               >
-                <p className="text-xs text-gray-600 mb-1">מרחק</p>
+                <p className="text-xs text-muted-foreground mb-1">מרחק</p>
                 <p className="text-2xl font-bold text-green-600">{formatDistance(distance)}</p>
               </motion.div>
             )}
@@ -155,11 +155,11 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
               <a
                 href={`tel:${place.phone}`}
                 onClick={() => trackPlaceEvent(place.id, 'call')}
-                className="flex items-start gap-3 text-right hover:bg-gray-50 p-3 rounded-lg transition-colors"
+                className="flex items-start gap-3 text-right hover:bg-accent p-3 rounded-lg transition-colors"
               >
                 <div className="flex-1">
                   <p className="font-semibold text-green-600 hover:underline">{place.phone}</p>
-                  <p className="text-xs text-gray-600">טלפון</p>
+                  <p className="text-xs text-muted-foreground">טלפון</p>
                 </div>
                 <Phone size={20} className="text-green-600 flex-shrink-0" />
               </a>
@@ -170,8 +170,8 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
             {place.address && (
               <div className="flex items-start gap-3 text-right">
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900">{place.address}</p>
-                  <p className="text-xs text-gray-600">כתובת</p>
+                  <p className="font-semibold text-foreground">{place.address}</p>
+                  <p className="text-xs text-muted-foreground">כתובת</p>
                 </div>
                 <MapPin size={20} className="text-green-600 flex-shrink-0" />
               </div>
@@ -184,9 +184,9 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.25 }}
-              className="p-4 bg-slate-50 rounded-2xl text-right"
+              className="p-4 bg-background rounded-2xl text-right"
             >
-              <p className="text-sm leading-relaxed text-gray-700">{place.description}</p>
+              <p className="text-sm leading-relaxed text-foreground">{place.description}</p>
             </motion.div>
           )}
 
@@ -207,7 +207,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
               className={`flex-1 p-3 rounded-2xl font-medium transition-all ${
                 isFavorite
                   ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                  : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                  : 'bg-slate-100 text-foreground hover:bg-slate-200'
               }`}
             >
               <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
@@ -231,7 +231,7 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
                 trackPlaceEvent(place.id, 'share');
                 navigator.share?.({ title: place.name, text: place.description });
               }}
-              className="flex-1 p-3 bg-slate-100 text-gray-700 rounded-2xl font-medium hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 p-3 bg-secondary text-foreground rounded-2xl font-medium hover:bg-accent transition-colors flex items-center justify-center gap-2"
             >
               <Share2 size={18} />
             </button>
@@ -242,17 +242,17 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.35 }}
-            className="border-t border-gray-200 pt-6"
+            className="border-t border-border pt-6"
           >
             <h3 className="font-bold text-lg text-right mb-4">טיפים מהקהילה</h3>
 
             {/* Add Tip Form */}
-            <div className="mb-6 p-4 bg-green-50 rounded-2xl">
+            <div className="mb-6 p-4 bg-green-50 rounded-2xl dark:bg-green-950/40">
               <textarea
                 value={newTipText}
                 onChange={(e) => setNewTipText(e.target.value)}
                 placeholder="שתף טיפ עם הקהילה..."
-                className="w-full p-3 border border-green-200 rounded-lg text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 mb-3"
+                className="w-full p-3 border border-green-200 rounded-lg text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 mb-3 dark:border-green-800"
                 rows={3}
               />
               <button
@@ -272,15 +272,15 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
                     key={tip.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-slate-50 rounded-lg border-r-4 border-green-600 text-right"
+                    className="p-4 bg-background rounded-lg border-r-4 border-green-600 text-right"
                   >
-                    <p className="text-sm text-gray-700">{tip.content}</p>
-                    <p className="text-xs text-gray-500 mt-2">עכשיו</p>
+                    <p className="text-sm text-foreground">{tip.content}</p>
+                    <p className="text-xs text-muted-foreground mt-2">עכשיו</p>
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500 text-sm py-4">עדיין אין טיפים. הוסף אחד!</p>
+              <p className="text-center text-muted-foreground text-sm py-4">עדיין אין טיפים. הוסף אחד!</p>
             )}
           </motion.div>
         </div>

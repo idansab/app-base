@@ -79,7 +79,7 @@ export default function BetaSettings({ onError, onSuccess }) {
         <div className="flex items-start justify-between gap-3">
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${
-              info.active ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+              info.active ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200' : 'bg-slate-200 text-foreground dark:bg-slate-800 dark:text-slate-200'
             }`}
           >
             {info.active ? 'הבטא פעילה' : 'הבטא הסתיימה'}
@@ -121,7 +121,7 @@ export default function BetaSettings({ onError, onSuccess }) {
         </label>
 
         {changed && endsNow && (
-          <div role="alert" className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 text-sm text-amber-900 dark:text-amber-200">
+          <div role="alert" className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 text-sm text-amber-900 dark:text-amber-200 dark:border-amber-800">
             <ShieldAlert size={18} className="shrink-0 mt-0.5" />
             <span>השינוי מסיים את תקופת ההטבה מיד. בעלי עסקים לא יוכלו לערוך ישירות, ובקשות העדכון שלהם יעברו אליך לאישור.</span>
           </div>

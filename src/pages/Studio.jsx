@@ -77,33 +77,33 @@ export default function Studio() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center pb-24">
+      <div className="min-h-screen bg-background flex items-center justify-center pb-24">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin mx-auto text-green-600 mb-4" />
-          <p className="text-gray-700">טוען סטודיו...</p>
+          <p className="text-foreground">טוען סטודיו...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-20 py-4">
+      <div className="sticky top-0 bg-card border-b border-border z-20 py-4">
         <div className="px-4 max-w-6xl mx-auto">
           <h1 className="text-2xl font-bold text-right text-green-600">סטודיו תוכן</h1>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white border-b border-gray-200 sticky top-[60px] z-19">
+      <div className="bg-card border-b border-border sticky top-[60px] z-19">
         <div className="px-4 max-w-6xl mx-auto flex gap-4 justify-end">
           <button
             onClick={() => setActiveTab('quick')}
             className={`py-3 px-4 font-medium border-b-2 transition-colors ${
               activeTab === 'quick'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-muted-foreground hover:text-gray-900'
             }`}
           >
             עדכון מהיר
@@ -113,7 +113,7 @@ export default function Studio() {
             className={`py-3 px-4 font-medium border-b-2 transition-colors ${
               activeTab === 'manage'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-muted-foreground hover:text-gray-900'
             }`}
           >
             ניהול מקומות
@@ -126,12 +126,12 @@ export default function Studio() {
         {activeTab === 'quick' && (
           <div className="max-w-2xl mr-auto">
             {/* Quick Panel */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-green-200 mb-6">
+            <div className="bg-card rounded-2xl p-6 border-2 border-green-200 mb-6 dark:border-green-800">
               <h2 className="text-xl font-bold text-right mb-4">פרסום מהיר</h2>
 
               {nearestPlace && (
-                <div className="mb-6 p-4 bg-green-50 rounded-2xl text-right">
-                  <p className="text-sm font-medium text-green-900 flex items-center gap-2 justify-end">
+                <div className="mb-6 p-4 bg-green-50 rounded-2xl text-right dark:bg-green-950/40">
+                  <p className="text-sm font-medium text-green-900 flex items-center gap-2 justify-end dark:text-green-300">
                     <MapPin size={16} />
                     זוהה אוטומטית: <strong>{nearestPlace.name}</strong>
                   </p>
@@ -142,7 +142,7 @@ export default function Studio() {
                 value={quickContent}
                 onChange={(e) => setQuickContent(e.target.value)}
                 placeholder="כתוב טיפ או דיווח מהשטח..."
-                className="w-full p-4 border border-gray-200 rounded-2xl text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 mb-4"
+                className="w-full p-4 border border-border rounded-2xl text-right resize-none focus:outline-none focus:ring-2 focus:ring-green-600 mb-4"
                 rows={4}
               />
 
@@ -172,15 +172,15 @@ export default function Studio() {
             <h2 className="text-xl font-bold text-right mb-6">ניהול מקומות</h2>
 
             {places.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl">
-                <p className="text-gray-600">אין מקומות להציג</p>
+              <div className="text-center py-12 bg-card rounded-2xl">
+                <p className="text-muted-foreground">אין מקומות להציג</p>
               </div>
             ) : (
               <div className="grid gap-4">
                 {places.map(place => (
                   <div
                     key={place.id}
-                    className="bg-white rounded-2xl p-4 border border-gray-200 hover:border-green-600 transition-colors"
+                    className="bg-card rounded-2xl p-4 border border-border hover:border-green-600 transition-colors"
                   >
                     <div className="flex items-start gap-4 text-right">
                       {place.image_url && (
@@ -193,12 +193,12 @@ export default function Studio() {
                       )}
                       <div className="flex-1">
                         <h3 className="font-bold text-lg mb-1">{place.name}</h3>
-                        <p className="text-sm text-gray-600 mb-3">{place.short_description}</p>
+                        <p className="text-sm text-muted-foreground mb-3">{place.short_description}</p>
                         <div className="flex gap-2 justify-end">
                           <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
                             עריכה
                           </button>
-                          <button className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium">
+                          <button className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/40">
                             מחיקה
                           </button>
                         </div>
