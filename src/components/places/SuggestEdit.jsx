@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Camera, CheckCircle2, Flag, Loader2, Pencil, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import useBodyScrollLock from '@/hooks/useBodyScrollLock';
 import { PRICE_LEVELS } from '@/components/admin/places/placeUtils';
 import AmenitiesField from '@/components/places/AmenitiesField';
 import { uploadPlaceImage, validateImageFile } from '@/lib/uploadPlaceImage';
@@ -42,6 +43,7 @@ export default function SuggestEdit({ place, className = '' }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  useBodyScrollLock(open);
   const [mode, setMode] = useState(null); // null = choose
   const [sent, setSent] = useState(false);
   const [saving, setSaving] = useState(false);

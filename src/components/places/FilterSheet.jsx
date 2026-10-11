@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
+import useBodyScrollLock from '@/hooks/useBodyScrollLock';
 
 /**
  * Minimal filter panel: a few switches, grouped, with a live result count.
  * `filters`: [{ key, label, group, active, toggle, count, hint? }]  (only the ones worth showing)
  */
 export default function FilterSheet({ filters, resultCount, onClear, onClose }) {
+  useBodyScrollLock();
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);

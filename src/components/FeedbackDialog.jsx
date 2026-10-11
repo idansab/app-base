@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CheckCircle2, Loader2, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
+import useBodyScrollLock from '@/hooks/useBodyScrollLock';
 
 const KINDS = [
   ['idea', 'רעיון או בקשה'],
@@ -15,6 +16,7 @@ const inputCls =
 
 /** "Send us feedback". Goes straight to the admin inbox; works without signing in. */
 export default function FeedbackDialog({ onClose }) {
+  useBodyScrollLock();
   const location = useLocation();
   const [kind, setKind] = useState('idea');
   const [message, setMessage] = useState('');
