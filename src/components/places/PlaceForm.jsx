@@ -4,7 +4,8 @@ import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock 
 import { supabase } from '@/api/base44Client';
 
 const CATEGORIES = [
-  { id: 'food', label: 'עגלות קפה ואוכל' },
+  { id: 'carts', label: 'עגלות קפה ופוד טראקים' },
+  { id: 'food', label: 'אוכל' },
   { id: 'nature', label: 'טבע וטיולים' },
   { id: 'nightlife', label: 'חיי לילה' },
   { id: 'shopping', label: 'שווקים וקניות' },

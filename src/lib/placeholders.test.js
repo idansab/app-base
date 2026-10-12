@@ -22,7 +22,7 @@ describe('placeholderKind', () => {
   });
 
   it('falls back to the category, also for legacy category names', () => {
-    expect(placeholderKind({ name: 'x', category: 'food' })).toBe('cart');
+    expect(placeholderKind({ name: 'x', category: 'carts' })).toBe('cart');
     expect(placeholderKind({ name: 'x', category: 'view' })).toBe('nature');
     expect(placeholderKind({ name: 'x', category: 'culture' })).toBe('heritage');
     expect(placeholderKind({})).toBe('nature');

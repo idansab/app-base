@@ -36,7 +36,7 @@ export const labelForTaxonomy = (taxonomy) =>
   Object.values(CATEGORY_SOURCES).map((labels) => labels[taxonomy]).find(Boolean) || null;
 
 /** --category values that are stored under a different app category. */
-export const PROFILE_CATEGORY = { carts: 'food' };
+export const PROFILE_CATEGORY = { carts: 'carts' };
 
 /** Areas for --area, as [south, west, north, east]. */
 export const AREAS = {
