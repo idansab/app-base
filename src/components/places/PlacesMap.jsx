@@ -15,11 +15,22 @@ const MARKER = {
 };
 const FALLBACK = { color: '#64748b', emoji: '📍' };
 
-const placeIcon = (place) => {
+// names are user-contributed: never put them into HTML unescaped
+const escapeHtml = (text) =>
+  String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+// from this zoom on, a place shows its name under the marker
+const LABEL_ZOOM = 14;
+
+const placeIcon = (place, showLabel) => {
   const { color, emoji } = MARKER[normalizeCategory(place.category)] || FALLBACK;
   return L.divIcon({
     className: '',
-    html: `<div style="width:34px;height:34px;border-radius:50%;background:#fff;border:3px solid ${color};box-shadow:0 2px 6px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:17px">${emoji}</div>`,
+    html: `<div style="width:34px;height:34px;border-radius:50%;background:#fff;border:3px solid ${color};box-shadow:0 2px 6px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:17px">${emoji}</div>${
+      showLabel
+        ? `<div style="position:absolute;top:38px;left:50%;transform:translateX(-50%);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:600 12px Rubik,sans-serif;color:#0f172a;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;pointer-events:none">${escapeHtml(place.name)}</div>`
+        : ''
+    }`,
     iconSize: [34, 34],
     iconAnchor: [17, 17],
   });
@@ -64,7 +75,7 @@ export default function PlacesMap({ places, userLocation, onSelect, onClose }) {
       for (const cluster of clusterPlaces(visible, map.getZoom())) {
         if (cluster.items.length === 1) {
           const place = cluster.items[0];
-          L.marker([Number(place.lat), Number(place.lng)], { icon: placeIcon(place), title: place.name })
+          L.marker([Number(place.lat), Number(place.lng)], { icon: placeIcon(place, map.getZoom() >= LABEL_ZOOM), title: place.name })
             .on('click', () => selectRef.current(place))
             .addTo(layer);
         } else {
