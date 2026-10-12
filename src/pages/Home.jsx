@@ -8,6 +8,7 @@ import VirtualPlaceGrid from '@/components/places/VirtualPlaceGrid';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import PlacesMap from '@/components/places/PlacesMap';
 import { OPEN_LOCATION_PICKER } from '@/lib/locationPickerEvent';
+import { saveSearchArea } from '@/lib/searchArea';
 import { haversineKm } from '@/lib/geo';
 import { isOpenNow } from '@/lib/openingHours';
 import useUserLocation from '@/hooks/useUserLocation';
@@ -118,6 +119,11 @@ export default function Home() {
       }
     }
   }, [autoLocation, userLocation, maxDistance]);
+
+  // the surprise page draws only from the area chosen here
+  useEffect(() => {
+    if (userLocation && maxDistance) saveSearchArea(userLocation, maxDistance);
+  }, [userLocation, maxDistance]);
 
   // Sync state with URL params
   useEffect(() => {
