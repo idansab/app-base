@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { haversineKm, formatDistance, wazeUrl, formatPlaceName, reverseGeocode } from './geo';
+import { haversineKm, formatDistance, wazeUrl, formatPlaceName, reverseGeocode, formatStreetAddress } from './geo';
 
 describe('haversineKm', () => {
   it('is zero for identical points', () => {
@@ -79,5 +79,16 @@ describe('reverseGeocode', () => {
     expect(await reverseGeocode(31.0, 35.0)).toBeNull();
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
     expect(await reverseGeocode(31.1, 35.1)).toBeNull();
+  });
+});
+
+describe('formatStreetAddress', () => {
+  it('joins street and house number', () => {
+    expect(formatStreetAddress({ road: 'הרצל', house_number: '10' })).toBe('הרצל 10');
+    expect(formatStreetAddress({ road: 'הרצל' })).toBe('הרצל');
+  });
+  it('is empty without a street', () => {
+    expect(formatStreetAddress({ city: 'חיפה' })).toBe('');
+    expect(formatStreetAddress(null)).toBe('');
   });
 });
