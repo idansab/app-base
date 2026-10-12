@@ -1,12 +1,19 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Settings, Store } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { MapPin, Plus, Settings, Store } from 'lucide-react';
+import { OPEN_LOCATION_PICKER } from '@/lib/locationPickerEvent';
 import useOwnerOverview from '@/hooks/useOwnerOverview';
 import { useAuth } from '@/lib/AuthContext';
 import { useTheme } from '@/lib/ThemeContext';
 
 export default function Header() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // the picker lives on the home page: open it there, or go there and open it
+  const openLocationPicker = () => {
+    if (pathname === '/') window.dispatchEvent(new Event(OPEN_LOCATION_PICKER));
+    else navigate('/?picker=1');
+  };
   const { isAuthenticated } = useAuth();
   const { isDark } = useTheme();
   const { hasApproved, unseen } = useOwnerOverview();
@@ -38,6 +45,14 @@ export default function Header() {
             {unseen > 0 && (
               <span className="absolute -top-1 -left-1 h-3 w-3 rounded-full bg-amber-500 ring-2 ring-card" aria-label={`${unseen} עדכונים חדשים`} />
             )}
+          </button>
+          <button
+            onClick={openLocationPicker}
+            className="p-2 rounded-full transition-colors hover:bg-secondary text-primary"
+            title="בחר מיקום ומרחק"
+            aria-label="בחר מיקום ומרחק"
+          >
+            <MapPin size={20} />
           </button>
           <button
             onClick={() => navigate(isAuthenticated ? '/contribute' : '/login')}

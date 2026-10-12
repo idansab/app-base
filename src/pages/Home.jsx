@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Loader2, X, SlidersHorizontal } from 'lucide-react';
+import { Search, Map as MapIcon, Loader2, X, SlidersHorizontal } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
 import VirtualPlaceGrid from '@/components/places/VirtualPlaceGrid';
 import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
+import PlacesMap from '@/components/places/PlacesMap';
+import { OPEN_LOCATION_PICKER } from '@/lib/locationPickerEvent';
 import { haversineKm } from '@/lib/geo';
 import { isOpenNow } from '@/lib/openingHours';
 import useUserLocation from '@/hooks/useUserLocation';
@@ -38,7 +40,14 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [userLocation, setUserLocation] = useState(null);
   const [maxDistance, setMaxDistance] = useState(searchParams.get('distance') ? parseInt(searchParams.get('distance')) : null);
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  // the picker is opened from the header button: by event when we are here, by ?picker=1 when it sent us here
+  const [locationPickerOpen, setLocationPickerOpen] = useState(() => searchParams.get('picker') === '1');
+  const [mapOpen, setMapOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setLocationPickerOpen(true);
+    window.addEventListener(OPEN_LOCATION_PICKER, open);
+    return () => window.removeEventListener(OPEN_LOCATION_PICKER, open);
+  }, []);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'distance');
   const [openNowOnly, setOpenNowOnly] = useState(searchParams.get('open') === '1');
   const [kosherOnly, setKosherOnly] = useState(searchParams.get('kosher') === '1');
@@ -310,12 +319,12 @@ export default function Home() {
             />
           </div>
           <button
-            onClick={() => setLocationPickerOpen(true)}
+            onClick={() => setMapOpen(true)}
             className="p-4 bg-card text-primary border border-border rounded-3xl hover:bg-secondary transition-all hover:scale-110 duration-300 flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg"
-            aria-label="בחר מיקום ומרחק"
-            title="בחר מיקום ומרחק"
+            aria-label="הצג על המפה"
+            title="הצג על המפה"
           >
-            <MapPin size={24} />
+            <MapIcon size={24} />
           </button>
         </div>
       </motion.div>
@@ -467,6 +476,15 @@ export default function Home() {
           />
         )}
       </div>
+
+      {mapOpen && (
+        <PlacesMap
+          places={filteredPlaces}
+          userLocation={userLocation}
+          onSelect={setSelectedPlace}
+          onClose={() => setMapOpen(false)}
+        />
+      )}
 
       {/* Location Picker Modal */}
       <LocationPicker
