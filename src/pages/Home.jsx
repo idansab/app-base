@@ -17,6 +17,8 @@ import { normalizeCategory } from '@/lib/categories';
 import { AMENITIES, hasAllAmenities, parseFeatureParam } from '@/lib/amenities';
 import FilterSheet from '@/components/places/FilterSheet';
 
+const MAP_MAX_KM = 100;
+
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
   { id: 'carts', label: 'עגלות קפה ופוד טראקים', emoji: '☕' },
@@ -261,6 +263,11 @@ export default function Home() {
       return a.name.localeCompare(b.name, 'he');
     });
 
+  // the map never loads more than MAP_MAX_KM around the visitor, whatever the list radius is
+  const mapPlaces = userLocation
+    ? filteredPlaces.filter(p => haversineKm(userLocation.lat, userLocation.lng, p.lat, p.lng) <= MAP_MAX_KM)
+    : filteredPlaces;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -479,7 +486,7 @@ export default function Home() {
 
       {mapOpen && (
         <PlacesMap
-          places={filteredPlaces}
+          places={mapPlaces}
           userLocation={userLocation}
           onSelect={setSelectedPlace}
           onClose={() => setMapOpen(false)}
