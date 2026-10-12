@@ -211,3 +211,35 @@ html[data-focus-outline="true"] input:focus-visible {
   ring: none;
   box-shadow: none;
 }
+
+/* Range slider that fills with colour up to the thumb (--fill is set inline, 0-100%; the page is RTL so it fills from the right) */
+.fill-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(to left, #16a34a 0%, #16a34a var(--fill, 0%), hsl(var(--muted)) var(--fill, 0%), hsl(var(--muted)) 100%);
+  outline: none;
+  cursor: pointer;
+}
+.fill-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid #16a34a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.fill-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid #16a34a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.fill-range:focus-visible {
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.35);
+}
