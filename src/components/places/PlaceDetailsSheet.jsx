@@ -12,6 +12,7 @@ import PlaceLinks from '@/components/places/PlaceLinks';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
 import PlaceLegalNote from '@/components/common/PlaceLegalNote';
+import { handleSharePlace } from '@/lib/sharePlace';
 import WaterSafetyNote from '@/components/places/WaterSafetyNote';
 import PlaceAmenities from '@/components/places/PlaceAmenities';
 import { supabase } from '@/api/base44Client';
@@ -237,13 +238,11 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
             )}
 
             <button
-              onClick={() => {
-                trackPlaceEvent(place.id, 'share');
-                navigator.share?.({ title: place.name, text: place.description });
-              }}
+              onClick={() => handleSharePlace(place)}
               className="flex-1 p-3 bg-secondary text-foreground rounded-2xl font-medium hover:bg-accent transition-colors flex items-center justify-center gap-2"
             >
               <Share2 size={18} />
+              שתף
             </button>
           </motion.div>
 

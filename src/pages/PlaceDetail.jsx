@@ -12,6 +12,7 @@ import { PlaceHours, PlaceKosher } from '@/components/places/PlaceHours';
 import { OpenBadge, KosherBadge } from '@/components/places/PlaceBadges';
 import { getPlaceImages } from '@/lib/placeImages';
 import { trackPlaceEvent } from '@/lib/trackPlace';
+import { handleSharePlace } from '@/lib/sharePlace';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
 import PlaceLegalNote from '@/components/common/PlaceLegalNote';
@@ -411,10 +412,7 @@ export default function PlaceDetail() {
           </DirectionalButton>
 
           <DirectionalButton
-            onClick={() => {
-              trackPlaceEvent(place.id, 'share');
-              navigator.share?.({ title: place.name, text: place.description });
-            }}
+            onClick={() => handleSharePlace(place)}
             className="p-4 bg-secondary text-foreground flex items-center justify-center gap-2"
           >
             <Share2 size={20} />
