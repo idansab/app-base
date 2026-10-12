@@ -5,6 +5,7 @@ import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
 import { trackPlaceEvent } from '@/lib/trackPlace';
+import { loadSearchArea, placesInArea } from '@/lib/searchArea';
 
 export default function Surprise() {
   const [place, setPlace] = useState(null);
@@ -12,6 +13,7 @@ export default function Surprise() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [distance, setDistance] = useState(null);
+  const [outsideArea, setOutsideArea] = useState(false);
   const { location: autoLocation } = useUserLocation({ auto: true });
 
   useEffect(() => {
@@ -33,13 +35,18 @@ export default function Surprise() {
         .eq('status', 'approved');
       if (error) throw error;
 
-      if (!places || places.length === 0) {
+      // only inside the area chosen on the home page (or 50 km around the visitor); the whole country when neither is known
+      const area = loadSearchArea() || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng, km: 50 } : null);
+      const candidates = placesInArea(places || [], area);
+      if (candidates.length === 0) {
         setPlace(null);
+        setOutsideArea(!!area && (places || []).length > 0);
         return;
       }
+      setOutsideArea(false);
 
       // Random place
-      const randomPlace = places[Math.floor(Math.random() * places.length)];
+      const randomPlace = candidates[Math.floor(Math.random() * candidates.length)];
       setPlace(randomPlace);
 
       // Calculate distance
@@ -106,7 +113,8 @@ export default function Surprise() {
       <div className="min-h-screen bg-background flex items-center justify-center pb-24">
         <div className="text-center">
           <Sparkles size={48} className="mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-xl font-bold text-foreground">אין מקומות</h2>
+          <h2 className="text-xl font-bold text-foreground">{outsideArea ? 'אין מקומות באזור שהגדרת' : 'אין מקומות'}</h2>
+          {outsideArea && <p className="mt-2 text-sm text-muted-foreground">הגדל את המרחק בבחירת המיקום כדי לקבל הפתעות מרחוק יותר</p>}
         </div>
       </div>
     );

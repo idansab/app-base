@@ -63,7 +63,9 @@ export default function PlacesMap({ places, userLocation, onSelect, onClose }) {
 
   useEffect(() => {
     const map = L.map(containerRef.current, { zoomControl: false, center: ISRAEL_CENTER, zoom: 8 });
-    L.control.zoom({ position: 'bottomleft' }).addTo(map);
+    // bottom-right, lifted above the "my location" button
+    const zoomControl = L.control.zoom({ position: 'bottomright' }).addTo(map);
+    zoomControl.getContainer().style.marginBottom = '76px';
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
     const layer = L.layerGroup().addTo(map);
     mapRef.current = map;
