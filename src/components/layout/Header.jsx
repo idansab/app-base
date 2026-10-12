@@ -48,11 +48,11 @@ export default function Header() {
           </button>
           <button
             onClick={openLocationPicker}
-            className="p-2 rounded-full transition-colors hover:bg-secondary text-primary"
+            className="p-2 rounded-full bg-primary/10 transition-colors hover:bg-primary/20 text-primary"
             title="בחר מיקום ומרחק"
             aria-label="בחר מיקום ומרחק"
           >
-            <MapPin size={20} />
+            <MapPin size={26} />
           </button>
           <button
             onClick={() => navigate(isAuthenticated ? '/contribute' : '/login')}
