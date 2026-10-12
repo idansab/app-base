@@ -12,6 +12,7 @@ import PlaceLinks from '@/components/places/PlaceLinks';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
 import PlaceLegalNote from '@/components/common/PlaceLegalNote';
+import WaterSafetyNote from '@/components/places/WaterSafetyNote';
 import PlaceAmenities from '@/components/places/PlaceAmenities';
 import { supabase } from '@/api/base44Client';
 
@@ -116,6 +117,8 @@ export default function PlaceDetailsSheet({ isOpen, onClose, place: placeProp, u
               <KosherBadge place={place} />
             </div>
           )}
+
+          <WaterSafetyNote place={place} />
 
           <PlaceAmenities place={place} className="rounded-2xl bg-background p-4" />
 

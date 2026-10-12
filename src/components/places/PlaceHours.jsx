@@ -84,6 +84,11 @@ export function PlaceKosher({ place, className = '' }) {
         <p className="font-semibold text-foreground">{isKosher ? 'כשר' : 'לא כשר'}</p>
         {isKosher && place.kosher_note && <p className="text-sm text-muted-foreground">{place.kosher_note}</p>}
         <p className="text-xs text-muted-foreground">כשרות</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {isKosher
+            ? 'לפי מידע שנמסר לאתר, לא תעודת כשרות. יש לוודא מול העסק או הרבנות המקומית.'
+            : 'לפי מידע שנמסר לאתר.'}
+        </p>
       </div>
       <BadgeCheck size={20} className={`flex-shrink-0 ${isKosher ? 'text-sky-600' : 'text-muted-foreground'}`} />
     </div>
