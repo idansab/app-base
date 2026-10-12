@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Save, Trash2, Loader2, ChevronDown, MapPin, ImageIcon, FileText, Clock } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
+import { reverseGeocodeAddress } from '@/lib/geo';
 
 const CATEGORIES = [
-  { id: 'carts', label: 'עגלות קפה ופוד טראקים' },
-  { id: 'food', label: 'אוכל' },
+  { id: 'carts', label: 'עגלות קפה ופוד טראקים (רק פוד טראקים ועגלות קפה)' },
+  { id: 'food', label: 'אוכל (מסעדות, בתי קפה ומאפיות)' },
   { id: 'nature', label: 'טבע וטיולים' },
   { id: 'nightlife', label: 'חיי לילה' },
   { id: 'shopping', label: 'שווקים וקניות' },
@@ -117,6 +118,26 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
     } finally {
       setGeocoding(false);
     }
+  };
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) return;
+    setGeocoding(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        const found = await reverseGeocodeAddress(coords.latitude, coords.longitude);
+        setFormData((prev) => ({
+          ...prev,
+          lat: coords.latitude,
+          lng: coords.longitude,
+          city: found?.city || prev.city,
+          address: found?.address || prev.address,
+        }));
+        setGeocoding(false);
+      },
+      () => setGeocoding(false),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const handleSave = async () => {
@@ -246,7 +267,22 @@ export default function PlaceForm({ place, onSave, onDelete, onCancel }) {
               {geocoding ? <Loader2 size={20} className="animate-spin" /> : 'זיהוי'}
             </motion.button>
           </div>
+          <button
+            type="button"
+            onClick={handleUseMyLocation}
+            disabled={geocoding}
+            className="mt-2 text-sm text-green-700 underline disabled:opacity-50"
+          >
+            מלא כתובת ועיר לפי המיקום שלי
+          </button>
         </div>
+
+        <FormInput
+          label="עיר"
+          value={formData.city || ''}
+          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+          placeholder="למשל: תל אביב"
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <FormInput

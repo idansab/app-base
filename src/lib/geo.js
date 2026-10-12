@@ -50,6 +50,29 @@ export function formatPlaceName(address) {
   return address.city || address.town || address.village || address.municipality || address.county || "";
 }
 
+/** Street + house number from a Nominatim `address` object ("" when there is no street). */
+export function formatStreetAddress(address) {
+  if (!address) return "";
+  const street = address.road || address.pedestrian || address.footway || "";
+  return street ? [street, address.house_number].filter(Boolean).join(" ") : "";
+}
+
+/**
+ * Full address of a point, for the add-a-place form: { city, address } where address is
+ * street + house number (empty when the point has no street). Null when it cannot be resolved.
+ */
+export async function reverseGeocodeAddress(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&accept-language=he&lat=${lat}&lon=${lng}`;
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return { city: formatPlaceName(data?.address), address: formatStreetAddress(data?.address) };
+  } catch {
+    return null;
+  }
+}
+
 const reverseCache = new Map();
 
 /**

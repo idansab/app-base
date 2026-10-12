@@ -5,13 +5,13 @@ import { supabase } from '@/api/base44Client';
 import AmenitiesField from '@/components/places/AmenitiesField';
 import HoursEditor from '@/components/admin/places/HoursEditor';
 import useUserLocation from '@/hooks/useUserLocation';
-import { geocodeAddress, reverseGeocode } from '@/lib/geo';
+import { geocodeAddress, reverseGeocodeAddress } from '@/lib/geo';
 import { uploadPlaceImage, validateImageFile } from '@/lib/uploadPlaceImage';
 import { contributionProblem, hoursFields, insideIsrael } from '@/lib/contributeForm';
 
 const CATEGORIES = [
-  { id: 'carts', label: 'עגלות קפה ופוד טראקים', icon: '☕' },
-  { id: 'food', label: 'אוכל', icon: '🍽️' },
+  { id: 'carts', hint: 'רק פוד טראקים ועגלות קפה', label: 'עגלות קפה ופוד טראקים', icon: '☕' },
+  { id: 'food', hint: 'מסעדות, בתי קפה ומאפיות (לא עגלות)', label: 'אוכל', icon: '🍽️' },
   { id: 'nature', label: 'טבע וטיולים', icon: '🏞️' },
   { id: 'nightlife', label: 'חיי לילה', icon: '🌙' },
   { id: 'shopping', label: 'קניות ושווקים', icon: '🛍️' },
@@ -61,8 +61,12 @@ export default function Contribute() {
       return;
     }
     setPosition(coords);
-    const city = await reverseGeocode(coords.lat, coords.lng);
-    setFormData(prev => ({ ...prev, city: prev.city || city || '' }));
+    const found = await reverseGeocodeAddress(coords.lat, coords.lng);
+    setFormData(prev => ({
+      ...prev,
+      city: prev.city || found?.city || '',
+      address: prev.address || found?.address || '',
+    }));
     setLocating(false);
   };
 
@@ -263,6 +267,7 @@ export default function Contribute() {
                 >
                   <div className="text-2xl mb-1">{cat.icon}</div>
                   <div className="text-sm font-medium">{cat.label}</div>
+                  {cat.hint && <div className="mt-0.5 text-xs text-muted-foreground">{cat.hint}</div>}
                 </button>
               ))}
             </div>
@@ -281,7 +286,7 @@ export default function Contribute() {
               placeholder="שם הרחוב ומספר"
               className="w-full px-4 py-3 border border-border rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
-            <p className="mt-1.5 text-xs text-muted-foreground">אנחנו מאתרים את המקום במפה לפי הכתובת והעיר.</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">אנחנו מאתרים את המקום במפה לפי הכתובת והעיר. הכפתור למטה ימלא גם כתובת וגם עיר לפי המיקום שלך.</p>
             <button
               type="button"
               onClick={useMyPosition}

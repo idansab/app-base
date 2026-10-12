@@ -257,6 +257,9 @@ export default function PlaceDrawer({
                   <option key={c.key} value={c.key}>{c.label}</option>
                 ))}
               </select>
+              {CATEGORIES.find((c) => c.key === form.category)?.hint && (
+                <span className="block text-xs text-muted-foreground mt-1 text-right">{CATEGORIES.find((c) => c.key === form.category).hint}</span>
+              )}
             </Field>
             <Field label="סטטוס">
               <select className={`${inputCls} border-border`} value={form.status} onChange={set('status')}>
