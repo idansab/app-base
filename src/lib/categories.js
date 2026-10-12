@@ -1,9 +1,10 @@
-import { Coffee, Trees, Palette, Music, ShoppingBag, Ticket, MapPin } from "lucide-react";
+import { Coffee, Utensils, Trees, Palette, Music, ShoppingBag, Ticket, MapPin } from "lucide-react";
 
-// The six categories of the site. Anything older (cafe, hiking, view, beach, family, trips...)
+// The seven categories of the site. Anything older (cafe, hiking, view, beach, family, trips...)
 // is folded into one of them by normalizeCategory.
 export const CATEGORIES = [
-  { key: "food", label: "עגלות קפה ואוכל", icon: Coffee, tone: "border-orange-200 bg-orange-50/95 text-orange-800" },
+  { key: "carts", label: "עגלות קפה ופוד טראקים", icon: Coffee, tone: "border-orange-200 bg-orange-50/95 text-orange-800" },
+  { key: "food", label: "אוכל", icon: Utensils, tone: "border-amber-200 bg-amber-50/95 text-amber-800" },
   { key: "nature", label: "טבע וטיולים", icon: Trees, tone: "border-emerald-200 bg-emerald-50/95 text-emerald-800" },
   { key: "nightlife", label: "חיי לילה", icon: Music, tone: "border-indigo-200 bg-indigo-50/95 text-indigo-800" },
   { key: "shopping", label: "קניות ושווקים", icon: ShoppingBag, tone: "border-rose-200 bg-rose-50/95 text-rose-800" },

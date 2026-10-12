@@ -7,14 +7,15 @@ import { placeholderFor } from '@/lib/placeholders';
 import PlaceAmenities from '@/components/places/PlaceAmenities';
 
 const CATEGORY_MAP = {
-  'coffee_food': 'עגלות קפה ואוכל',
+  'coffee_food': 'אוכל',
   'trips': 'טבע וטיולים',
-  'cafe': 'עגלות קפה ואוכל',
+  'cafe': 'אוכל',
   'hiking': 'טבע וטיולים',
   'view': 'טבע וטיולים',
   'beach': 'טבע וטיולים',
   'family': 'טבע וטיולים',
-  'food': 'עגלות קפה ואוכל',
+  'food': 'אוכל',
+  'carts': 'עגלות קפה ופוד טראקים',
   'nature': 'טבע וטיולים',
   'nightlife': 'חיי לילה',
   'shopping': 'קניות ושווקים',

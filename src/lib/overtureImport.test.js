@@ -44,7 +44,7 @@ describe('contact details', () => {
 
 describe('carts profile', () => {
   it('stores food trucks and stalls under the food category', () => {
-    expect(toPlaceRow(rec({ taxonomy: 'food_truck_stand', name: 'Falafel Cart' }), 'carts')).toMatchObject({ category: 'food', tags: ['עגלת אוכל'] });
+    expect(toPlaceRow(rec({ taxonomy: 'food_truck_stand', name: 'Falafel Cart' }), 'carts')).toMatchObject({ category: 'carts', tags: ['עגלת אוכל'] });
     expect(toPlaceRow(rec({ taxonomy: 'coffee_shop' }), 'carts')).toBeNull();
   });
 });

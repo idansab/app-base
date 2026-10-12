@@ -17,7 +17,8 @@ import FilterSheet from '@/components/places/FilterSheet';
 
 const CATEGORIES = [
   { id: 'all', label: 'הכל', emoji: '🌍' },
-  { id: 'food', label: 'עגלות קפה ואוכל', emoji: '☕' },
+  { id: 'carts', label: 'עגלות קפה ופוד טראקים', emoji: '☕' },
+  { id: 'food', label: 'אוכל', emoji: '🍽️' },
   { id: 'nature', label: 'טבע וטיולים', emoji: '🏞️' },
   { id: 'nightlife', label: 'חיי לילה', emoji: '🌙' },
   { id: 'shopping', label: 'קניות ושווקים', emoji: '🛍️' },

@@ -10,7 +10,8 @@ import { uploadPlaceImage, validateImageFile } from '@/lib/uploadPlaceImage';
 import { contributionProblem, hoursFields, insideIsrael } from '@/lib/contributeForm';
 
 const CATEGORIES = [
-  { id: 'food', label: 'עגלות קפה ואוכל', icon: '🍽️' },
+  { id: 'carts', label: 'עגלות קפה ופוד טראקים', icon: '☕' },
+  { id: 'food', label: 'אוכל', icon: '🍽️' },
   { id: 'nature', label: 'טבע וטיולים', icon: '🏞️' },
   { id: 'nightlife', label: 'חיי לילה', icon: '🌙' },
   { id: 'shopping', label: 'קניות ושווקים', icon: '🛍️' },

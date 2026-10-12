@@ -26,7 +26,7 @@ const RULES = [
   ['heritage', /אתר ארכאולוגי|ארכיאולוגי|חורבת|תל |עתיק|קיסריה|בית כנסת|אתר היסטורי|אתר מבקרים|מבצר|מצד /i],
 ];
 
-const BY_CATEGORY = { food: 'cart', nature: 'nature', nightlife: 'bar', shopping: 'market', culture: 'heritage', attractions: 'amusement' };
+const BY_CATEGORY = { carts: 'cart', food: 'cafe', nature: 'nature', nightlife: 'bar', shopping: 'market', culture: 'heritage', attractions: 'amusement' };
 
 /** Which illustration fits a place, by kind label / name first and category as the fallback. */
 export function placeholderKind(place) {
