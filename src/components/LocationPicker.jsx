@@ -245,7 +245,9 @@ export default function LocationPicker({ isOpen, onClose, onLocationChange, curr
             max="100"
             value={distance}
             onChange={(e) => setDistance(Number(e.target.value))}
-            className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-green-600"
+            aria-label="מרחק חיפוש בקילומטרים"
+            style={{ '--fill': `${((distance - 1) / 99) * 100}%` }}
+            className="w-full fill-range"
           />
         </div>
 
