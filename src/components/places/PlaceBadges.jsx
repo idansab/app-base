@@ -30,7 +30,7 @@ export function KosherBadge({ place, className = '' }) {
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full bg-sky-600 px-2.5 py-1 text-xs font-medium text-white shadow-sm ${className}`}
-      title={place.kosher_note || 'כשר'}
+      title={`${place.kosher_note || 'כשר'} (לפי מידע שנמסר לאתר, לא תעודת כשרות)`}
     >
       <BadgeCheck size={12} aria-hidden="true" />
       כשר

@@ -15,6 +15,7 @@ import { trackPlaceEvent } from '@/lib/trackPlace';
 import ClaimPlace from '@/components/places/ClaimPlace';
 import SuggestEdit from '@/components/places/SuggestEdit';
 import PlaceLegalNote from '@/components/common/PlaceLegalNote';
+import WaterSafetyNote from '@/components/places/WaterSafetyNote';
 import PlaceAmenities from '@/components/places/PlaceAmenities';
 import { getPlaceAmenities } from '@/lib/amenities';
 
@@ -351,6 +352,8 @@ export default function PlaceDetail() {
             </BreathingPulse>
           )}
         </motion.div>
+
+        <WaterSafetyNote place={place} className="mb-6" />
 
         <PlaceLinks place={place} className="mb-8" />
 
