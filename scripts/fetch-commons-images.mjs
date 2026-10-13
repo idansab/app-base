@@ -45,10 +45,12 @@ const api = (host, params) => `https://${host}/w/api.php?${new URLSearchParams({
 async function osmTags() {
   const ids = { node: [], way: [], relation: [] };
   for (const r of rows) {
+    if (!r.source_ref) continue; // places added by hand have no OSM element: only the geosearch route applies
     const [type, id] = r.source_ref.split('/');
     ids[type]?.push(id);
   }
   const part = (t) => (ids[t].length ? `${t}(id:${ids[t].join(',')});` : '');
+  if (!ids.node.length && !ids.way.length && !ids.relation.length) return {};
   const query = `[out:json][timeout:60];(${part('node')}${part('way')}${part('relation')});out tags center;`;
   for (const url of OVERPASS) {
     const json = await getJson(url, {
@@ -146,6 +148,7 @@ async function main() {
       continue;
     }
     results.push({
+      id: row.id,
       source_ref: row.source_ref,
       name: row.name,
       images: picked.map((p) => p.url),
