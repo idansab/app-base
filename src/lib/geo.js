@@ -41,6 +41,38 @@ export async function geocodeAddress(query) {
   };
 }
 
+// Nominatim result types that cover a whole area: the pin would be its center, not the place.
+const AREA_TYPES = new Set([
+  "country", "state", "region", "province", "district", "county", "municipality",
+  "city", "town", "village", "hamlet", "suburb", "quarter", "neighbourhood", "postcode",
+]);
+
+/**
+ * Like geocodeAddress(), limited to Israel and with the parts of the address:
+ * { lat, lng, city, address, precise }. `precise` is false when only a whole city or area matched.
+ * Returns null when nothing matched or the request failed.
+ */
+export async function geocodeInIsrael(query, { signal } = {}) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=il&addressdetails=1&accept-language=he&q=${encodeURIComponent(
+      query
+    )}`;
+    const response = await fetch(url, { headers: { Accept: "application/json" }, signal });
+    if (!response.ok) return null;
+    const [hit] = await response.json();
+    if (!hit) return null;
+    return {
+      lat: Number.parseFloat(hit.lat),
+      lng: Number.parseFloat(hit.lon),
+      city: formatPlaceName(hit.address),
+      address: formatStreetAddress(hit.address),
+      precise: !AREA_TYPES.has(hit.addresstype || hit.type),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The city (or town / village) from a Nominatim `address` object. City level only:
  * no street, house number or neighbourhood is shown or kept.

@@ -11,6 +11,7 @@ import {
   Search,
   Trash2,
   Undo2,
+  Upload,
   X,
 } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
@@ -18,6 +19,9 @@ import { CATEGORIES, getCategory } from '@/lib/categories';
 import { placeholderFor } from '@/lib/placeholders';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import PlaceDrawer from './PlaceDrawer';
+import CsvImportDialog from './CsvImportDialog';
+import { decodeCsvBytes, locateQueries, parseCsv, planImport, toInsertPayload } from './placeImport';
+import { geocodeInIsrael } from '@/lib/geo';
 import {
   ISSUES,
   STATUS_LABELS,
@@ -30,6 +34,10 @@ import {
 
 const PAGE_SIZE = 25;
 const FETCH_CHUNK = 1000;
+const INSERT_CHUNK = 100;
+// OpenStreetMap Nominatim allows one request per second
+const GEOCODE_GAP_MS = 1100;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const STATUS_TONE = {
   pending: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-700',
@@ -87,8 +95,12 @@ export default function PlacesManager({
   const [undo, setUndo] = useState(null); // { label, previous: [{id,status}] }
   const [confirm, setConfirm] = useState(null); // { ids, label }
   const [busy, setBusy] = useState(false);
+  const [csvImport, setCsvImport] = useState(null); // null | { fileName, plan }
+  const [locating, setLocating] = useState(null); // null | { done, total } while geocoding rows without a position
+  const stopLocating = useRef(false);
   const searchRef = useRef(null);
   const undoTimer = useRef(null);
+  const fileInputRef = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -306,6 +318,116 @@ export default function PlacesManager({
     onSuccess?.(`יוצאו ${rows.length} מקומות`);
   };
 
+  // Rows without coordinates: search the exact address, then the place name. Only a precise hit counts:
+  // a whole-city match would pin the place at the city center.
+  const locateRows = async (rows) => {
+    const jobs = locateQueries(rows);
+    const located = {};
+    if (jobs.length === 0) return located;
+    stopLocating.current = false;
+    setLocating({ done: 0, total: jobs.length });
+    const cache = new Map();
+    let first = true;
+    try {
+      for (const [i, { line, queries }] of jobs.entries()) {
+        if (stopLocating.current) break;
+        located[line] = null;
+        for (const { query, by } of queries) {
+          if (!cache.has(query)) {
+            if (!first) await sleep(GEOCODE_GAP_MS);
+            first = false;
+            cache.set(query, await geocodeInIsrael(query));
+          }
+          const hit = cache.get(query);
+          if (hit?.precise) {
+            located[line] = { ...hit, by };
+            break;
+          }
+        }
+        setLocating({ done: i + 1, total: jobs.length });
+      }
+    } finally {
+      setLocating(null);
+    }
+    return located;
+  };
+
+  const chooseCsv = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // picking the same file again should work too
+    if (!file) return;
+    try {
+      const rows = parseCsv(decodeCsvBytes(await file.arrayBuffer()));
+      const located = await locateRows(rows);
+      const plan = planImport(rows, places, located);
+      if (plan.missingNameColumn) {
+        onError?.('לא נמצאה עמודת "שם" בקובץ. כדאי להתחיל מקובץ שיוצא מכאן.');
+        return;
+      }
+      setCsvImport({ fileName: file.name, plan });
+    } catch (err) {
+      console.error('CSV read failed:', err);
+      onError?.('לא הצלחנו לקרוא את הקובץ');
+    }
+  };
+
+  const runCsvImport = async () => {
+    const { insert, fill } = csvImport.plan;
+    setBusy(true);
+    const inserted = [];
+    const updated = [];
+    let failed = 0;
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const rows = insert.map(({ place }) => toInsertPayload(place, auth?.user?.id));
+      for (let i = 0; i < rows.length; i += INSERT_CHUNK) {
+        const chunk = rows.slice(i, i + INSERT_CHUNK);
+        const { data, error } = await supabase.from('places').insert(chunk).select();
+        if (!error) {
+          inserted.push(...data);
+          continue;
+        }
+        // one bad row fails the whole chunk: retry one by one so the good rows still get in
+        for (const row of chunk) {
+          const single = await supabase.from('places').insert([row]).select().single();
+          if (single.error) {
+            console.error('Import row failed:', row.name, single.error);
+            failed += 1;
+          } else inserted.push(single.data);
+        }
+      }
+
+      const now = new Date().toISOString();
+      for (const { target, patch } of fill) {
+        const { data, error } = await supabase
+          .from('places')
+          .update({ ...patch, updated_at: now })
+          .eq('id', target.id)
+          .select()
+          .single();
+        if (error) {
+          console.error('Import fill failed:', target.name, error);
+          failed += 1;
+        } else updated.push(data);
+      }
+    } catch (err) {
+      console.error('CSV import failed:', err);
+      failed = -1;
+    }
+
+    const byId = new Map(updated.map((p) => [p.id, p]));
+    setPlaces((prev) => [...inserted, ...prev.map((p) => byId.get(p.id) || p)]);
+    setBusy(false);
+    setCsvImport(null);
+
+    const parts = [];
+    if (inserted.length) parts.push(`נוספו ${inserted.length} מקומות לאישור`);
+    if (updated.length) parts.push(`הושלם מידע ב-${updated.length} מקומות`);
+    if (parts.length) onSuccess?.(parts.join(' · '));
+    if (failed === -1) onError?.('הייבוא נעצר באמצע. כדאי לרענן ולבדוק מה נכנס.');
+    else if (failed > 0) onError?.(`${failed} שורות לא נשמרו (פרטים בקונסול)`);
+  };
+
   const duplicate = (place) => {
     setDrawer({
       id: null,
@@ -355,6 +477,38 @@ export default function PlacesManager({
             <Download size={16} />
             ייצוא CSV{selected.size > 0 ? ` (${selected.size})` : ''}
           </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={loading || busy || !!locating}
+            className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-border text-sm hover:bg-secondary disabled:opacity-50"
+          >
+            {locating ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+            ייבוא CSV
+          </button>
+          {locating && (
+            <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="tabular-nums">
+                מאתר מיקום לפי כתובת {locating.done}/{locating.total}…
+              </span>
+              <button
+                onClick={() => {
+                  stopLocating.current = true;
+                }}
+                className="text-primary hover:underline"
+              >
+                עצור
+              </button>
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            onChange={chooseCsv}
+            className="hidden"
+            aria-hidden="true"
+            tabIndex={-1}
+          />
           <button
             onClick={() => setDrawer({ id: null })}
             className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-green-600 text-white text-sm font-medium hover:bg-green-700"
@@ -660,6 +814,14 @@ export default function PlacesManager({
           onSuccess={onSuccess}
         />
       )}
+
+      <CsvImportDialog
+        fileName={csvImport?.fileName}
+        plan={csvImport?.plan}
+        isLoading={busy}
+        onConfirm={runCsvImport}
+        onCancel={() => setCsvImport(null)}
+      />
 
       <ConfirmDialog
         isOpen={!!confirm}

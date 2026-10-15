@@ -190,7 +190,8 @@ const csvCell = (value) => {
   return `"${s.replace(/"/g, '""')}"`;
 };
 
-const CSV_COLUMNS = [
+// Shared with placeImport.js: an exported file can be imported back as-is.
+export const CSV_COLUMNS = [
   ['name', 'שם'],
   ['category', 'קטגוריה'],
   ['city', 'עיר'],
