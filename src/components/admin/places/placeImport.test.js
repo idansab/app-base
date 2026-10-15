@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { placesToCsv } from './placeUtils';
+import { summarizeSchedule } from '@/lib/openingHours';
 import {
   decodeCsvBytes,
   isSamePlace,
@@ -7,6 +8,7 @@ import {
   mapHeader,
   missingFields,
   parseCsv,
+  parseImportHours,
   planImport,
   rowToPlace,
   toInsertPayload,
@@ -217,6 +219,46 @@ describe('locating rows without coordinates', () => {
     const { place, locatedBy } = rowToPlace(rows[3], mapHeader(rows[0]), { lat: 31, lng: 35, by: 'address' });
     expect(place).toMatchObject({ lat: 32.8, lng: 35.0 });
     expect(locatedBy).toBeNull();
+  });
+});
+
+describe('opening hours', () => {
+  it('turns Hebrew hours text into a schedule and rewrites the text from it', () => {
+    const h = parseImportHours('ראשון-חמישי 8:00-17:00; שישי 8:00-13:00');
+    expect(h.recognized).toBe(true);
+    expect(h.opening_schedule.days[0]).toEqual([['08:00', '17:00']]);
+    expect(h.opening_hours).toBe("א'-ה' 08:00-17:00, ו' 08:00-13:00");
+  });
+
+  it('also reads the OpenStreetMap form and always-open texts', () => {
+    expect(parseImportHours('Mo-Fr 09:00-17:00').opening_schedule.days[1]).toEqual([['09:00', '17:00']]);
+    expect(parseImportHours('פתוח 24 שעות')).toEqual({
+      opening_schedule: { type: 'always' },
+      opening_hours: 'פתוח 24 שעות',
+      recognized: true,
+    });
+  });
+
+  it('keeps unreadable text as text, without a schedule, and warns in the preview', () => {
+    expect(parseImportHours('לפי עונה')).toEqual({ opening_schedule: null, opening_hours: 'לפי עונה', recognized: false });
+    const h = mapHeader(['name', 'category', 'address', 'lat', 'lng', 'opening_hours']);
+    const { place, warnings } = rowToPlace(['א', 'food', 'ב', '32', '35', 'לפי עונה'], h);
+    expect(place.opening_schedule).toBeNull();
+    expect(warnings).toContain('שעות הפתיחה לא זוהו, נשמרו כטקסט בלבד');
+  });
+
+  it('round-trips the hours of an exported place', () => {
+    const schedule = { type: 'weekly', days: { 0: [['08:00', '12:00'], ['16:00', '20:00']], 1: [], 2: [], 3: [], 4: [], 5: [['08:00', '13:00']], 6: [] } };
+    const text = summarizeSchedule(schedule);
+    expect(parseImportHours(text).opening_schedule).toEqual(schedule);
+  });
+
+  it('fills structured hours into an existing place that has none, without touching its text', () => {
+    const incoming = parseImportHours("א'-ה' 08:00-17:00");
+    expect(missingFields({ ...existing, opening_hours: 'בדקו בעמוד' }, incoming)).toEqual({
+      opening_schedule: incoming.opening_schedule,
+    });
+    expect(missingFields({ ...existing, opening_schedule: { type: 'always' } }, incoming)).toEqual({});
   });
 });
 

@@ -161,7 +161,37 @@ describe('parseHoursText (the real values in the database)', () => {
     expect(s.days[6]).toEqual([]);
   });
 
+  it('reads split shifts, as summarizeSchedule writes them and as a following bare range', () => {
+    const joined = parseHoursText("א'-ה' 08:00-12:00 ו-16:00-20:00, ו' 08:00-13:00");
+    expect(joined.days[1]).toEqual([['08:00', '12:00'], ['16:00', '20:00']]);
+    expect(joined.days[5]).toEqual([['08:00', '13:00']]);
+    expect(parseHoursText("א'-ה' 08:00-12:00, 16:00-20:00").days[4]).toEqual([
+      ['08:00', '12:00'],
+      ['16:00', '20:00'],
+    ]);
+  });
+
+  it('reads full day names, "עד", dots, semicolons and explicit closed days', () => {
+    const s = parseHoursText('ראשון-חמישי: 9:00-17:00; שישי: 9.00 עד 13.00; שבת: סגור');
+    expect(s.days[0]).toEqual([['09:00', '17:00']]);
+    expect(s.days[5]).toEqual([['09:00', '13:00']]);
+    expect(s.days[6]).toEqual([]);
+    expect(parseHoursText('ימים א-ה 8-17').days[2]).toEqual([['08:00', '17:00']]);
+    expect(parseHoursText('יום שבת 10:00-14:00').days[6]).toEqual([['10:00', '14:00']]);
+  });
+
+  it('keeps overnight ranges and wrapping day ranges', () => {
+    const s = parseHoursText("ה'-ש' 20:00-02:00");
+    expect(s.days[4]).toEqual([['20:00', '02:00']]);
+    expect(s.days[6]).toEqual([['20:00', '02:00']]);
+    expect(s.days[0]).toEqual([]);
+  });
+
   it('gives up (null) on anything it is not sure about', () => {
+    expect(parseHoursText('8-17')).toBeNull(); // whole hours without days could be anything
+    expect(parseHoursText("א'-ה' 08:00-17:00 (בתיאום מראש)")).toBeNull();
+    expect(parseHoursText('סגור')).toBeNull();
+    expect(parseHoursText("א', ג' 08:00-12:00")).toBeNull();
     expect(parseHoursText('ימים משתנים')).toBeNull();
     expect(parseHoursText('בדקו בעמוד')).toBeNull();
     expect(parseHoursText('לפי לוח הטיולים')).toBeNull();
@@ -180,6 +210,7 @@ describe('summarizeSchedule', () => {
       "א'-ה' 10:00-18:00, ש' 10:00-14:00",
       "א'-ו' 07:00-19:00",
       '07:00-20:00',
+      "א'-ה' 08:00-12:00 ו-16:00-20:00, ו' 08:00-13:00",
     ]) {
       expect(summarizeSchedule(parseHoursText(text))).toBe(text);
     }
