@@ -165,57 +165,124 @@ export function summarizeSchedule(schedule) {
     .join(', ');
 }
 
-const normaliseTime = (t) => {
-  const [h, m] = t.split(':');
-  return `${h.padStart(2, '0')}:${m}`;
+// "8", "8:00", "08.00", "24:00" -> "HH:MM"; null when it is not a time. Minutes are optional only when allowed.
+const normaliseTime = (t, allowHourOnly) => {
+  const m = String(t).match(/^(\d{1,2})(?:[:.](\d{2}))?$/);
+  if (!m || (!m[2] && !allowHourOnly)) return null;
+  const hhmm = `${m[1].padStart(2, '0')}:${m[2] ?? '00'}`;
+  return isValidTime(hhmm) ? hhmm : null;
 };
 
-const OPEN_SPACE_TEXTS = new Set(['שטח פתוח', 'פתוח 24 שעות', 'פתוח 24/7', '24/7', '24 שעות', 'פתוח תמיד']);
+const OPEN_SPACE_TEXTS = new Set([
+  'שטח פתוח', 'פתוח 24 שעות', 'פתוח 24/7', '24/7', '24 שעות', 'פתוח תמיד', 'פתוח 24 שעות ביממה',
+  '24 שעות ביממה', 'כל הזמן', 'open 24/7', 'פתוח כל השבוע 24 שעות',
+]);
+
+// "א" / "א'" / "ראשון" / "יום ראשון" / "שבת" / "מוצ"ש" is not supported (it is a time, not a day)
+const DAY_WORDS = Object.fromEntries([
+  ...DAY_LETTERS.map((l, i) => [l, i]),
+  ...DAY_NAMES.map((n, i) => [n, i]),
+]);
+
+const parseDay = (token) => {
+  const t = token.trim().replace(/^יום\s+/, '').replace(/'$/, '');
+  return t in DAY_WORDS ? DAY_WORDS[t] : null;
+};
+
+/** "א'-ה'", "ראשון עד חמישי", "ימים א-ה", "שבת" -> list of day indexes (wrapping, e.g. ו-א). Null if not days. */
+const parseDays = (text) => {
+  const t = text.trim().replace(/:$/, '').replace(/^ימים\s+/, '').trim();
+  const range = t.split(/\s*(?:-|עד)\s*/);
+  if (range.length > 2) return null;
+  const from = parseDay(range[0]);
+  const to = range.length === 2 ? parseDay(range[1]) : from;
+  if (from === null || to === null) return null;
+  const days = [];
+  for (let d = from; ; d = (d + 1) % 7) {
+    days.push(d);
+    if (d === to) break;
+  }
+  return days;
+};
+
+const TIME_TOKEN = String.raw`\d{1,2}(?:[:.]\d{2})?`;
+const RANGE_RE = new RegExp(String.raw`(${TIME_TOKEN})\s*(?:-|עד)\s*(${TIME_TOKEN})`, 'g');
 
 /**
- * Best-effort conversion of the legacy free-text hours into a schedule.
- * Handles "א'-ה' 07:00-22:00, ו' 07:00-15:00", "07:00-20:00", "שטח פתוח".
+ * Best-effort conversion of free-text hours into a schedule. Handles, among others:
+ *   "א'-ה' 07:00-22:00, ו' 07:00-15:00"      "07:00-20:00"            "שטח פתוח" / "24/7"
+ *   "א'-ה' 08:00-12:00 ו-16:00-20:00"        "ראשון-חמישי: 9:00-17:00; שישי: 9:00-13:00; שבת: סגור"
+ *   "א-ה 8-17" (whole hours, only after days) "ימים א'-ה' 08.00 עד 17.00"
+ * A bare range only counts on its own ("07:00-20:00"); a bare range right after a day group adds a second
+ * shift to it ("א'-ה' 08:00-12:00, 16:00-20:00").
  * Returns null whenever it is not sure; an admin then fills the schedule in by hand.
  */
 export function parseHoursText(text) {
   if (!text || typeof text !== 'string') return null;
-  const clean = text.trim().replace(/[׳’`]/g, "'").replace(/[–—]/g, '-');
-  if (OPEN_SPACE_TEXTS.has(clean)) return { type: 'always' };
+  const clean = text
+    .trim()
+    .replace(/[׳’`´]/g, "'")
+    .replace(/[–—−]/g, '-')
+    .replace(/\s+/g, ' ');
+  if (OPEN_SPACE_TEXTS.has(clean.toLowerCase())) return { type: 'always' };
 
-  const timeRange = /(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/;
-  const segments = clean.split(/\s*,\s*/).filter(Boolean);
+  const segments = clean.split(/\s*[,;|\n]\s*/).filter(Boolean);
   if (segments.length === 0) return null;
 
   const schedule = emptyWeek();
   let sawDays = false;
   let sawBare = false;
+  let lastDays = null;
 
   for (const segment of segments) {
-    const match = segment.match(timeRange);
-    if (!match) return null;
-    const open = normaliseTime(match[1]);
-    const close = normaliseTime(match[2]);
-    if (!isValidTime(open) || !isValidTime(close) || open === close) return null;
+    const ranges = [...segment.matchAll(RANGE_RE)];
+    const daysPart = (ranges.length ? segment.slice(0, ranges[0].index) : segment).trim();
 
-    const daysPart = segment.slice(0, match.index).trim();
-    if (!daysPart) {
-      sawBare = true;
-      for (let d = 0; d < 7; d += 1) schedule.days[d].push([open, close]);
+    if (ranges.length === 0) {
+      // "שבת: סגור" / "ו' - סגור"
+      const closed = daysPart.match(/^(.*?)\s*[-:]?\s*סגור$/);
+      const days = closed && parseDays(closed[1]);
+      if (!days) return null;
+      sawDays = true;
+      lastDays = null;
       continue;
     }
-    sawDays = true;
-    const dayMatch = daysPart.match(/^([אבגדהוש])'?(?:\s*-\s*([אבגדהוש])'?)?$/);
-    if (!dayMatch) return null;
-    const from = DAY_LETTERS.indexOf(dayMatch[1]);
-    const to = dayMatch[2] ? DAY_LETTERS.indexOf(dayMatch[2]) : from;
-    for (let d = from; ; d = (d + 1) % 7) {
-      schedule.days[d].push([open, close]);
-      if (d === to) break;
+
+    // everything after the first range must be more ranges joined by "ו" / "and"
+    const rest = segment
+      .slice(ranges[0].index)
+      .replace(RANGE_RE, '')
+      .replace(/ו-?|\s|and|&|\+/g, '');
+    if (rest) return null;
+
+    const days = daysPart ? parseDays(daysPart) : null;
+    if (daysPart && !days) return null;
+
+    const parsed = [];
+    for (const [, a, b] of ranges) {
+      const open = normaliseTime(a, !!days);
+      const close = normaliseTime(b, !!days);
+      if (!open || !close || open === close || open === '24:00') return null;
+      parsed.push([open, close]);
     }
+
+    let targets = days;
+    if (!days) {
+      if (lastDays) targets = lastDays; // second shift for the previous day group
+      else {
+        sawBare = true;
+        targets = [0, 1, 2, 3, 4, 5, 6];
+      }
+    } else {
+      sawDays = true;
+      lastDays = days;
+    }
+    targets.forEach((d) => schedule.days[d].push(...parsed));
   }
 
   // A bare range only makes sense on its own ("07:00-20:00")
   if (sawBare && (sawDays || segments.length > 1)) return null;
+  if (!hasUsableSchedule(schedule)) return null;
   return validateSchedule(schedule) ? null : schedule;
 }
 

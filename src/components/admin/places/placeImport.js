@@ -5,6 +5,8 @@ import { coreName, normalizeName } from '@/lib/importPlaces';
 import { CATEGORIES, normalizeCategory } from '@/lib/categories';
 import { AMENITIES, cleanAmenities } from '@/lib/amenities';
 import { MAX_PLACE_IMAGES, getPlaceImages } from '@/lib/placeImages';
+import { hasUsableSchedule, parseHoursText, requiresHours, summarizeSchedule } from '@/lib/openingHours';
+import { parseOsmHours } from '@/lib/osmHours';
 import { CSV_COLUMNS, IL_BOUNDS, PRICE_LEVELS } from './placeUtils';
 
 // ---- reading the file --------------------------------------------------------
@@ -111,6 +113,23 @@ const toLink = (value) => {
   return /^https?:\/\/[^\s<>"']+$/.test(v) && v.length <= 300 ? v : undefined;
 };
 
+/**
+ * Hours text -> { opening_schedule, opening_hours }. Hebrew text first ("א'-ה' 08:00-17:00, ו' 08:00-13:00"),
+ * then the OpenStreetMap form ("Mo-Fr 08:00-17:00"). Like the admin form, the text is rewritten from the
+ * schedule so both always agree; text that cannot be read is kept as-is with no schedule.
+ */
+export function parseImportHours(text) {
+  const raw = String(text ?? '').trim();
+  if (!raw) return { opening_schedule: null, opening_hours: null, recognized: false };
+  const schedule = parseHoursText(raw) ?? parseOsmHours(raw);
+  if (!schedule) return { opening_schedule: null, opening_hours: raw, recognized: false };
+  return {
+    opening_schedule: schedule,
+    opening_hours: schedule.type === 'weekly' ? summarizeSchedule(schedule) : raw,
+    recognized: true,
+  };
+}
+
 const inIsrael = (lat, lng) =>
   lat >= IL_BOUNDS.latMin && lat <= IL_BOUNDS.latMax && lng >= IL_BOUNDS.lngMin && lng <= IL_BOUNDS.lngMax;
 
@@ -206,6 +225,10 @@ export function rowToPlace(row, header, located) {
     splitList(get('amenities')).map((v) => AMENITIES.find((a) => a.key === v || a.label === v)?.key)
   );
 
+  const hours = parseImportHours(get('opening_hours'));
+  if (hours.opening_hours && !hours.recognized) warnings.push('שעות הפתיחה לא זוהו, נשמרו כטקסט בלבד');
+  if (requiresHours({ name }) && !hasUsableSchedule(hours.opening_schedule)) warnings.push('עגלת קפה בלי שעות פתיחה');
+
   const orNull = (v) => (v ? v : null);
   const place = {
     name,
@@ -219,7 +242,8 @@ export function rowToPlace(row, header, located) {
     images: images.slice(0, MAX_PLACE_IMAGES),
     rating,
     price_level,
-    opening_hours: orNull(get('opening_hours')),
+    opening_hours: hours.opening_hours,
+    opening_schedule: hours.opening_schedule,
     kosher,
     amenities,
     phone: orNull(get('phone')),
@@ -276,9 +300,16 @@ const isEmpty = (v) => v === null || v === undefined || String(v).trim() === '';
 export function missingFields(existing, incoming) {
   const patch = {};
   for (const key of FILL_FIELDS) {
+    // hours text must describe the place's own schedule, so it is only filled when there is none
+    if (key === 'opening_hours' && existing.opening_schedule) continue;
     if (isEmpty(existing[key]) && !isEmpty(incoming[key])) patch[key] = incoming[key];
   }
   if (getPlaceImages(existing).length === 0 && incoming.images?.length > 0) patch.images = incoming.images;
+  // structured hours fill a place that has none; its text follows unless the place already has its own text
+  if (!existing.opening_schedule && incoming.opening_schedule) {
+    patch.opening_schedule = incoming.opening_schedule;
+    if (isEmpty(existing.opening_hours)) patch.opening_hours = incoming.opening_hours;
+  }
 
   const tags = [...new Set([...(existing.tags || []), ...(incoming.tags || [])])];
   if (tags.length > (existing.tags || []).length) patch.tags = tags;
@@ -291,6 +322,7 @@ export function missingFields(existing, incoming) {
 export const FIELD_LABELS = {
   ...Object.fromEntries(CSV_COLUMNS),
   images: 'תמונות',
+  opening_schedule: 'שעות פתיחה מובנות',
 };
 
 /**

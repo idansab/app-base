@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CopyCheck, FilePlus2, Loader2, MapPin, Upload, X } from 'lucide-react';
+import { AlertTriangle, Clock, CopyCheck, FilePlus2, Loader2, MapPin, Upload, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FIELD_LABELS } from './placeImport';
 
@@ -89,6 +89,12 @@ export default function CsvImportDialog({ fileName, plan, isLoading, onConfirm, 
                   <span className="mr-2 inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[11px] font-medium text-sky-800 dark:border-sky-700 dark:bg-sky-950/60 dark:text-sky-200">
                     <MapPin size={11} />
                     {locatedBy === 'address' ? 'מיקום לפי הכתובת' : 'מיקום לפי שם המקום'}
+                  </span>
+                )}
+                {place.opening_schedule && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock size={11} className="shrink-0" />
+                    {place.opening_hours}
                   </span>
                 )}
                 {warnings.length > 0 && (
