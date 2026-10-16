@@ -180,6 +180,17 @@ describe('parseHoursText (the real values in the database)', () => {
     expect(parseHoursText('יום שבת 10:00-14:00').days[6]).toEqual([['10:00', '14:00']]);
   });
 
+  it('reads day lists joined with "ו"', () => {
+    const s = parseHoursText("א'-ה' וש' 08:00-16:00, ו' 08:00-15:00");
+    expect(s.days[4]).toEqual([['08:00', '16:00']]);
+    expect(s.days[6]).toEqual([['08:00', '16:00']]);
+    expect(s.days[5]).toEqual([['08:00', '15:00']]);
+    const t = parseHoursText("א' ו-ו' 09:30-21:00, ב'-ה' 15:00-21:00");
+    expect(t.days[0]).toEqual([['09:30', '21:00']]);
+    expect(t.days[5]).toEqual([['09:30', '21:00']]);
+    expect(t.days[2]).toEqual([['15:00', '21:00']]);
+  });
+
   it('keeps overnight ranges and wrapping day ranges', () => {
     const s = parseHoursText("ה'-ש' 20:00-02:00");
     expect(s.days[4]).toEqual([['20:00', '02:00']]);

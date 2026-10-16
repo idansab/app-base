@@ -44,6 +44,8 @@ export function validateSchedule(schedule) {
   for (let day = 0; day < 7; day += 1) {
     const ranges = schedule.days[day];
     if (!Array.isArray(ranges)) return 'חסר יום בשעות הפתיחה';
+    // same limit as valid_schedule() in the database (migration 010)
+    if (ranges.length > 2) return `עד שתי משמרות ביום ${DAY_NAMES[day]}`;
     for (const range of ranges) {
       if (!Array.isArray(range) || range.length !== 2 || !isValidTime(range[0]) || !isValidTime(range[1])) {
         return `שעות לא תקינות ביום ${DAY_NAMES[day]}`;
@@ -189,10 +191,8 @@ const parseDay = (token) => {
   return t in DAY_WORDS ? DAY_WORDS[t] : null;
 };
 
-/** "א'-ה'", "ראשון עד חמישי", "ימים א-ה", "שבת" -> list of day indexes (wrapping, e.g. ו-א). Null if not days. */
-const parseDays = (text) => {
-  const t = text.trim().replace(/:$/, '').replace(/^ימים\s+/, '').trim();
-  const range = t.split(/\s*(?:-|עד)\s*/);
+const parseDayRange = (text) => {
+  const range = text.trim().split(/\s*(?:-|עד)\s*/);
   if (range.length > 2) return null;
   const from = parseDay(range[0]);
   const to = range.length === 2 ? parseDay(range[1]) : from;
@@ -203,6 +203,23 @@ const parseDays = (text) => {
     if (d === to) break;
   }
   return days;
+};
+
+/**
+ * "א'-ה'", "ראשון עד חמישי", "ימים א-ה", "שבת", and lists joined with "ו": "א'-ה' וש'", "א' ו-ו'"
+ * -> day indexes (ranges may wrap, e.g. ו-א). Null if it is not a day spec.
+ */
+const parseDays = (text) => {
+  const t = text.trim().replace(/:$/, '').replace(/^ימים\s+/, '').trim();
+  // the joining "ו" always follows a space; a leading "ו'" is Friday
+  const parts = t.split(/\s+ו-?(?=\S)/);
+  const days = [];
+  for (const part of parts) {
+    const range = parseDayRange(part);
+    if (!range) return null;
+    range.forEach((d) => !days.includes(d) && days.push(d));
+  }
+  return days.length ? days : null;
 };
 
 const TIME_TOKEN = String.raw`\d{1,2}(?:[:.]\d{2})?`;

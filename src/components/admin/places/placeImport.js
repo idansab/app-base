@@ -68,18 +68,31 @@ const normalizeHeader = (h) => String(h ?? '').replace(/^﻿/, '').trim().toLowe
 const HEADER_ALIASES = {
   ...Object.fromEntries(CSV_COLUMNS.flatMap(([key, label]) => [[normalizeHeader(key), key], [normalizeHeader(label), key]])),
   'שם המקום': 'name',
+  'שם העסק': 'name',
+  'שעות': 'opening_hours',
   latitude: 'lat',
   longitude: 'lng',
   lon: 'lng',
-  'קו רוחב (lat)': 'lat',
-  'קו אורך (lng)': 'lng',
+  long: 'lng',
+  hours: 'opening_hours',
+  'opening hours': 'opening_hours',
+};
+
+// Files from Excel, Google Sheets or AI tools label columns like "קו רוחב (Latitude)":
+// try the whole header, then the part before the parentheses, then the part inside them.
+const headerKey = (h) => {
+  const full = normalizeHeader(h);
+  if (HEADER_ALIASES[full]) return HEADER_ALIASES[full];
+  const m = full.match(/^(.*?)\s*\((.*)\)\s*$/);
+  if (!m) return null;
+  return HEADER_ALIASES[m[1].trim()] || HEADER_ALIASES[m[2].trim()] || null;
 };
 
 /** Index of each known column in the header row; unknown columns are ignored. */
 export function mapHeader(headerRow) {
   const map = {};
   headerRow.forEach((h, i) => {
-    const key = HEADER_ALIASES[normalizeHeader(h)];
+    const key = headerKey(h);
     if (key && map[key] === undefined) map[key] = i;
   });
   return map;
@@ -121,11 +134,16 @@ const toLink = (value) => {
 export function parseImportHours(text) {
   const raw = String(text ?? '').trim();
   if (!raw) return { opening_schedule: null, opening_hours: null, recognized: false };
-  const schedule = parseHoursText(raw) ?? parseOsmHours(raw);
-  if (!schedule) return { opening_schedule: null, opening_hours: raw, recognized: false };
+  // "09:00-16:00 (בעונה)": the remark becomes the schedule's note (the database allows up to 100 characters)
+  const notes = [...raw.matchAll(/\(([^)]*)\)/g)].map((m) => m[1].trim()).filter(Boolean);
+  const bare = raw.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+  const parsed = parseHoursText(bare) ?? parseOsmHours(bare);
+  if (!parsed) return { opening_schedule: null, opening_hours: raw, recognized: false };
+  const note = notes.join('; ').slice(0, 100);
+  const schedule = note ? { ...parsed, note } : parsed;
   return {
     opening_schedule: schedule,
-    opening_hours: schedule.type === 'weekly' ? summarizeSchedule(schedule) : raw,
+    opening_hours: schedule.type === 'weekly' ? summarizeSchedule(schedule) : bare,
     recognized: true,
   };
 }
@@ -263,7 +281,8 @@ const phoneDigits = (phone) => {
 /**
  * Same place? Stricter than isDuplicate() in lib/importPlaces (which is tuned for springs and reserves):
  * businesses in a city sit a few dozen meters apart, so position alone never counts.
- *  - same normalized name within 1 km, or
+ *  - same normalized name within 1 km, or within 3 km when the row names the same town, or
+ *  - one name contains the other at practically the same spot (150 m), or
  *  - same distinctive name (without words like "מעיין", "חוף") within 300 m, or
  *  - same phone number.
  */
@@ -271,9 +290,18 @@ export function isSamePlace(a, b) {
   const km = haversineKm(Number(a.lat), Number(a.lng), Number(b.lat), Number(b.lng));
   const within = (limit) => Number.isFinite(km) && km <= limit;
   const nameA = normalizeName(a.name);
-  if (nameA && nameA === normalizeName(b.name) && within(1)) return true;
+  const sameName = nameA && nameA === normalizeName(b.name);
+  if (sameName && within(1)) return true;
+  // files often carry rough coordinates: the same name in the same town still counts, up to 3 km apart
+  const town = normalizeName(b.city);
+  const where = normalizeName(`${a.city ?? ''} ${a.address ?? ''}`);
+  if (sameName && town.length >= 2 && ` ${where} `.includes(` ${town} `) && within(3)) return true;
   const coreA = coreName(a.name);
-  if (coreA.length >= 3 && coreA === coreName(b.name) && within(0.3)) return true;
+  const coreB = coreName(b.name);
+  if (coreA.length >= 3 && coreA === coreB && within(0.3)) return true;
+  // "יער הקופים יודפת" at the pin of "יער הקופים": one name contains the other, practically the same spot
+  const [shorter, longer] = coreA.length <= coreB.length ? [coreA, coreB] : [coreB, coreA];
+  if (shorter.length >= 4 && ` ${longer} `.includes(` ${shorter} `) && within(0.15)) return true;
   const phoneA = phoneDigits(a.phone);
   return phoneA.length >= 9 && phoneA === phoneDigits(b.phone);
 }
