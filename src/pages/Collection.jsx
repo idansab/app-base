@@ -1,16 +1,155 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Loader2, Share2 } from 'lucide-react';
+import { ChevronDown, Heart, Info, Loader2, MapPin, Navigation, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-import PlaceCard from '@/components/PlaceCard';
 import { supabase } from '@/api/base44Client';
 import useFavorites from '@/hooks/useFavorites';
 import { useAuth } from '@/lib/AuthContext';
 import { trackEvent } from '@/lib/analytics';
 import { getCollection, orderCollectionPlaces } from '@/lib/collections';
+import { wazeUrl } from '@/lib/geo';
+import { placeholderFor } from '@/lib/placeholders';
 import PageNotFound from '@/lib/PageNotFound';
 
-/** A curated list of places linked from a social post, e.g. /list/springs. */
+// Bold white text with a dark outline, like the captions in Israeli travel and food TikToks.
+const CAPTION = { textShadow: '0 0 2px #000, 0 2px 10px rgba(0,0,0,0.7)' };
+
+// Same height as the Discover feed: the screen minus the header and bottom nav.
+const SLIDE = 'relative h-[calc(100dvh-9rem)] min-h-[420px] w-full snap-start snap-always overflow-hidden bg-black';
+
+const imageOf = (place) => place.images?.[0] || place.image_url || placeholderFor(place);
+
+function RailButton({ label, children, ...props }) {
+  const Tag = props.href ? 'a' : props.to ? Link : 'button';
+  return (
+    <Tag {...props} aria-label={label} className="flex flex-col items-center gap-1 text-white">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">{children}</span>
+      <span className="text-[11px] font-semibold" style={CAPTION}>
+        {label}
+      </span>
+    </Tag>
+  );
+}
+
+function CoverSlide({ collection, place, count }) {
+  return (
+    <section className={SLIDE}>
+      {place && <img src={imageOf(place)} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-black/60" />
+      <div className="relative flex h-full flex-col items-center justify-between px-6 pb-8 pt-[18%] text-center text-white">
+        <div>
+          <span className="mb-4 inline-block rounded-full bg-primary px-4 py-1 text-sm font-bold text-primary-foreground">
+            {count} מקומות
+          </span>
+          <h1 className="text-4xl font-extrabold leading-tight md:text-5xl" style={CAPTION}>
+            {collection.title}
+          </h1>
+          <p className="mt-3 text-lg font-semibold text-white/95" style={CAPTION}>
+            {collection.subtitle}
+          </p>
+        </div>
+        <div className="flex flex-col items-center gap-1 text-sm font-semibold" style={CAPTION}>
+          גללו למטה
+          <ChevronDown className="animate-bounce" size={28} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PlaceSlide({ place, index, total, isFavorite, onFavorite, onShare }) {
+  return (
+    <section className={SLIDE}>
+      <img src={imageOf(place)} alt={place.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/60 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+
+      <span className="absolute right-4 top-4 rounded-full bg-black/50 px-3 py-1 text-sm font-bold text-white">
+        {index + 1}/{total}
+      </span>
+
+      <div className="absolute bottom-24 left-4 flex flex-col gap-4">
+        <RailButton label={isFavorite ? 'נשמר' : 'שמירה'} type="button" onClick={onFavorite}>
+          <Heart size={24} className={isFavorite ? 'fill-red-500 text-red-500' : ''} />
+        </RailButton>
+        {place.lat && place.lng && (
+          <RailButton
+            label="Waze"
+            href={wazeUrl(place.lat, place.lng)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackEvent('navigate', { item_id: place.id, method: 'waze' })}
+          >
+            <Navigation size={22} />
+          </RailButton>
+        )}
+        <RailButton label="שיתוף" type="button" onClick={onShare}>
+          <Share2 size={22} />
+        </RailButton>
+        <RailButton label="פרטים" to={`/place/${place.id}`}>
+          <Info size={22} />
+        </RailButton>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 pb-4 pl-20 pr-4 text-right text-white">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-lg font-extrabold text-primary-foreground">
+            {index + 1}
+          </span>
+          <h2 className="text-3xl font-extrabold leading-tight" style={CAPTION}>
+            {place.name}
+          </h2>
+        </div>
+        {place.city && !place.short_description?.includes(place.city) && (
+          <p className="mb-1 flex items-center gap-1 text-base font-semibold" style={CAPTION}>
+            <MapPin size={16} /> {place.city}
+          </p>
+        )}
+        {place.short_description && (
+          <p className="text-base text-white/95" style={CAPTION}>
+            {place.short_description}
+          </p>
+        )}
+        {place.tags?.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {place.tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold backdrop-blur-sm">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+        <p className="mt-2 text-[10px] text-white/70">{place.credit}</p>
+      </div>
+    </section>
+  );
+}
+
+function EndSlide({ onShare }) {
+  return (
+    <section className={`${SLIDE} bg-gradient-to-b from-primary/90 to-black`}>
+      <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center text-white">
+        <p className="text-3xl font-extrabold leading-tight" style={CAPTION}>
+          תשלחו למי שחייב להכיר 👇
+        </p>
+        <button
+          type="button"
+          onClick={onShare}
+          className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-lg font-bold text-black shadow-lg"
+        >
+          <Share2 size={20} />
+          שתפו את הרשימה
+        </button>
+        <p className="mt-6 text-white/85">יש עוד עשרות מעיינות, עגלות קפה ומקומות באתר</p>
+        <Link to="/" className="rounded-full border-2 border-white px-6 py-2.5 font-bold">
+          לגלות מה יש באזור שלי
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/** A curated list of places linked from a social post, e.g. /list/springs, as a vertical swipe like the post itself. */
 export default function Collection() {
   const { slug } = useParams();
   const collection = getCollection(slug);
@@ -53,12 +192,12 @@ export default function Collection() {
     toggle(placeId).catch(() => toast.error('לא הצלחנו לשמור, נסו שוב'));
   };
 
-  const handleShare = async () => {
-    trackEvent('share', { content_type: 'collection', item_id: collection.slug });
-    const url = window.location.href.split('?')[0];
+  const share = async ({ title, path, contentType, itemId }) => {
+    trackEvent('share', { content_type: contentType, item_id: itemId });
+    const url = `${window.location.origin}${path}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: collection.title, text: `${collection.title} — מצאתי ב"מה יש פה"`, url });
+        await navigator.share({ title, text: `${title} — מצאתי ב"מה יש פה"`, url });
         return;
       } catch (e) {
         if (e?.name === 'AbortError') return;
@@ -72,56 +211,37 @@ export default function Collection() {
     }
   };
 
+  const shareCollection = () =>
+    share({ title: collection.title, path: window.location.pathname, contentType: 'collection', itemId: collection.slug });
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8" dir="rtl">
-      <header className="text-right mb-8">
-        <h1 className="text-3xl md:text-4xl font-black mb-2">{collection.title}</h1>
-        <p className="text-muted-foreground mb-4">{collection.subtitle}</p>
-        <button
-          onClick={handleShare}
-          className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-5 py-2.5 font-medium shadow-sm hover:opacity-90 transition-opacity"
-        >
-          <Share2 size={18} />
-          שתפו את הרשימה
-        </button>
-      </header>
-
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="animate-spin text-primary" size={32} />
-        </div>
-      ) : failed || places.length === 0 ? (
-        <p className="text-center text-muted-foreground py-16">לא הצלחנו לטעון את הרשימה כרגע. נסו לרענן.</p>
-      ) : (
-        <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {places.map((place, i) => (
-            <li key={place.id} className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold">
-                  {i + 1}
-                </span>
-                <span className="text-sm text-muted-foreground">{place.city}</span>
-              </div>
-              <PlaceCard
+    <div className="bg-black" dir="rtl">
+      <div className="mx-auto h-[calc(100dvh-9rem)] min-h-[420px] w-full max-w-[480px] snap-y snap-mandatory overflow-y-scroll">
+        {loading ? (
+          <div className="flex h-full items-center justify-center">
+            <Loader2 className="animate-spin text-white" size={32} />
+          </div>
+        ) : failed || places.length === 0 ? (
+          <p className="p-8 text-center text-white/80">לא הצלחנו לטעון את הרשימה כרגע. נסו לרענן.</p>
+        ) : (
+          <>
+            <CoverSlide collection={collection} place={places[0]} count={places.length} />
+            {places.map((place, i) => (
+              <PlaceSlide
+                key={place.id}
                 place={place}
+                index={i}
+                total={places.length}
                 isFavorite={isFavorite(place.id)}
-                onFavoriteToggle={() => handleFavorite(place.id)}
-                onClick={() => navigate(`/place/${place.id}`)}
+                onFavorite={() => handleFavorite(place.id)}
+                onShare={() =>
+                  share({ title: place.name, path: `/place/${place.id}`, contentType: 'place', itemId: place.id })
+                }
               />
-              <p className="text-[11px] text-muted-foreground mt-1.5 text-right">{place.credit}</p>
-            </li>
-          ))}
-        </ol>
-      )}
-
-      <div className="text-center mt-12">
-        <p className="text-muted-foreground mb-3">יש עוד עשרות מעיינות, עגלות קפה ומקומות באתר</p>
-        <Link
-          to="/"
-          className="inline-flex rounded-full border border-primary text-primary px-6 py-2.5 font-medium hover:bg-primary/10 transition-colors"
-        >
-          לגלות מה יש באזור שלי
-        </Link>
+            ))}
+            <EndSlide onShare={shareCollection} />
+          </>
+        )}
       </div>
     </div>
   );
