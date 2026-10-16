@@ -25,6 +25,17 @@ const PAGES = {
     title: `גלה — סרטונים ורעיונות לטיולים | ${SITE_NAME}`,
     description: 'סרטוני תדמית ורעיונות לסופ"ש, אזורים ומקומות מומלצים מתוך "מה יש פה".',
   },
+  // Collection pages (src/lib/collections.js); `image` is a site path used as the link-preview image.
+  '/list/springs': {
+    title: `5 מעיינות שעוד לא היית בהם | ${SITE_NAME}`,
+    description: '5 מעיינות פחות מוכרים מהגולן ועד הנגב, עם ניווט ל-Waze בלחיצה.',
+    image: '/og/springs.jpg',
+  },
+  '/list/winter-streams': {
+    title: `3 נחלים שמתעוררים רק בחורף | ${SITE_NAME}`,
+    description: 'מפל התנור, מפל סער ונחל צין: מקומות שבאמת שווה לראות אחרי גשם, ואיפה לצפות בשיטפון בבטחה.',
+    image: '/og/winter-streams.jpg',
+  },
   '/accessibility': { title: `הצהרת נגישות | ${SITE_NAME}`, description: 'הצהרת הנגישות של "מה יש פה".' },
   '/privacy': { title: `מדיניות פרטיות | ${SITE_NAME}`, description: 'מדיניות הפרטיות של "מה יש פה".' },
   '/terms': { title: `תנאי שימוש | ${SITE_NAME}`, description: 'תנאי השימוש של "מה יש פה".' },
@@ -100,7 +111,7 @@ async function rewrite({ request, next, env }) {
   let meta = PAGES[path];
   let noindex = isPrivate(path);
   let ldJson = null;
-  let ogImage = null;
+  let ogImage = meta?.image ? url.origin + meta.image : null;
 
   const placeMatch = path.match(/^\/place\/([^/]+)$/);
   if (placeMatch) {

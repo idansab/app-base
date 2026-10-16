@@ -32,6 +32,7 @@ const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const About = lazy(() => import('@/pages/About'));
 const PlaceDetail = lazy(() => import('@/pages/PlaceDetail'));
+const Collection = lazy(() => import('@/pages/Collection'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const AccessibilityStatement = lazy(() => import('@/pages/AccessibilityStatement'));
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/place/:id" element={<PlaceDetail />} />
+        <Route path="/list/:slug" element={<Collection />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/trips" element={<Trips />} />
         <Route path="/trips/:id" element={<TripPage />} />
