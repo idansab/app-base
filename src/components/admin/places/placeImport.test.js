@@ -222,7 +222,46 @@ describe('locating rows without coordinates', () => {
   });
 });
 
+describe('files made in other tools', () => {
+  it('recognizes headers with an English hint in parentheses', () => {
+    const h = mapHeader(['שם המקום', 'כתובת', 'קו רוחב (Latitude)', 'קו אורך (Longitude)', 'קטגוריה', 'שעות פתיחה', 'תיאור']);
+    expect(h).toMatchObject({ name: 0, address: 1, lat: 2, lng: 3, category: 4, opening_hours: 5, description: 6 });
+    expect(mapHeader(['Name', 'Latitude', 'Longitude'])).toMatchObject({ name: 0, lat: 1, lng: 2 });
+  });
+
+  it('a row with coordinates in such a file is not sent to the location search', () => {
+    const rows = parseCsv('שם המקום,כתובת,קו רוחב (Latitude),קו אורך (Longitude),קטגוריה\nא,ב,32.8,35.2,אוכל');
+    expect(locateQueries(rows)).toEqual([]);
+    expect(planImport(rows, []).insert).toHaveLength(1);
+  });
+
+  it('matches the same name in the same town despite rough coordinates, but not in another town', () => {
+    const brewery = { id: 'b', name: 'מבשלת הגולן (Golan Brewery)', city: 'קצרין', lat: 32.9869, lng: 35.7077 };
+    const row = { name: 'מבשלת הגולן (Golan Brewery)', address: 'אזור התעשייה, קצרין', lat: 32.9931, lng: 35.6921 };
+    expect(isSamePlace(row, brewery)).toBe(true); // ~1.6 km apart
+    expect(isSamePlace({ ...row, address: 'ראש פינה' }, brewery)).toBe(false);
+  });
+
+  it('treats a longer name at the same spot as the same place', () => {
+    const forest = { id: 'f', name: 'יער הקופים', lat: 32.8394, lng: 35.2708 };
+    expect(isSamePlace({ name: 'יער הקופים יודפת', lat: 32.8394, lng: 35.2708 }, forest)).toBe(true);
+    // two different shops in the same complex share a pin but not a name
+    expect(isSamePlace({ name: 'גלריית אמני יודפת', lat: 32.839, lng: 35.2704 }, { name: 'לחם ארז', lat: 32.8389, lng: 35.2702 })).toBe(false);
+  });
+});
+
 describe('opening hours', () => {
+  it('reads day lists joined with "ו" and keeps a note in parentheses', () => {
+    const h = parseImportHours("א'-ה' וש' 08:00–16:00, ו' 08:00–15:00");
+    expect(h.recognized).toBe(true);
+    expect(h.opening_schedule.days[6]).toEqual([['08:00', '16:00']]);
+    expect(h.opening_schedule.days[5]).toEqual([['08:00', '15:00']]);
+    const noted = parseImportHours("א'-ש' 09:00–16:00 (בעונה)");
+    expect(noted.opening_schedule.days[3]).toEqual([['09:00', '16:00']]);
+    expect(noted.opening_schedule.note).toBe('בעונה');
+    expect(parseImportHours('פתוח 24 שעות (מתקנים בשעות האור)').opening_schedule).toEqual({ type: 'always', note: 'מתקנים בשעות האור' });
+  });
+
   it('turns Hebrew hours text into a schedule and rewrites the text from it', () => {
     const h = parseImportHours('ראשון-חמישי 8:00-17:00; שישי 8:00-13:00');
     expect(h.recognized).toBe(true);

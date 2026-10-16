@@ -356,6 +356,11 @@ export default function PlacesManager({
     const file = e.target.files?.[0];
     e.target.value = ''; // picking the same file again should work too
     if (!file) return;
+    // duplicates are found against the loaded list: never plan against a list that is still loading
+    if (loading || loadError) {
+      onError?.('רשימת המקומות עדיין לא נטענה. נסו שוב בעוד רגע.');
+      return;
+    }
     try {
       const rows = parseCsv(decodeCsvBytes(await file.arrayBuffer()));
       const located = await locateRows(rows);
