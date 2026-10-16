@@ -5,14 +5,54 @@ import { VIDEO_EXT, checkVideoMeta, validateVideoFile, validateVideoText } from 
 const BUCKET = 'discover-videos';
 const COLUMNS = 'id, place_id, owner_id, title, description, video_url, poster_url, storage_path, poster_path, duration_seconds, status, review_note, sort_order, created_at, places(id, name)';
 
+// The feed also shows the place's details and the number of comments.
+const FEED_COLUMNS = 'id, place_id, owner_id, title, description, video_url, poster_url, sort_order, created_at, places(id, name, city, short_description, lat, lng, tags)';
+const COMMENT_COLUMNS = 'id, video_id, user_id, body, author_name, is_owner, created_at';
+
 /** Feed order: admin order first, then newest. */
 export const byFeedOrder = (a, b) => a.sort_order - b.sort_order || new Date(b.created_at) - new Date(a.created_at);
 
 /** Approved videos for the public feed. Falls back to the built-in list if the table is not reachable. */
 export async function loadFeed() {
-  const { data, error } = await supabase.from('discover_videos').select(COLUMNS).eq('status', 'approved');
+  const approved = (columns) => supabase.from('discover_videos').select(columns).eq('status', 'approved');
+  let { data, error } = await approved(`${FEED_COLUMNS}, discover_video_comments(count)`);
+  // the comments table may not exist yet in this environment: load the feed without counts
+  if (error) ({ data, error } = await approved(FEED_COLUMNS));
   if (error) return DISCOVER_VIDEOS.map((v) => ({ id: v.id, title: v.title, description: v.description, video_url: v.src, poster_url: v.poster }));
   return [...data].sort(byFeedOrder);
+}
+
+/** Comments of one video, oldest first. */
+export async function loadComments(videoId) {
+  const { data, error } = await supabase
+    .from('discover_video_comments')
+    .select(COMMENT_COLUMNS)
+    .eq('video_id', videoId)
+    .order('created_at');
+  if (error) throw new Error('לא הצלחנו לטעון את התגובות');
+  return data || [];
+}
+
+/** Adds a comment as the signed-in user and returns the saved row (with the name the server chose). */
+export async function addComment(videoId, body) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const uid = session?.user?.id;
+  if (!uid) throw new Error('צריך להתחבר כדי להגיב');
+  const { data, error } = await supabase
+    .from('discover_video_comments')
+    .insert({ video_id: videoId, user_id: uid, body: body.trim() })
+    .select(COMMENT_COLUMNS)
+    .single();
+  if (error) {
+    const limited = error.hint === 'too_many_requests' || /rate limit/i.test(error.message || '');
+    throw new Error(limited ? 'יותר מדי תגובות בזמן קצר. נסו שוב בעוד כמה דקות' : 'שליחת התגובה נכשלה');
+  }
+  return data;
+}
+
+export async function deleteComment(commentId) {
+  const { error } = await supabase.from('discover_video_comments').delete().eq('id', commentId);
+  if (error) throw new Error('מחיקת התגובה נכשלה');
 }
 
 /** Everything (admin) or the caller's own videos (RLS decides). */

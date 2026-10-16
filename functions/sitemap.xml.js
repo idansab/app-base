@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://gsbbtrknnkdihdlojwbd.supabase.co';
 
-const STATIC_PATHS = ['/', '/about', '/for-business', '/surprise', '/accessibility', '/privacy', '/terms'];
+const STATIC_PATHS = ['/', '/about', '/for-business', '/surprise', '/list/springs', '/list/winter-streams','/accessibility', '/privacy', '/terms'];
 
 export async function onRequestGet({ request, env }) {
   const origin = new URL(request.url).origin;
