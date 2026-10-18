@@ -86,15 +86,16 @@ function placeJsonLd(place, url, image) {
   return JSON.stringify(ld).replace(/</g, '\\u003c');
 }
 
-// The site moved to its own domain: send the old pages.dev address there (301) so shared
-// links and search rankings follow. Only the production host — preview deploys
+// The site moved to its own domain: send the old pages.dev address (and www) there (301) so
+// shared links and search rankings follow and there is one canonical host. Only the production host — preview deploys
 // (<hash>.app-base-420.pages.dev) stay reachable, and so does the Search Console file.
 const OLD_HOST = 'app-base-420.pages.dev';
 const SITE_ORIGIN = 'https://mayeshpo.top';
 
 export async function onRequest(context) {
   const reqUrl = new URL(context.request.url);
-  if (reqUrl.hostname === OLD_HOST && !/^\/google[0-9a-f]+\.html$/.test(reqUrl.pathname)) {
+  const movedHost = reqUrl.hostname === OLD_HOST || reqUrl.hostname === 'www.mayeshpo.top';
+  if (movedHost && !/^\/google[0-9a-f]+\.html$/.test(reqUrl.pathname)) {
     return Response.redirect(SITE_ORIGIN + reqUrl.pathname + reqUrl.search, 301);
   }
   // SEO rewriting must never take the site down: on any error serve the original page.
