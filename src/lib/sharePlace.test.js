@@ -6,11 +6,11 @@ vi.mock('@/lib/trackPlace', () => ({ trackPlaceEvent: vi.fn() }));
 import { placeShareText, placeShareUrl, sharePlaceLink } from './sharePlace';
 
 const place = { id: 'abc-123', name: 'קפה נוף הגליל', city: 'עפולה' };
-const location = { origin: 'https://app-base-420.pages.dev' };
+const location = { origin: 'https://mayeshpo.top' };
 
 describe('placeShareUrl', () => {
   it('points at the place page', () => {
-    expect(placeShareUrl(location.origin, 'abc-123')).toBe('https://app-base-420.pages.dev/place/abc-123');
+    expect(placeShareUrl(location.origin, 'abc-123')).toBe('https://mayeshpo.top/place/abc-123');
   });
   it('encodes odd ids', () => {
     expect(placeShareUrl('https://x.y', 'a b/c')).toBe('https://x.y/place/a%20b%2Fc');
@@ -28,7 +28,7 @@ describe('sharePlaceLink', () => {
     const share = vi.fn().mockResolvedValue();
     const result = await sharePlaceLink(place, { location, navigator: { share } });
     expect(result).toBe('shared');
-    expect(share).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://app-base-420.pages.dev/place/abc-123' }));
+    expect(share).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://mayeshpo.top/place/abc-123' }));
   });
   it('treats a dismissed share sheet as cancelled, not as an error', async () => {
     const share = vi.fn().mockRejectedValue(Object.assign(new Error('x'), { name: 'AbortError' }));
@@ -38,7 +38,7 @@ describe('sharePlaceLink', () => {
     const writeText = vi.fn().mockResolvedValue();
     const result = await sharePlaceLink(place, { location, navigator: { clipboard: { writeText } } });
     expect(result).toBe('copied');
-    expect(writeText).toHaveBeenCalledWith('https://app-base-420.pages.dev/place/abc-123');
+    expect(writeText).toHaveBeenCalledWith('https://mayeshpo.top/place/abc-123');
   });
   it('copies the link when sharing fails for another reason', async () => {
     const share = vi.fn().mockRejectedValue(new Error('NotAllowedError'));
