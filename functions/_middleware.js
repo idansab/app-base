@@ -2,6 +2,7 @@
 // so title / description / canonical / robots / JSON-LD are rewritten here
 // instead of relying on client-side JS (which can conflict with the raw HTML).
 import { LANDINGS, MIN_LANDING_PLACES, getLanding, landingFilter, landingPath } from '../src/lib/landings.js';
+import { ABOUT_SUMMARY, ABOUT_VISION, ABOUT_SOURCES, CONTACT_EMAIL, siteJsonLd } from '../src/lib/siteAbout.js';
 
 const SUPABASE_URL = 'https://gsbbtrknnkdihdlojwbd.supabase.co';
 const SITE_NAME = 'מה יש פה';
@@ -108,12 +109,23 @@ async function loadPlaceList(env, limit = 300) {
   }
 }
 
+// Who runs the site and where its places come from, so a crawler or AI assistant can tell what the site is.
+const aboutHtml = (heading) =>
+  `<h2>${heading}</h2><p>${esc(ABOUT_SUMMARY)}</p><h3>החזון</h3><p>${esc(ABOUT_VISION)}</p>` +
+  `<h3>איך נאספו המקומות</h3><ul>${ABOUT_SOURCES.map((s) => `<li><strong>${esc(s.title)}:</strong> ${esc(s.text)}</li>`).join('')}</ul>` +
+  `<p>יצירת קשר: <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> · <a href="/about">אודות</a></p>`;
+
+function aboutFallback() {
+  return fallback(`<h1>אודות ${esc(SITE_NAME)}</h1>${aboutHtml('מי אנחנו')}${navHtml()}`);
+}
+
 function homeFallback(meta, places) {
   const items = places
     .map((p) => `<li><a href="/place/${encodeURIComponent(p.id)}">${esc(p.name)}${p.city ? `, ${esc(p.city)}` : ''}</a></li>`)
     .join('');
   return fallback(
-    `<h1>${esc(SITE_NAME)} — כל מה שיש באזור</h1><p>${esc(meta.description)}</p>${navHtml()}${landingsNavHtml()}` +
+    `<h1>${esc(SITE_NAME)} — כל מה שיש באזור</h1><p>${esc(meta.description)}</p>${aboutHtml('מי אנחנו ואיך נאספו המקומות')}` +
+      `${navHtml()}${landingsNavHtml()}` +
       (items ? `<h2>מקומות במדריך</h2><ul>${items}</ul>` : '')
   );
 }
@@ -255,6 +267,7 @@ async function rewrite({ request, next, env }) {
   let rootHtml = null;
 
   if (path === '/') rootHtml = homeFallback(meta, await loadPlaceList(env));
+  if (path === '/about') rootHtml = aboutFallback();
 
   const placeMatch = path.match(/^\/place\/([^/]+)$/);
   const landingMatch = path.match(/^\/(city|category)\/([^/]+)$/);
@@ -315,6 +328,10 @@ async function rewrite({ request, next, env }) {
     rewriter = rewriter
       .on('meta[property="og:image"]', setContent(ogImage))
       .on('meta[name="twitter:card"]', setContent('summary_large_image'));
+  }
+  // the home page names the organization behind the site (replaces the plain WebSite block in index.html)
+  if (path === '/') {
+    rewriter = rewriter.on('script[type="application/ld+json"]', { element: (e) => e.setInnerContent(siteJsonLd()) });
   }
   if (rootHtml) rewriter = rewriter.on('div#root', { element: (e) => e.setInnerContent(rootHtml, { html: true }) });
   if (noindex || ldJson) {

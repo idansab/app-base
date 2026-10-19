@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import FeedbackDialog from '@/components/FeedbackDialog';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Heart, Github } from 'lucide-react';
+import { Heart, Mail } from 'lucide-react';
 import { LANDINGS, landingPath } from '@/lib/landings';
+import { CONTACT_EMAIL } from '@/lib/siteAbout';
+import AboutSite from '@/components/AboutSite';
 
 const LANDING_GROUPS = [
   { kind: 'city', title: 'לפי עיר ואזור' },
@@ -69,41 +71,29 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          {/* Social */}
+          {/* Contact: a real address instead of placeholder social links */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
           >
-            <h3 className="font-bold mb-4 text-right md:text-left">עקוב</h3>
-            <div className="flex gap-3 justify-end md:justify-start">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-slate-700 rounded-full hover:bg-green-600 transition-colors"
-              >
-                📷
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-slate-700 rounded-full hover:bg-green-600 transition-colors"
-              >
-                f
-              </a>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-slate-700 rounded-full hover:bg-green-600 transition-colors"
-              >
-                <Github size={18} />
-              </a>
-            </div>
+            <h3 className="font-bold mb-4 text-right md:text-left">יצירת קשר</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground text-right md:text-left">
+              <li>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex items-center gap-1.5 hover:text-green-400 transition-colors">
+                  <Mail size={14} aria-hidden="true" />
+                  <span dir="ltr">{CONTACT_EMAIL}</span>
+                </a>
+              </li>
+              <li><a href="/about" className="hover:text-green-400 transition-colors">מי אנחנו ואיך נאספו המקומות</a></li>
+            </ul>
           </motion.div>
+        </div>
+
+        {/* Who we are and where the places come from */}
+        <div className="mb-12">
+          <AboutSite tone="dark" />
         </div>
 
         {/* City / category landing pages */}
