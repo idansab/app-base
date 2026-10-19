@@ -91,7 +91,18 @@ export default function PlaceCard({
 
       {/* Content */}
       <div className="p-4 flex-1 flex flex-col">
-        <h3 className="font-bold text-lg text-right mb-2">{place.name}</h3>
+        <h3 className="font-bold text-lg text-right mb-2">
+          {/* Real link so crawlers can follow it; a plain click still goes to the card's onClick. */}
+          <a
+            href={`/place/${place.id}`}
+            onClick={(e) => {
+              if (!e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) e.preventDefault();
+              else e.stopPropagation();
+            }}
+          >
+            {place.name}
+          </a>
+        </h3>
 
         {/* Rating & Distance Row */}
         <div className="flex items-center justify-between gap-2 mb-3 text-sm">

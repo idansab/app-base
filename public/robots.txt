@@ -28,4 +28,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://app-base-420.pages.dev/sitemap.xml
+Sitemap: https://mayeshpo.top/sitemap.xml

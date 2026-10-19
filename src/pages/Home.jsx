@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Map as MapIcon, Loader2, X, SlidersHorizontal } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
@@ -17,6 +17,7 @@ import { supabase } from '@/api/base44Client';
 import { normalizeCategory } from '@/lib/categories';
 import { AMENITIES, hasAllAmenities, parseFeatureParam } from '@/lib/amenities';
 import FilterSheet from '@/components/places/FilterSheet';
+import { LANDINGS, landingPath } from '@/lib/landings';
 
 const MAP_MAX_KM = 100;
 
@@ -415,6 +416,28 @@ export default function Home() {
           </span>
         )}
       </div>
+
+      {/* City / category landing pages: one scrollable row of real links */}
+      <nav aria-label="מקומות לפי עיר וסוג" className="overflow-x-auto">
+        <ul className="px-4 max-w-6xl mx-auto pt-3 flex gap-1.5 items-center text-xs whitespace-nowrap">
+          <li className="font-medium text-muted-foreground ml-1">לפי עיר ואזור:</li>
+          {LANDINGS.filter((l) => l.kind === 'city').map((l) => (
+            <li key={l.slug}>
+              <Link to={landingPath(l)} className="inline-flex rounded-full border border-border px-2.5 py-1 text-foreground hover:border-primary hover:text-primary transition-colors">
+                {l.name}
+              </Link>
+            </li>
+          ))}
+          <li className="font-medium text-muted-foreground mr-3 ml-1">לפי סוג מקום:</li>
+          {LANDINGS.filter((l) => l.kind === 'category').map((l) => (
+            <li key={l.slug}>
+              <Link to={landingPath(l)} className="inline-flex rounded-full border border-border px-2.5 py-1 text-foreground hover:border-primary hover:text-primary transition-colors">
+                {l.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {filterOpen && (
         <FilterSheet

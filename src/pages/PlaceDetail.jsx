@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, Star, Heart, Navigation, Share2, Loader2, AlertCircle, Sparkles } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
@@ -19,6 +19,7 @@ import PlaceLegalNote from '@/components/common/PlaceLegalNote';
 import WaterSafetyNote from '@/components/places/WaterSafetyNote';
 import PlaceAmenities from '@/components/places/PlaceAmenities';
 import { getPlaceAmenities } from '@/lib/amenities';
+import { LANDINGS, landingMatches, landingPath } from '@/lib/landings';
 
 const SkeletonLine = ({ width = 'w-full', height = 'h-3' }) => (
   <motion.div
@@ -358,6 +359,8 @@ export default function PlaceDetail() {
 
         <PlaceLinks place={place} className="mb-8" />
 
+        <PlaceLandingLinks place={place} />
+
         {getPlaceAmenities(place).length > 0 && (
           <div className="mb-8 p-6 bg-card rounded-3xl border border-border/50">
             <PlaceAmenities place={place} />
@@ -526,5 +529,29 @@ export default function PlaceDetail() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Links to the city page and the category page this place appears on (see src/lib/landings.js). */
+function PlaceLandingLinks({ place }) {
+  const cityPage = LANDINGS.find((l) => l.kind === 'city' && l.match.cities.includes(place.city));
+  const categoryPage = LANDINGS.find((l) => l.kind === 'category' && landingMatches(l, place));
+  const links = [
+    cityPage && { to: landingPath(cityPage), label: `עוד מקומות ב${cityPage.name}` },
+    categoryPage && { to: landingPath(categoryPage), label: `עוד ${categoryPage.name}` },
+  ].filter(Boolean);
+  if (!links.length) return null;
+  return (
+    <nav aria-label="עוד מקומות דומים" className="mb-8 flex flex-wrap gap-2 justify-start">
+      {links.map((l) => (
+        <Link
+          key={l.to}
+          to={l.to}
+          className="inline-flex rounded-full border border-primary text-primary px-4 py-1.5 text-sm font-medium hover:bg-primary/10 transition-colors"
+        >
+          {l.label} ←
+        </Link>
+      ))}
+    </nav>
   );
 }

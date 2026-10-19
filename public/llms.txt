@@ -4,7 +4,7 @@
 
 ## עמודים עיקריים
 
-- [דף הבית](https://app-base-420.pages.dev/): חיפוש וסינון מקומות לפי קטגוריה ואזור
-- [אודות](https://app-base-420.pages.dev/about): מי אנחנו ואיך מקומות נבדקים
-- [לעסקים](https://app-base-420.pages.dev/for-business): הוספת עסק למדריך
-- [מפת האתר](https://app-base-420.pages.dev/sitemap.xml): כל המקומות המאושרים
+- [דף הבית](https://mayeshpo.top/): חיפוש וסינון מקומות לפי קטגוריה ואזור
+- [אודות](https://mayeshpo.top/about): מי אנחנו ואיך מקומות נבדקים
+- [לעסקים](https://mayeshpo.top/for-business): הוספת עסק למדריך
+- [מפת האתר](https://mayeshpo.top/sitemap.xml): כל המקומות המאושרים

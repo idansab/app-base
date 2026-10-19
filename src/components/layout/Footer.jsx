@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import FeedbackDialog from '@/components/FeedbackDialog';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { Heart, Github } from 'lucide-react';
+import { LANDINGS, landingPath } from '@/lib/landings';
+
+const LANDING_GROUPS = [
+  { kind: 'city', title: 'לפי עיר ואזור' },
+  { kind: 'category', title: 'לפי סוג מקום' },
+];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -98,6 +105,27 @@ export default function Footer() {
             </div>
           </motion.div>
         </div>
+
+        {/* City / category landing pages */}
+        <nav aria-label="מקומות לפי עיר וסוג" className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 text-right">
+          {LANDING_GROUPS.map(({ kind, title }) => (
+            <div key={kind}>
+              <h3 className="font-bold mb-3">{title}</h3>
+              <ul className="flex flex-wrap gap-2">
+                {LANDINGS.filter((l) => l.kind === kind).map((l) => (
+                  <li key={l.slug}>
+                    <Link
+                      to={landingPath(l)}
+                      className="inline-flex rounded-full border border-slate-600 px-3 py-1 text-xs text-slate-300 hover:border-green-400 hover:text-green-400 transition-colors"
+                    >
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
 
         {/* Divider */}
         <div className="border-t border-slate-700 mb-8" />
