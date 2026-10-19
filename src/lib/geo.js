@@ -41,6 +41,43 @@ export async function geocodeAddress(query) {
   };
 }
 
+// Words people type before a street or a settlement name that OpenStreetMap does not have in the name.
+const STREET_PREFIX = /^(?:רחוב|רח['׳]|רח\.|שד['׳]|שד\.)\s*/;
+const SETTLEMENT_PREFIX = /^(?:מושב|קיבוץ|המושב|הקיבוץ|יישוב|ישוב)\s+/;
+
+/**
+ * The searches to try for an address typed in the add-a-place form, most precise first:
+ * street + number + city, then the street without the number (many house numbers are not on the map),
+ * then only the city (or, with no city, the whole text alone). Duplicates and empty searches are left out.
+ */
+export function addressQueries(address, city) {
+  const street = String(address || '').trim().replace(STREET_PREFIX, '');
+  const town = String(city || '').trim().replace(SETTLEMENT_PREFIX, '');
+  const noNumber = street.replace(/\s*\d+\s*[א-ת]?(?=\s|,|$)/g, ' ').replace(/\s+/g, ' ').trim();
+  const join = (...parts) => parts.filter(Boolean).join(', ');
+  const queries = [
+    join(street, town),
+    join(noNumber, town),
+    // the text alone only when no city was typed: otherwise it finds the same street in another city
+    town ? '' : street.replace(SETTLEMENT_PREFIX, ''),
+    town,
+  ];
+  return [...new Set(queries.filter(Boolean))];
+}
+
+/**
+ * Finds a typed address in Israel, trying addressQueries() in order until one matches.
+ * Returns { lat, lng, precise } (precise is false when only the city or street area was found),
+ * or null when nothing matched.
+ */
+export async function geocodeTypedAddress(address, city) {
+  for (const query of addressQueries(address, city)) {
+    const hit = await geocodeInIsrael(query);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 // Nominatim result types that cover a whole area: the pin would be its center, not the place.
 const AREA_TYPES = new Set([
   "country", "state", "region", "province", "district", "county", "municipality",
