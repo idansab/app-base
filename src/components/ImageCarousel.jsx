@@ -114,7 +114,12 @@ export default function ImageCarousel({ images, title, credits, placeholder }) {
         )}
       </div>
 
-      {credit && (
+      {credit?.source === 'user' && (
+        <p className="px-3 py-1.5 text-[11px] text-muted-foreground bg-muted/50 text-right" dir="rtl">
+          צולם ע״י {credit.author}
+        </p>
+      )}
+      {credit && credit.source !== 'user' && (
         <p className="px-3 py-1.5 text-[11px] text-muted-foreground bg-muted/50" dir="ltr">
           Photo:{' '}
           {fileUrl ? <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">{credit.author}</a> : credit.author}

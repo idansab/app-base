@@ -49,3 +49,41 @@ export function buildDescription({ label, city, wikidata }) {
   if (label && city) return `${label} ב${city}.`;
   return label ? `${label}.` : null;
 }
+
+/** The template text the nature importer writes ("מעיין בגליל. מומלץ לבדוק ... לפני היציאה."), safe to replace. */
+export const isGeneratedDescription = (text) => /מומלץ לבדוק [^.]* לפני (היציאה|ההגעה)\.\s*$/.test(String(text ?? ''));
+
+const dropParens = (text) => {
+  let out = String(text ?? '').replace(/[֑-ֽֿ-ׇ]/g, ''); // niqqud, not the maqaf
+  for (let i = 0; i < 3; i += 1) out = out.replace(/\s*\([^()]*\)/g, '');
+  return out.replace(/\s+([,.])/g, '$1').replace(/\s+/g, ' ').trim();
+};
+
+/** First sentences of a Wikipedia lead: no parentheses (transliterations, dates), at most `max` characters. */
+export function leadSentences(extract, max = 280) {
+  const para = dropParens(String(extract ?? '').split(/\n+/).find((l) => l.trim().length > 20) ?? '');
+  const sentences = para.split(/(?<=[.!?])\s+(?=\D)/).filter(Boolean);
+  if (!sentences.length) return '';
+  let out = sentences[0];
+  if (out.length > max + 70) return `${out.slice(0, out.lastIndexOf(' ', max))}…`;
+  for (const s of sentences.slice(1)) {
+    if (out.length + s.length + 1 > max) break;
+    out += ` ${s}`;
+  }
+  return /[.!?…]$/.test(out) ? out : `${out}.`;
+}
+
+/**
+ * A description from a Hebrew Wikipedia lead (CC BY-SA, credited in the text) or a Wikidata description (CC0),
+ * replacing the first, generic sentence of the generated text and keeping its practical notes.
+ * null when there is nothing better than what is there.
+ */
+export function wikiDescription({ name, existing, extract, wikidata }) {
+  const sentences = String(existing ?? '').split(/(?<=\.)\s+/);
+  const tail = sentences.slice(1).join(' ');
+  const lead = leadSentences(extract);
+  if (lead.length >= 25) return `${lead} (מתוך ויקיפדיה) ${tail}`.trim();
+  const desc = String(wikidata ?? '').trim().replace(/\.$/, '');
+  if (desc.split(/\s+/).length >= 3 && desc.length >= 15) return `${name} – ${desc}. ${tail}`.trim();
+  return null;
+}

@@ -1,11 +1,19 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/api/base44Client';
+import { normalizeDisplayName } from '@/lib/displayName';
+import DisplayNameDialog from '@/components/auth/DisplayNameDialog';
 const AuthContext = createContext();
+
+const LATER_KEY = 'mayhishpo:display-name-later';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // undefined = not loaded yet, null = the user has not chosen one
+  const [displayName, setDisplayNameState] = useState(undefined);
+  const [nameDialog, setNameDialog] = useState(null); // { reason: 'login' | 'action' }
+  const pendingName = useRef(null); // resolves ensureDisplayName()
 
   useEffect(() => {
     // Get initial session
@@ -32,7 +40,71 @@ export function AuthProvider({ children }) {
     return () => subscription?.unsubscribe();
   }, []);
 
-  const signUp = async (email, password, captchaToken) => {
+  const userId = user?.id;
+  useEffect(() => {
+    if (!userId) {
+      setDisplayNameState(undefined);
+      return undefined;
+    }
+    let cancelled = false;
+    supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', userId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) console.error('Loading the display name failed:', error);
+        setDisplayNameState(data?.display_name || null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // Users from before display names existed are asked once per session after signing in; "later" is allowed,
+  // but commenting, suggesting and chatting ask again (ensureDisplayName).
+  useEffect(() => {
+    if (displayName !== null) return;
+    let later = false;
+    try {
+      later = sessionStorage.getItem(LATER_KEY) === '1';
+    } catch { /* ignore */ }
+    if (!later) setNameDialog((d) => d || { reason: 'login' });
+  }, [displayName]);
+
+  /** Saves the signed-in user's display name (validated again by the server). */
+  const setDisplayName = async (name) => {
+    const { data, error } = await supabase.rpc('set_display_name', { p_name: normalizeDisplayName(name) });
+    if (error) {
+      throw new Error(error.hint === 'invalid_display_name' ? 'השם לא התקבל. יש לבחור שם אחר' : 'שמירת השם נכשלה. נסו שוב');
+    }
+    setDisplayNameState(data);
+    return data;
+  };
+
+  /** Resolves true once the user has a display name, asking for one first if needed; false if they cancel. */
+  const ensureDisplayName = useCallback(() => {
+    if (displayName) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      pendingName.current?.(false);
+      pendingName.current = resolve;
+      setNameDialog({ reason: 'action' });
+    });
+  }, [displayName]);
+
+  const closeNameDialog = (saved) => {
+    if (!saved && nameDialog?.reason === 'login') {
+      try {
+        sessionStorage.setItem(LATER_KEY, '1');
+      } catch { /* ignore */ }
+    }
+    setNameDialog(null);
+    pendingName.current?.(saved);
+    pendingName.current = null;
+  };
+
+  const signUp = async (email, password, captchaToken, name) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -41,7 +113,8 @@ export function AuthProvider({ children }) {
           emailRedirectTo: window.location.origin,
           captchaToken,
           // proof of consent: when, and to which version of the terms
-          data: { terms_accepted_at: new Date().toISOString(), terms_version: '2026-10' }
+          // display_name is copied into profiles by the signup trigger (migration 031)
+          data: { terms_accepted_at: new Date().toISOString(), terms_version: '2026-10', display_name: normalizeDisplayName(name) }
         }
       });
 
@@ -145,11 +218,17 @@ export function AuthProvider({ children }) {
     updatePassword,
     changePassword,
     deleteAccount,
+    displayName: displayName || '',
+    setDisplayName,
+    ensureDisplayName,
   };
 
   return (
     <AuthContext.Provider value={value}>
       {children}
+      {nameDialog && user && (
+        <DisplayNameDialog reason={nameDialog.reason} onSave={setDisplayName} onClose={closeNameDialog} />
+      )}
     </AuthContext.Provider>
   );
 }
@@ -159,3 +238,6 @@ export function useAuth() {
   if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }
+
+/** The signed-in user's display name, or '' (also outside AuthProvider, e.g. in component tests). */
+export const useDisplayName = () => useContext(AuthContext)?.displayName || '';

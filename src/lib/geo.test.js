@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { haversineKm, formatDistance, wazeUrl, formatPlaceName, reverseGeocode, formatStreetAddress } from './geo';
+import { haversineKm, formatDistance, wazeUrl, formatPlaceName, reverseGeocode, formatStreetAddress, addressQueries } from './geo';
 
 describe('haversineKm', () => {
   it('is zero for identical points', () => {
@@ -90,5 +90,21 @@ describe('formatStreetAddress', () => {
   it('is empty without a street', () => {
     expect(formatStreetAddress({ city: 'חיפה' })).toBe('');
     expect(formatStreetAddress(null)).toBe('');
+  });
+});
+
+describe('addressQueries', () => {
+  it('drops the street word, then tries without the house number, then the city alone (never the street in any city)', () => {
+    expect(addressQueries('רחוב הנשיא 3', 'קריית מוצקין')).toEqual([
+      'הנשיא 3, קריית מוצקין',
+      'הנשיא, קריית מוצקין',
+      'קריית מוצקין',
+    ]);
+  });
+
+  it('handles abbreviations, settlement words and a missing city', () => {
+    expect(addressQueries("רח' הרצל 10א", '')).toEqual(['הרצל 10א', 'הרצל']);
+    expect(addressQueries('השקד 7', 'מושב בני ציון')[0]).toBe('השקד 7, בני ציון');
+    expect(addressQueries('', '')).toEqual([]);
   });
 });

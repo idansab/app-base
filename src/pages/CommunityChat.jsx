@@ -7,15 +7,15 @@ import { useNavigate } from 'react-router-dom';
 
 export default function CommunityChat({ embedded = false }) {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, displayName, ensureDisplayName } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Never derive the public chat name from the email address
-  const username = user?.user_metadata?.display_name || `משתמש ${(user?.id || '').slice(0, 4)}`;
+  // The display name chosen at signup; the server sets it on every message anyway (migration 031)
+  const username = displayName;
 
   // Load messages
   useEffect(() => {
@@ -78,6 +78,7 @@ export default function CommunityChat({ embedded = false }) {
     e.preventDefault();
 
     if (!newMessage.trim()) return;
+    if (!(await ensureDisplayName())) return;
 
     try {
       setSending(true);

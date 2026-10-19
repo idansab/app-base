@@ -9,6 +9,7 @@ import useIsAdmin from '@/hooks/useIsAdmin';
 import { useTheme } from '@/lib/ThemeContext';
 import { useAuth } from '@/lib/AuthContext';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import DisplayNameSetting from '@/components/settings/DisplayNameSetting';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -142,6 +143,8 @@ export default function Settings() {
           className="bg-card rounded-2xl p-6 border border-border"
         >
           <h2 className="font-bold text-lg text-right mb-4 text-foreground">פרטיות ואבטחה</h2>
+
+          {isAuthenticated && <DisplayNameSetting />}
 
           {isAuthenticated && (
             <motion.button

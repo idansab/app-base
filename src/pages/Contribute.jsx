@@ -5,7 +5,7 @@ import { supabase } from '@/api/base44Client';
 import AmenitiesField from '@/components/places/AmenitiesField';
 import HoursEditor from '@/components/admin/places/HoursEditor';
 import useUserLocation from '@/hooks/useUserLocation';
-import { geocodeAddress, reverseGeocodeAddress } from '@/lib/geo';
+import { geocodeTypedAddress, reverseGeocodeAddress } from '@/lib/geo';
 import { uploadPlaceImage, validateImageFile } from '@/lib/uploadPlaceImage';
 import { contributionProblem, hoursFields, insideIsrael } from '@/lib/contributeForm';
 
@@ -108,7 +108,7 @@ export default function Contribute() {
       // the position: from the phone, or looked up on the map from the address
       let coords = position;
       if (!coords) {
-        const found = await geocodeAddress(`${formData.address.trim()}, ${formData.city.trim()}, ישראל`.replace(/,\s*,/g, ','));
+        const found = await geocodeTypedAddress(formData.address, formData.city);
         if (!found || !insideIsrael(found.lat, found.lng)) {
           setErrorMessage('לא הצלחנו לאתר את הכתובת במפה. נסה לכתוב אותה במלואה (רחוב ומספר, עיר), או לחץ על "המקום נמצא איפה שאני עכשיו".');
           setStatus('error');

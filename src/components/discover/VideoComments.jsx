@@ -9,7 +9,7 @@ import { COMMENT_MAX, commentAuthor, timeAgo, validateCommentBody } from '@/lib/
 /** Bottom panel with a video's comments, like TikTok's. */
 export default function VideoComments({ video, onClose, onCountChange }) {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, ensureDisplayName } = useAuth();
   const [comments, setComments] = useState(null);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -47,6 +47,7 @@ export default function VideoComments({ video, onClose, onCountChange }) {
       toast.error(problem);
       return;
     }
+    if (!(await ensureDisplayName())) return;
     setSending(true);
     try {
       const saved = await addComment(video.id, text);
@@ -54,7 +55,8 @@ export default function VideoComments({ video, onClose, onCountChange }) {
       setText('');
       requestAnimationFrame(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight }));
     } catch (err) {
-      toast.error(err.message);
+      if (err.code === 'display_name_required') ensureDisplayName();
+      else toast.error(err.message);
     } finally {
       setSending(false);
     }
