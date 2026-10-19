@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Camera, CheckCircle2, Flag, Loader2, Pencil, X } from 'lucide-react';
 import { supabase } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { isDisplayNameRequired } from '@/lib/displayName';
 import useBodyScrollLock from '@/hooks/useBodyScrollLock';
 import { PRICE_LEVELS } from '@/components/admin/places/placeUtils';
 import AmenitiesField from '@/components/places/AmenitiesField';
@@ -39,7 +40,7 @@ function Field({ label, error, children }) {
  * changes on the site until the admin accepts it (all of it, or only some fields, e.g. just the photos).
  */
 export default function SuggestEdit({ place, className = '' }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, displayName, ensureDisplayName } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -112,6 +113,7 @@ export default function SuggestEdit({ place, className = '' }) {
   };
 
   const send = async (kind, changes, noteText) => {
+    if (!(await ensureDisplayName())) return;
     setSaving(true);
     setError('');
     const { error: rpcError } = await supabase.rpc('suggest_place_update', {
@@ -123,6 +125,10 @@ export default function SuggestEdit({ place, className = '' }) {
     setSaving(false);
     if (rpcError) {
       console.error('suggest_place_update failed:', rpcError);
+      if (isDisplayNameRequired(rpcError)) {
+        ensureDisplayName();
+        return;
+      }
       setError(
         rpcError.hint === 'too_many_requests' || /rate limit/i.test(rpcError.message || '')
           ? 'שלחת הרבה הצעות היום. אפשר לנסות שוב מחר.'
@@ -289,6 +295,7 @@ export default function SuggestEdit({ place, className = '' }) {
                     <>
                       <p className="text-sm text-muted-foreground">
                         העלה תמונות שצילמת בעצמך (JPG, PNG, WEBP עד 5MB). המנהל יאשר אותן לפני שיופיעו.
+                        {displayName && <> התמונות יופיעו עם הקרדיט &quot;צולם ע״י {displayName}&quot;.</>}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {images.map((url) => (
