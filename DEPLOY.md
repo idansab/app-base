@@ -73,7 +73,8 @@ main branch → GitHub Actions:
 ## 5. Test Production
 ```
 בקר בـ:
-- https://mayheshpo.com (Production)
+- https://mayeshpo.top (Production)
+- https://app-base-420.pages.dev (301 → mayeshpo.top)
 - https://staging.mayheshpo.com (Staging)
 ```
 

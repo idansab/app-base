@@ -173,10 +173,10 @@ app.get('/api/places', async (req, res) => {
 │  - Run tests                            │
 └────────┬────────────────────────────────┘
          │
-         ├──▶ ┌─────────────────────┐
-         │    │ Cloudflare Pages    │  (Frontend)
-         │    │ mayheshpo.com       │
-         │    └─────────────────────┘
+         ├──▶ ┌────────────────────────┐
+         │    │ Cloudflare Pages       │  (Frontend)
+         │    │ app-base-420.pages.dev │
+         │    └────────────────────────┘
          │
          ├──▶ ┌─────────────────────┐
          │    │ Cloudflare Workers  │  (Backend)

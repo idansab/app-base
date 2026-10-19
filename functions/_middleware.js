@@ -1,6 +1,8 @@
 // Per-URL SEO for the SPA: Googlebot's first look at each URL is the raw HTML,
 // so title / description / canonical / robots / JSON-LD are rewritten here
 // instead of relying on client-side JS (which can conflict with the raw HTML).
+import { LANDINGS, MIN_LANDING_PLACES, getLanding, landingFilter, landingPath } from '../src/lib/landings.js';
+
 const SUPABASE_URL = 'https://gsbbtrknnkdihdlojwbd.supabase.co';
 const SITE_NAME = 'מה יש פה';
 
@@ -54,6 +56,133 @@ const clip = (s, n) => {
   const t = String(s || '').replace(/\s+/g, ' ').trim();
   return t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t;
 };
+
+const esc = (s) =>
+  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+// short_description is often just a label ("מפל · שמורת נחל עיון"); pad it with the full text.
+const placeDescription = (place, n) => {
+  const short = clip(place.short_description, n);
+  const long = clip(place.description, n);
+  if (short && long && short.length < 60 && !long.startsWith(short)) return clip(`${short} — ${long}`, n);
+  return short || long;
+};
+
+// Plain-HTML content inside #root for crawlers that don't run JS (Bing, ChatGPT, Perplexity, Claude).
+// React's createRoot replaces it on load; it's visually hidden so users never see it flash.
+const FALLBACK_STYLE = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap';
+const fallback = (inner) => `<div style="${FALLBACK_STYLE}">${inner}</div>`;
+
+const NAV_LINKS = [
+  ...Object.entries(PAGES)
+    .filter(([p]) => p.startsWith('/list/'))
+    .map(([p, m]) => [p, m.title.replace(` | ${SITE_NAME}`, '')]),
+  ['/discover', 'גלה — סרטונים ורעיונות לטיולים'],
+  ['/surprise', 'הפתעה — מקום אקראי באזור'],
+  ['/about', 'אודות'],
+  ['/for-business', 'לעסקים'],
+];
+
+const navHtml = () =>
+  `<nav><ul>${NAV_LINKS.map(([p, t]) => `<li><a href="${p}">${esc(t)}</a></li>`).join('')}</ul></nav>`;
+
+const landingLinks = (kind, except) =>
+  `<ul>${LANDINGS.filter((l) => l.kind === kind && l !== except)
+    .map((l) => `<li><a href="${landingPath(l)}">${esc(l.name)}</a></li>`)
+    .join('')}</ul>`;
+
+const landingsNavHtml = (except) =>
+  `<h2>לפי עיר ואזור</h2>${landingLinks('city', except)}<h2>לפי סוג מקום</h2>${landingLinks('category', except)}`;
+
+async function loadPlaceList(env, limit = 300) {
+  const key = env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
+  if (!key) return [];
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/places?select=id,name,city&status=eq.approved&order=updated_at.desc&limit=${limit}`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cf: { cacheTtl: 900, cacheEverything: true } }
+    );
+    return res.ok ? await res.json() : [];
+  } catch {
+    return [];
+  }
+}
+
+function homeFallback(meta, places) {
+  const items = places
+    .map((p) => `<li><a href="/place/${encodeURIComponent(p.id)}">${esc(p.name)}${p.city ? `, ${esc(p.city)}` : ''}</a></li>`)
+    .join('');
+  return fallback(
+    `<h1>${esc(SITE_NAME)} — כל מה שיש באזור</h1><p>${esc(meta.description)}</p>${navHtml()}${landingsNavHtml()}` +
+      (items ? `<h2>מקומות במדריך</h2><ul>${items}</ul>` : '')
+  );
+}
+
+function placeFallback(place, desc) {
+  const cityPage = LANDINGS.find((l) => l.kind === 'city' && l.match.cities.includes(place.city));
+  const rows = [
+    place.address || place.city ? `<p>כתובת: ${esc([place.address, place.city].filter(Boolean).join(', '))}</p>` : '',
+    place.phone ? `<p>טלפון: ${esc(place.phone)}</p>` : '',
+  ].join('');
+  return fallback(
+    `<h1>${esc(place.name)}</h1><p>${esc(clip(place.description || desc, 1200))}</p>${rows}` +
+      (cityPage ? `<p><a href="${landingPath(cityPage)}">${esc(cityPage.h1)}</a></p>` : '') +
+      `<p><a href="/">כל המקומות ב${esc(SITE_NAME)}</a></p>${navHtml()}`
+  );
+}
+
+async function loadLandingPlaces(landing, env) {
+  const key = env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
+  if (!key) return { places: [], lookupFailed: true };
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/places?select=id,name,city,short_description&status=eq.approved` +
+        `&or=(${encodeURIComponent(landingFilter(landing))})&order=rating.desc.nullslast,name&limit=300`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cf: { cacheTtl: 900, cacheEverything: true } }
+    );
+    return res.ok ? { places: await res.json(), lookupFailed: false } : { places: [], lookupFailed: true };
+  } catch {
+    return { places: [], lookupFailed: true };
+  }
+}
+
+function landingFallback(landing, places) {
+  const items = places
+    .map((p) => {
+      const label = String(p.short_description || '').split(' · ')[0].trim();
+      const extra = landing.kind === 'category' ? p.city : label;
+      return `<li><a href="/place/${encodeURIComponent(p.id)}">${esc(p.name)}</a>${extra ? ` — ${esc(extra)}` : ''}</li>`;
+    })
+    .join('');
+  return fallback(
+    `<h1>${esc(landing.h1)}</h1><p>${esc(landing.intro)}</p>` +
+      (items ? `<h2>${places.length} מקומות במדריך</h2><ul>${items}</ul>` : '') +
+      landingsNavHtml(landing) +
+      `<p><a href="/">כל המקומות ב${esc(SITE_NAME)}</a></p>${navHtml()}`
+  );
+}
+
+function landingJsonLd(landing, places, url, origin) {
+  const ld = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: landing.h1,
+    description: landing.description,
+    url,
+    inLanguage: 'he',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: places.length,
+      itemListElement: places.slice(0, 50).map((p, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${origin}/place/${encodeURIComponent(p.id)}`,
+        name: p.name,
+      })),
+    },
+  };
+  return JSON.stringify(ld).replace(/</g, '\\u003c');
+}
 
 async function loadPlace(id, env) {
   const key = env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
@@ -123,19 +252,39 @@ async function rewrite({ request, next, env }) {
   let noindex = isPrivate(path);
   let ldJson = null;
   let ogImage = meta?.image ? url.origin + meta.image : null;
+  let rootHtml = null;
+
+  if (path === '/') rootHtml = homeFallback(meta, await loadPlaceList(env));
 
   const placeMatch = path.match(/^\/place\/([^/]+)$/);
-  if (placeMatch) {
+  const landingMatch = path.match(/^\/(city|category)\/([^/]+)$/);
+  const landing = landingMatch && getLanding(landingMatch[1], decodeURIComponent(landingMatch[2]));
+  if (landing) {
+    const { places, lookupFailed } = await loadLandingPlaces(landing, env);
+    meta = { title: `${landing.title} | ${SITE_NAME}`, description: landing.description };
+    if (!lookupFailed && places.length < MIN_LANDING_PLACES) {
+      // Thin page (too few places): don't let it be indexed.
+      status = 404;
+      noindex = true;
+    } else if (places.length) {
+      rootHtml = landingFallback(landing, places);
+      ldJson = landingJsonLd(landing, places, canonical, url.origin);
+    } else {
+      rootHtml = landingFallback(landing, places);
+    }
+  } else if (placeMatch) {
     const { place, lookupFailed } = await loadPlace(decodeURIComponent(placeMatch[1]), env);
     if (place) {
       const where = [place.city, place.address].filter(Boolean).join(', ');
-      const desc = clip(place.short_description || place.description, 155) || `${place.name} — ${where}`;
+      const desc = placeDescription(place, 155) || `${place.name} — ${where}`;
       meta = {
-        title: `${place.name}${place.city ? ` ב${place.city}` : ''} | ${SITE_NAME}`,
+        // Comma, not "ב" + city: "בהגליל העליון" is wrong Hebrew, and the prefix can't be fixed generically.
+        title: `${place.name}${place.city ? `, ${place.city}` : ''} | ${SITE_NAME}`,
         description: desc,
       };
       ogImage = /^https?:\/\//.test(place.image_url || '') ? place.image_url : null;
       ldJson = placeJsonLd(place, canonical, ogImage);
+      rootHtml = placeFallback(place, desc);
     } else if (!lookupFailed) {
       status = 404;
       noindex = true;
@@ -167,6 +316,7 @@ async function rewrite({ request, next, env }) {
       .on('meta[property="og:image"]', setContent(ogImage))
       .on('meta[name="twitter:card"]', setContent('summary_large_image'));
   }
+  if (rootHtml) rewriter = rewriter.on('div#root', { element: (e) => e.setInnerContent(rootHtml, { html: true }) });
   if (noindex || ldJson) {
     rewriter = rewriter.on('head', {
       element: (e) => {

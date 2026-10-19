@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Map as MapIcon, Loader2, X, SlidersHorizontal } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import LocationPicker from '@/components/LocationPicker';
 import PlaceCard from '@/components/PlaceCard';
@@ -17,6 +17,7 @@ import { supabase } from '@/api/base44Client';
 import { normalizeCategory } from '@/lib/categories';
 import { AMENITIES, hasAllAmenities, parseFeatureParam } from '@/lib/amenities';
 import FilterSheet from '@/components/places/FilterSheet';
+import { LANDINGS, landingPath } from '@/lib/landings';
 
 const MAP_MAX_KM = 100;
 
@@ -211,16 +212,17 @@ export default function Home() {
   };
 
   // Filter and sort places
+  const matchesSearchAndArea = (place) => {
+    if (searchQuery && !place.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (userLocation && maxDistance != null) {
+      const distance = haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng);
+      if (distance > maxDistance) return false;
+    }
+    return true;
+  };
   const baseFiltered = places
-    .filter(place => {
-      if (selectedCategory !== 'all' && normalizeCategory(place.category) !== selectedCategory) return false;
-      if (searchQuery && !place.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      if (userLocation && maxDistance != null) {
-        const distance = haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng);
-        if (distance > maxDistance) return false;
-      }
-      return true;
-    });
+    .filter(place => selectedCategory === 'all' || normalizeCategory(place.category) === selectedCategory)
+    .filter(matchesSearchAndArea);
 
   // counts for the quick-filter chips reflect the other active filters
   const openCount = baseFiltered.filter(p => isOpenNow(p, now) === true).length;
@@ -254,11 +256,14 @@ export default function Home() {
     setFeatures([]);
   };
 
+  const matchesExtraFilters = (p) =>
+    (!openNowOnly || isOpenNow(p, now) === true) &&
+    (!kosherOnly || p.kosher === 'kosher') &&
+    hasAllAmenities(p, features) &&
+    (!freeOnly || p.price_level === 'free');
+
   const filteredPlaces = baseFiltered
-    .filter(p => !openNowOnly || isOpenNow(p, now) === true)
-    .filter(p => !kosherOnly || p.kosher === 'kosher')
-    .filter(p => hasAllAmenities(p, features))
-    .filter(p => !freeOnly || p.price_level === 'free')
+    .filter(matchesExtraFilters)
     .sort((a, b) => {
       if (sortBy === 'distance' && userLocation) {
         const distA = haversineKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
@@ -270,9 +275,19 @@ export default function Home() {
     });
 
   // the map never loads more than MAP_MAX_KM around the visitor, whatever the list radius is
-  const mapPlaces = userLocation
-    ? filteredPlaces.filter(p => haversineKm(userLocation.lat, userLocation.lng, p.lat, p.lng) <= MAP_MAX_KM)
-    : filteredPlaces;
+  const inMapRange = (p) => !userLocation || haversineKm(userLocation.lat, userLocation.lng, p.lat, p.lng) <= MAP_MAX_KM;
+  const mapPlaces = filteredPlaces.filter(inMapRange);
+
+  // the map's category chips count what each category would show with every other filter kept
+  const mapCategoryCounts = {};
+  if (mapOpen) {
+    for (const p of places) {
+      if (!matchesSearchAndArea(p) || !matchesExtraFilters(p) || !inMapRange(p)) continue;
+      const cat = normalizeCategory(p.category);
+      mapCategoryCounts[cat] = (mapCategoryCounts[cat] || 0) + 1;
+      mapCategoryCounts.all = (mapCategoryCounts.all || 0) + 1;
+    }
+  }
 
   if (loading) {
     return (
@@ -402,6 +417,28 @@ export default function Home() {
         )}
       </div>
 
+      {/* City / category landing pages: one scrollable row of real links */}
+      <nav aria-label="מקומות לפי עיר וסוג" className="overflow-x-auto">
+        <ul className="px-4 max-w-6xl mx-auto pt-3 flex gap-1.5 items-center text-xs whitespace-nowrap">
+          <li className="font-medium text-muted-foreground ml-1">לפי עיר ואזור:</li>
+          {LANDINGS.filter((l) => l.kind === 'city').map((l) => (
+            <li key={l.slug}>
+              <Link to={landingPath(l)} className="inline-flex rounded-full border border-border px-2.5 py-1 text-foreground hover:border-primary hover:text-primary transition-colors">
+                {l.name}
+              </Link>
+            </li>
+          ))}
+          <li className="font-medium text-muted-foreground mr-3 ml-1">לפי סוג מקום:</li>
+          {LANDINGS.filter((l) => l.kind === 'category').map((l) => (
+            <li key={l.slug}>
+              <Link to={landingPath(l)} className="inline-flex rounded-full border border-border px-2.5 py-1 text-foreground hover:border-primary hover:text-primary transition-colors">
+                {l.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
       {filterOpen && (
         <FilterSheet
           filters={filterDefs}
@@ -494,6 +531,10 @@ export default function Home() {
         <PlacesMap
           places={mapPlaces}
           userLocation={userLocation}
+          categories={CATEGORIES}
+          selectedCategory={selectedCategory}
+          categoryCounts={mapCategoryCounts}
+          onCategoryChange={setSelectedCategory}
           onSelect={setSelectedPlace}
           onClose={() => setMapOpen(false)}
         />

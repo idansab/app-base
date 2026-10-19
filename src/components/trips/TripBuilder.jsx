@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, Loader2, X } from 'lucide-react';
 import StopPicker from '@/components/trips/StopPicker';
 import { createTrip, tripErrorMessage, updateTrip } from '@/lib/tripsApi';
+import { useDisplayName } from '@/lib/AuthContext';
 import { MAX_TRIP_STOPS, estimateHours, moveItem, parseOrder, routeKm } from '@/lib/tripUtils';
 
 const AUTHOR_KEY = 'mayhishpo:trip-author';
@@ -25,7 +26,8 @@ export default function TripBuilder({ userId, places, favoriteIds, userLocation,
   const [description, setDescription] = useState(initialTrip?.description ?? '');
   const [order, setOrder] = useState(() => parseOrder(initialTrip?.places_order));
   const [shareWithCommunity, setShareWithCommunity] = useState(Boolean(initialTrip?.is_public));
-  const [authorName, setAuthorName] = useState(initialTrip?.author_name ?? readAuthor());
+  const displayName = useDisplayName();
+  const [authorName, setAuthorName] = useState(initialTrip?.author_name ?? (readAuthor() || displayName));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 

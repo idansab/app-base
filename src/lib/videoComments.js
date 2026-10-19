@@ -1,5 +1,5 @@
-// Comments on "Discover" videos. The author's name and owner flag are set by the database
-// (see supabase/migrations/030_discover_video_comments.sql); the client only displays them.
+// Comments on "Discover" videos. The author's name (their display name) and owner flag are set by the database
+// (see supabase/migrations/030_discover_video_comments.sql and 031_display_names.sql); the client only displays them.
 
 export const COMMENT_MAX = 300;
 export const OWNER_LABEL = 'בעל העסק';

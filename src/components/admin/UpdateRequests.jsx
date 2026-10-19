@@ -194,7 +194,8 @@ export default function UpdateRequests({ onError, onSuccess, onPendingChange }) 
                         <ExternalLink size={14} />
                       </a>
                     </p>
-                    <p className="text-sm text-muted-foreground" dir="ltr">{request.email || 'משתמש לא ידוע'}</p>
+                    <p className="text-sm text-foreground">{request.display_name || 'ללא שם תצוגה'}</p>
+                    <p className="text-xs text-muted-foreground" dir="ltr">{request.email || 'משתמש לא ידוע'}</p>
                     <p className="text-xs text-muted-foreground">{new Date(request.created_at).toLocaleString('he-IL')}</p>
                   </div>
                 </div>

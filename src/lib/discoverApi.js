@@ -1,6 +1,7 @@
 import { supabase } from '@/api/base44Client';
 import { DISCOVER_VIDEOS } from '@/lib/discoverVideos';
 import { VIDEO_EXT, checkVideoMeta, validateVideoFile, validateVideoText } from '@/lib/videoSpec';
+import { isDisplayNameRequired } from '@/lib/displayName';
 
 const BUCKET = 'discover-videos';
 const COLUMNS = 'id, place_id, owner_id, title, description, video_url, poster_url, storage_path, poster_path, duration_seconds, status, review_note, sort_order, created_at, places(id, name)';
@@ -44,6 +45,7 @@ export async function addComment(videoId, body) {
     .select(COMMENT_COLUMNS)
     .single();
   if (error) {
+    if (isDisplayNameRequired(error)) throw Object.assign(new Error('צריך לבחור שם לפני שמגיבים'), { code: 'display_name_required' });
     const limited = error.hint === 'too_many_requests' || /rate limit/i.test(error.message || '');
     throw new Error(limited ? 'יותר מדי תגובות בזמן קצר. נסו שוב בעוד כמה דקות' : 'שליחת התגובה נכשלה');
   }
