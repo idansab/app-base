@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildDescription, formatPhone, pickLinks } from './enrich';
+import { buildDescription, formatPhone, isGeneratedDescription, leadSentences, pickLinks, wikiDescription } from './enrich';
 
 describe('formatPhone', () => {
   it('formats mobile and landline numbers', () => {
@@ -40,5 +40,29 @@ describe('buildDescription', () => {
     expect(buildDescription({ label: 'מעיין', city: 'x', wikidata: 'מעיין בגליל.' })).toBe('מעיין בגליל.');
     expect(buildDescription({ label: 'בר' })).toBe('בר.');
     expect(buildDescription({})).toBeNull();
+  });
+});
+
+describe('wikiDescription', () => {
+  const existing = 'מעיין במועצה אזורית מטה יהודה. מומלץ לבדוק את תנאי השטח לפני היציאה.';
+  it('only treats importer text as replaceable', () => {
+    expect(isGeneratedDescription(existing)).toBe(true);
+    expect(isGeneratedDescription('עין פשחס הוא מעיין יפהפה.')).toBe(false);
+  });
+  it('uses the Wikipedia lead without parentheses, credited, keeping the practical note', () => {
+    const extract = 'עין חניה (בערבית: עין אל-חניה) הוא מעיין בעמק רפאים. המעיין שוחזר בשנת 2018. משפט שלישי ארוך מאוד '.concat('x'.repeat(300), '.');
+    expect(wikiDescription({ name: 'עין חניה', existing, extract })).toBe(
+      'עין חניה הוא מעיין בעמק רפאים. המעיין שוחזר בשנת 2018. (מתוך ויקיפדיה) מומלץ לבדוק את תנאי השטח לפני היציאה.'
+    );
+  });
+  it('falls back to a specific Wikidata description, and to nothing', () => {
+    expect(wikiDescription({ name: 'עין X', existing, wikidata: 'מעיין בגליל העליון' })).toBe('עין X – מעיין בגליל העליון. מומלץ לבדוק את תנאי השטח לפני היציאה.');
+    expect(wikiDescription({ name: 'עין X', existing, wikidata: 'מעיין' })).toBeNull();
+  });
+});
+
+describe('leadSentences', () => {
+  it('drops niqqud but keeps the maqaf', () => {
+    expect(leadSentences('נַחַל אַבּוּב הוא נחל ממזרח לערד־אבוב.')).toBe('נחל אבוב הוא נחל ממזרח לערד־אבוב.');
   });
 });
