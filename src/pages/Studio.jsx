@@ -3,6 +3,7 @@ import { Loader2, MapPin, Send } from 'lucide-react';
 import useUserLocation from '@/hooks/useUserLocation';
 import { haversineKm } from '@/lib/geo';
 import { supabase } from '@/api/base44Client';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 export default function Studio() {
   const { location: userLocation } = useUserLocation({ auto: true });
@@ -17,12 +18,10 @@ export default function Studio() {
     const loadPlaces = async () => {
       try {
         setLoading(true);
-        const { data: allPlaces, error } = await supabase
-          .from('places')
-          .select('*')
-          .eq('status', 'approved');
-        if (error) throw error;
-        setPlaces(allPlaces || []);
+        const allPlaces = await fetchAllRows(() =>
+          supabase.from('places').select('*').eq('status', 'approved').order('id')
+        );
+        setPlaces(allPlaces);
       } catch (e) {
         console.error(e);
       } finally {

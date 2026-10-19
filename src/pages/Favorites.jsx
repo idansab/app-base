@@ -5,6 +5,7 @@ import PlaceDetailsSheet from '@/components/places/PlaceDetailsSheet';
 import { haversineKm } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 
 export default function Favorites() {
   const [places, setPlaces] = useState([]);
@@ -31,11 +32,9 @@ export default function Favorites() {
           return;
         }
 
-        const { data: allPlaces, error: placesError } = await supabase
-          .from('places')
-          .select('*')
-          .eq('status', 'approved');
-        if (placesError) throw placesError;
+        const allPlaces = await fetchAllRows(() =>
+          supabase.from('places').select('*').eq('status', 'approved').order('id')
+        );
 
         const { data: favData, error: favError } = await supabase
           .from('favorites')

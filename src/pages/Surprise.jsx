@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { haversineKm, formatDistance } from '@/lib/geo';
 import useUserLocation from '@/hooks/useUserLocation';
 import { supabase } from '@/api/base44Client';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 import { trackPlaceEvent } from '@/lib/trackPlace';
 import { loadSearchArea, placesInArea } from '@/lib/searchArea';
 
@@ -29,11 +30,9 @@ export default function Surprise() {
   const loadSurprise = async () => {
     try {
       setLoading(true);
-      const { data: places, error } = await supabase
-        .from('places')
-        .select('*')
-        .eq('status', 'approved');
-      if (error) throw error;
+      const places = await fetchAllRows(() =>
+        supabase.from('places').select('*').eq('status', 'approved').order('id')
+      );
 
       // only inside the area chosen on the home page (or 50 km around the visitor); the whole country when neither is known
       const area = loadSearchArea() || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng, km: 50 } : null);

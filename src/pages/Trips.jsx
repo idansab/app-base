@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bookmark, Clock, Eye, Loader2, MapPin, MessageCircle, Plus, Users } from 'lucide-react';
 import CommunityChat from '@/pages/CommunityChat';
 import { supabase } from '@/api/base44Client';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 import TripBuilder from '@/components/trips/TripBuilder';
 import useFavorites from '@/hooks/useFavorites';
 import useUserLocation from '@/hooks/useUserLocation';
@@ -75,12 +76,11 @@ export default function Trips() {
     setLoading(true);
     setError('');
     try {
-      const [placesResult, communityTrips] = await Promise.all([
-        supabase.from('places').select('*').eq('status', 'approved'),
+      const [allPlaces, communityTrips] = await Promise.all([
+        fetchAllRows(() => supabase.from('places').select('*').eq('status', 'approved').order('id')),
         loadCommunityTrips(),
       ]);
-      if (placesResult.error) throw placesResult.error;
-      setPlaces(placesResult.data || []);
+      setPlaces(allPlaces);
       setCommunity(communityTrips);
       if (user?.id) {
         const [myTrips, savedTrips] = await Promise.all([loadMyTrips(user.id), loadSavedTrips()]);
