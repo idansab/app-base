@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Users, MapPin, Zap, Mail, MessageSquare } from 'lucide-react';
 import FeedbackDialog from '@/components/FeedbackDialog';
-
-const CONTACT_EMAIL = 'idansbah21@gmail.com';
+import { ABOUT_SUMMARY, ABOUT_VISION, ABOUT_SOURCES, CONTACT_EMAIL } from '@/lib/siteAbout';
 
 export default function About() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -72,6 +71,28 @@ export default function About() {
           <p className="text-foreground leading-relaxed">
             בנינו פלטפורמה שקהילה של מטיילים, גולשים וחוקרים יוצרים יחד. כל טיפ, כל דיווח, כל ביקורת היא מתנה לקהילה.
           </p>
+        </motion.section>
+
+        {/* Who runs it, the vision, and where the places come from (src/lib/siteAbout.js) */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="bg-card rounded-2xl p-8 border border-border text-right space-y-4"
+        >
+          <h2 className="text-2xl font-bold text-green-600">מי אנחנו</h2>
+          <p className="text-foreground leading-relaxed">{ABOUT_SUMMARY}</p>
+          <h3 className="font-bold text-lg">החזון</h3>
+          <p className="text-foreground leading-relaxed">{ABOUT_VISION}</p>
+          <h3 className="font-bold text-lg">איך נאספו המקומות</h3>
+          <ul className="space-y-3">
+            {ABOUT_SOURCES.map((s) => (
+              <li key={s.title} className="leading-relaxed">
+                <span className="font-semibold">{s.title}: </span>
+                <span className="text-muted-foreground">{s.text}</span>
+              </li>
+            ))}
+          </ul>
         </motion.section>
 
         {/* Features Grid */}
