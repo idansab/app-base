@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/AuthContext';
 
 export default function WriteTip() {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, displayName } = useAuth();
   const [content, setContent] = useState('');
   const [tipType, setTipType] = useState('tip');
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,7 @@ export default function WriteTip() {
   ];
 
   
-  const username = user?.user_metadata?.display_name || 'משתמש';
+  const username = displayName || 'משתמש';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

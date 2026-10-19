@@ -17,8 +17,8 @@ describe('commentAuthor', () => {
   it('shows the business-owner tag for the owner, whatever the stored name', () => {
     expect(commentAuthor({ is_owner: true, author_name: 'dana' })).toBe(OWNER_LABEL);
   });
-  it('shows the email name for everyone else', () => {
-    expect(commentAuthor({ is_owner: false, author_name: 'dana.k' })).toBe('dana.k');
+  it('shows the display name for everyone else', () => {
+    expect(commentAuthor({ is_owner: false, author_name: 'דנה מהגליל' })).toBe('דנה מהגליל');
     expect(commentAuthor({ is_owner: false, author_name: '' })).toBe('משתמש');
   });
 });

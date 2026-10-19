@@ -5,9 +5,11 @@ import { useAuth } from '@/lib/AuthContext';
 import Turnstile, { TURNSTILE_SITE_KEY } from '@/components/common/Turnstile';
 import PasswordRules from '@/components/common/PasswordRules';
 import { authErrorMessage, passwordProblem } from '@/lib/passwordRules';
+import { DISPLAY_NAME_MAX, displayNameProblem } from '@/lib/displayName';
 import { trackEvent } from '@/lib/analytics';
 
 export default function Register() {
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -29,6 +31,12 @@ export default function Register() {
       return;
     }
 
+    const nameProblem = displayNameProblem(displayName);
+    if (nameProblem) {
+      setError(nameProblem);
+      return;
+    }
+
     const problem = passwordProblem(password);
     if (problem) {
       setError(problem);
@@ -42,7 +50,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const result = await signUp(email, password, captcha);
+      const result = await signUp(email, password, captcha, displayName);
       trackEvent('sign_up', { method: 'email' });
       setError('');
       if (result?.session) {
@@ -81,6 +89,27 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-1">
+              שם שיוצג באתר
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-background text-foreground"
+              required
+              maxLength={DISPLAY_NAME_MAX + 10}
+              autoComplete="nickname"
+              placeholder="למשל: דנה מהגליל"
+              aria-describedby="displayName-hint"
+            />
+            <p id="displayName-hint" className="mt-1 text-xs text-muted-foreground">
+              יופיע ליד תגובות, הצעות ותמונות שתעלו. האימייל לא מוצג לאף אחד.
+            </p>
+          </div>
+
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
               אימייל
