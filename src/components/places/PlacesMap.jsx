@@ -52,8 +52,19 @@ const ISRAEL_CENTER = [31.8, 35.0];
  * Full-screen map of the places the home page is currently filtered to.
  * Nearby places are grouped into numbered circles; tapping a place opens its card.
  */
-export default function PlacesMap({ places, userLocation, onSelect, onClose }) {
+export default function PlacesMap({
+  places,
+  userLocation,
+  categories = [],
+  selectedCategory = 'all',
+  categoryCounts = {},
+  onCategoryChange,
+  onSelect,
+  onClose,
+}) {
   const containerRef = useRef(null);
+  const categoryRef = useRef(selectedCategory);
+  const chipsRef = useRef(null);
   const mapRef = useRef(null);
   const placesRef = useRef(places);
   const selectRef = useRef(onSelect);
@@ -104,8 +115,27 @@ export default function PlacesMap({ places, userLocation, onSelect, onClose }) {
 
   // the filter changed while the map is open
   useEffect(() => {
+    const map = mapRef.current;
+    const categoryChanged = categoryRef.current !== selectedCategory;
+    categoryRef.current = selectedCategory;
+    // a new category with nothing in view: move to where its places are instead of showing an empty map
+    if (map && categoryChanged) {
+      const bounds = map.getBounds();
+      const pts = places
+        .filter((p) => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng)))
+        .map((p) => [Number(p.lat), Number(p.lng)]);
+      if (pts.length && !pts.some((pt) => bounds.contains(pt))) {
+        map.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 15 });
+        return; // fitBounds fires moveend, which redraws
+      }
+    }
     drawRef.current();
-  }, [places]);
+  }, [places, selectedCategory]);
+
+  // keep the picked category chip visible in the scrolling row
+  useEffect(() => {
+    chipsRef.current?.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [selectedCategory]);
 
   // the visitor's own position
   useEffect(() => {
@@ -139,6 +169,37 @@ export default function PlacesMap({ places, userLocation, onSelect, onClose }) {
           <X size={16} /> סגור
         </button>
       </div>
+      {onCategoryChange && categories.length > 0 && (
+        <div ref={chipsRef} className="absolute top-[3.75rem] inset-x-0 z-[1000] overflow-x-auto no-scrollbar" role="group" aria-label="קטגוריות במפה">
+          <div className="flex w-max gap-2 px-3 pb-1">
+            {categories
+              // a category with nothing to show here is hidden, unless it is the one picked
+              .filter((cat) => cat.id === 'all' || cat.id === selectedCategory || categoryCounts[cat.id] > 0)
+              .map((cat) => {
+                const active = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => onCategoryChange(cat.id)}
+                    aria-pressed={active}
+                    className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium shadow-md transition-colors ${
+                      active
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-card text-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    <span aria-hidden="true">{cat.emoji}</span>
+                    {cat.label}
+                    <span className={`text-xs ${active ? 'opacity-90' : 'text-muted-foreground'}`}>
+                      {categoryCounts[cat.id] || 0}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      )}
       {userLocation && (
         <button
           type="button"

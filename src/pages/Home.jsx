@@ -211,16 +211,17 @@ export default function Home() {
   };
 
   // Filter and sort places
+  const matchesSearchAndArea = (place) => {
+    if (searchQuery && !place.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (userLocation && maxDistance != null) {
+      const distance = haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng);
+      if (distance > maxDistance) return false;
+    }
+    return true;
+  };
   const baseFiltered = places
-    .filter(place => {
-      if (selectedCategory !== 'all' && normalizeCategory(place.category) !== selectedCategory) return false;
-      if (searchQuery && !place.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      if (userLocation && maxDistance != null) {
-        const distance = haversineKm(userLocation.lat, userLocation.lng, place.lat, place.lng);
-        if (distance > maxDistance) return false;
-      }
-      return true;
-    });
+    .filter(place => selectedCategory === 'all' || normalizeCategory(place.category) === selectedCategory)
+    .filter(matchesSearchAndArea);
 
   // counts for the quick-filter chips reflect the other active filters
   const openCount = baseFiltered.filter(p => isOpenNow(p, now) === true).length;
@@ -254,11 +255,14 @@ export default function Home() {
     setFeatures([]);
   };
 
+  const matchesExtraFilters = (p) =>
+    (!openNowOnly || isOpenNow(p, now) === true) &&
+    (!kosherOnly || p.kosher === 'kosher') &&
+    hasAllAmenities(p, features) &&
+    (!freeOnly || p.price_level === 'free');
+
   const filteredPlaces = baseFiltered
-    .filter(p => !openNowOnly || isOpenNow(p, now) === true)
-    .filter(p => !kosherOnly || p.kosher === 'kosher')
-    .filter(p => hasAllAmenities(p, features))
-    .filter(p => !freeOnly || p.price_level === 'free')
+    .filter(matchesExtraFilters)
     .sort((a, b) => {
       if (sortBy === 'distance' && userLocation) {
         const distA = haversineKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
@@ -270,9 +274,19 @@ export default function Home() {
     });
 
   // the map never loads more than MAP_MAX_KM around the visitor, whatever the list radius is
-  const mapPlaces = userLocation
-    ? filteredPlaces.filter(p => haversineKm(userLocation.lat, userLocation.lng, p.lat, p.lng) <= MAP_MAX_KM)
-    : filteredPlaces;
+  const inMapRange = (p) => !userLocation || haversineKm(userLocation.lat, userLocation.lng, p.lat, p.lng) <= MAP_MAX_KM;
+  const mapPlaces = filteredPlaces.filter(inMapRange);
+
+  // the map's category chips count what each category would show with every other filter kept
+  const mapCategoryCounts = {};
+  if (mapOpen) {
+    for (const p of places) {
+      if (!matchesSearchAndArea(p) || !matchesExtraFilters(p) || !inMapRange(p)) continue;
+      const cat = normalizeCategory(p.category);
+      mapCategoryCounts[cat] = (mapCategoryCounts[cat] || 0) + 1;
+      mapCategoryCounts.all = (mapCategoryCounts.all || 0) + 1;
+    }
+  }
 
   if (loading) {
     return (
@@ -494,6 +508,10 @@ export default function Home() {
         <PlacesMap
           places={mapPlaces}
           userLocation={userLocation}
+          categories={CATEGORIES}
+          selectedCategory={selectedCategory}
+          categoryCounts={mapCategoryCounts}
+          onCategoryChange={setSelectedCategory}
           onSelect={setSelectedPlace}
           onClose={() => setMapOpen(false)}
         />
