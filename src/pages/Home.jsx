@@ -14,6 +14,7 @@ import { isOpenNow } from '@/lib/openingHours';
 import useUserLocation from '@/hooks/useUserLocation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/api/base44Client';
+import { fetchAllRows } from '@/lib/fetchAllRows';
 import { normalizeCategory } from '@/lib/categories';
 import { AMENITIES, hasAllAmenities, parseFeatureParam } from '@/lib/amenities';
 import FilterSheet from '@/components/places/FilterSheet';
@@ -71,20 +72,9 @@ export default function Home() {
     const loadPlaces = async () => {
       try {
         setLoading(true);
-        // The API caps one response at 1000 rows: page through until everything is loaded
-        const PAGE = 1000;
-        const all = [];
-        for (let from = 0; ; from += PAGE) {
-          const { data, error } = await supabase
-            .from('places')
-            .select('*')
-            .eq('status', 'approved')
-            .order('id')
-            .range(from, from + PAGE - 1);
-          if (error) throw error;
-          all.push(...(data || []));
-          if (!data || data.length < PAGE) break;
-        }
+        const all = await fetchAllRows(() =>
+          supabase.from('places').select('*').eq('status', 'approved').order('id')
+        );
         setPlaces(all);
 
         // Load favorites
